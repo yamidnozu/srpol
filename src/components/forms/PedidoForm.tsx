@@ -1,15 +1,14 @@
-// src/components/forms/PedidoForm.tsx
-
+// src/components/pedidos/PedidoForm.tsx
 import {
-  Button,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
+    Button,
+    Checkbox,
+    FormControl,
+    FormControlLabel,
+    InputLabel,
+    MenuItem,
+    Select,
+    TextField,
+    Typography,
 } from "@mui/material";
 import { addDoc, collection, Timestamp } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
@@ -20,7 +19,11 @@ import { db } from "../../utils/firebase";
 
 interface PedidoFormProps {
   onClose: () => void;
-  people?: { id: string; name: string; items: { id: string; quantity: number }[] }[];
+  people?: {
+    id: string;
+    name: string;
+    items: { id: string; quantity: number }[];
+  }[];
 }
 
 const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
@@ -30,22 +33,25 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
   const [items, setItems] = useState<
     { id: string; quantity: number; assignedTo: string }[]
   >([]);
-  const [peopleOrder, setPeopleOrder] = useState<{ id: string; name: string }[]>([]);
+  const [peopleOrder, setPeopleOrder] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [sede, setSede] = useState("");
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [deliveryIncluded, setDeliveryIncluded] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState("contraentrega");
 
-
   useEffect(() => {
     if (people) {
-        setPeopleOrder(people.map(person => ({ id: person.id, name: person.name })))
-      const newItems = people.flatMap(person =>
-          person.items.map(item => ({
-            id: item.id,
-            quantity: item.quantity,
-              assignedTo: person.name,
-          }))
+      setPeopleOrder(
+        people.map((person) => ({ id: person.id, name: person.name }))
+      );
+      const newItems = people.flatMap((person) =>
+        person.items.map((item) => ({
+          id: item.id,
+          quantity: item.quantity,
+          assignedTo: person.name,
+        }))
       );
       setItems(newItems);
     }
@@ -59,7 +65,6 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
       setSede(sedesDisponibles[0]);
     }
   }, [sedesDisponibles]);
-
 
   const calculateTotal = () => {
     let total = 0;
@@ -84,7 +89,7 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
         items: items.map((item) => ({
           id: item.id,
           quantity: item.quantity,
-            assignedTo: item.assignedTo,
+          assignedTo: item.assignedTo,
         })),
         people: peopleOrder,
         sede: sede,
@@ -98,18 +103,17 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
       };
 
       await addDoc(collection(db, "pedidos"), orderData);
-        handlePaymentSuccess()
-
+      handlePaymentSuccess();
     } catch (error) {
       console.error("Error al agregar el pedido:", error);
     }
   };
 
   const handlePaymentSuccess = async () => {
-      // Sumar puntos al usuario
-      await addPoints();
-      alert("Pedido realizado con éxito y puntos sumados.");
-      onClose();
+    // Sumar puntos al usuario
+    await addPoints();
+    alert("Pedido realizado con éxito y puntos sumados.");
+    onClose();
   };
 
   return (
@@ -158,18 +162,20 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
         label="¿El domicilio está incluido?"
         sx={{ marginBottom: 2 }}
       />
+
       {/* Método de Pago */}
-        <FormControl fullWidth sx={{ marginBottom: 2 }}>
-            <InputLabel>Método de Pago</InputLabel>
-            <Select
-              value={paymentMethod}
-              label="Método de Pago"
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              required
-            >
-              <MenuItem value="contraentrega">Contraentrega</MenuItem>
-            </Select>
-          </FormControl>
+      <FormControl fullWidth sx={{ marginBottom: 2 }}>
+        <InputLabel>Método de Pago</InputLabel>
+        <Select
+          value={paymentMethod}
+          label="Método de Pago"
+          onChange={(e) => setPaymentMethod(e.target.value)}
+          required
+        >
+          <MenuItem value="contraentrega">Contraentrega</MenuItem>
+          {/* Puedes añadir otros métodos de pago si lo deseas */}
+        </Select>
+      </FormControl>
 
       <Button type="submit" variant="contained" color="primary" fullWidth>
         Realizar Pedido

@@ -1,11 +1,4 @@
-import {
-    Button,
-    Checkbox,
-    FormControlLabel,
-    Grid,
-    TextField,
-    Typography,
-} from "@mui/material";
+import { Button, Grid, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { MenuItem } from "../../context/AppContext";
 import { useMenu } from "../../hooks/useMenu";
@@ -18,9 +11,7 @@ interface MenuFormProps {
 const MenuForm: React.FC<MenuFormProps> = ({ initialValues, onSubmit }) => {
   const { loading } = useMenu();
   const [name, setName] = useState(initialValues?.name || "");
-  const [description, setDescription] = useState(
-    initialValues?.description || ""
-  );
+  const [description, setDescription] = useState(initialValues?.description || "");
   const [price, setPrice] = useState(initialValues?.price || 0);
   const [imageUrl, setImageUrl] = useState(initialValues?.imageUrl || "");
   const [recommendation, setRecommendation] = useState(
@@ -28,9 +19,6 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialValues, onSubmit }) => {
   );
   const [observations, setObservations] = useState(
     initialValues?.observations || ""
-  );
-  const [available, setAvailable] = useState(
-    initialValues?.available !== undefined ? initialValues.available : true
   );
 
   const handleSubmit = (event: React.FormEvent) => {
@@ -40,7 +28,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialValues, onSubmit }) => {
       description,
       price,
       imageUrl,
-      available,
+      available: true,
       recommendation,
       observations,
     });
@@ -101,17 +89,6 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialValues, onSubmit }) => {
             label="Observaciones"
             value={observations}
             onChange={(e) => setObservations(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={available}
-                onChange={(e) => setAvailable(e.target.checked)}
-              />
-            }
-            label="Disponible"
           />
         </Grid>
         <Grid item xs={12}>
