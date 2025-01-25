@@ -1,5 +1,5 @@
-import { Box } from '@mui/material';
-import React, { ReactNode } from 'react';
+// src/components/layout/PublicLayout.tsx
+import React, { ReactNode } from "react";
 
 interface PublicLayoutProps {
   children: ReactNode;
@@ -7,9 +7,11 @@ interface PublicLayoutProps {
 
 const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
   return (
-      <Box  sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        {children}
-      </Box>
+    <div className="flex justify-center items-center h-screen bg-gray-100">
+      {" "}
+      {/* Clases Tailwind para centrar y fondo */}
+      {children}
+    </div>
   );
 };
 

@@ -1,6 +1,3 @@
-// src/App.tsx
-import { ThemeProvider } from "@emotion/react";
-import { CssBaseline } from "@mui/material";
 import React from "react";
 import {
   Navigate,
@@ -18,12 +15,12 @@ import Dashboard from "./pages/Dashboard";
 import GestionMenu from "./pages/GestionMenu";
 import GestionUsuarios from "./pages/GestionUsuarios";
 import Login from "./pages/Login";
-import MenuPage from "./pages/MenuPage";
+
+import GroupOrderPage from "./components/menu/GroupOrderPage";
 import PedidosPage from "./pages/PedidosPage";
 import Perfil from "./pages/Perfil";
 import Success from "./pages/Success";
 import "./styles/global.css";
-import theme from "./utils/theme";
 
 const PrivateRoute: React.FC<{
   children: React.ReactNode;
@@ -60,90 +57,87 @@ const App: React.FC = () => {
   return (
     <AuthProvider>
       <AppProvider>
-        <ThemeProvider theme={theme}>
-          <CssBaseline />
-          <Router>
-            <ErrorBoundary>
-              <Routes>
-                <Route
-                  path="/login"
-                  element={
-                    <PublicRoute>
-                      <Login />
-                    </PublicRoute>
-                  }
-                />
-                <Route
-                  path="/success"
-                  element={
-                    <PrivateRoute>
-                      <Success />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/"
-                  element={
-                    <PrivateRoute>
-                      <Dashboard />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/menu"
-                  element={
-                    <PrivateRoute>
-                      <MenuPage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/pedidos"
-                  element={
-                    <PrivateRoute>
-                      <PedidosPage />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/gestion-menu"
-                  element={
-                    <PrivateRoute allowedRoles={["admin", "encargado"]}>
-                      <GestionMenu />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/perfil"
-                  element={
-                    <PrivateRoute>
-                      <Perfil />
-                    </PrivateRoute>
-                  }
-                />
-                <Route
-                  path="/gestion-usuarios"
-                  element={
-                    <PrivateRoute allowedRoles={["admin"]}>
-                      <GestionUsuarios />
-                    </PrivateRoute>
-                  }
-                />
-                {/* Ruta para manejar pagos exitosos */}
-                <Route
-                  path="/success"
-                  element={
-                    <PrivateRoute>
-                      <Success />
-                    </PrivateRoute>
-                  }
-                />
-                {/* Ruta por defecto */}
-                <Route path="*" element={<Navigate to="/" />} />
-              </Routes>
-            </ErrorBoundary>
-          </Router>
-        </ThemeProvider>
+        <Router>
+          <ErrorBoundary>
+            <Routes>
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <Login />
+                  </PublicRoute>
+                }
+              />
+              <Route
+                path="/success"
+                element={
+                  <PrivateRoute>
+                    <Success />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/"
+                element={
+                  <PrivateRoute>
+                    <Dashboard />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/menu"
+                element={
+                  <PrivateRoute>
+                    <GroupOrderPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/pedidos"
+                element={
+                  <PrivateRoute>
+                    <PedidosPage />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/gestion-menu"
+                element={
+                  <PrivateRoute allowedRoles={["admin", "encargado"]}>
+                    <GestionMenu />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/perfil"
+                element={
+                  <PrivateRoute>
+                    <Perfil />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/gestion-usuarios"
+                element={
+                  <PrivateRoute allowedRoles={["admin"]}>
+                    <GestionUsuarios />
+                  </PrivateRoute>
+                }
+              />
+              {/* Ruta para manejar pagos exitosos */}
+              <Route
+                path="/success"
+                element={
+                  <PrivateRoute>
+                    <Success />
+                  </PrivateRoute>
+                }
+              />
+              {/* Ruta por defecto */}
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </ErrorBoundary>
+        </Router>
       </AppProvider>
     </AuthProvider>
   );

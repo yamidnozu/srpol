@@ -1,15 +1,12 @@
-import {
-  Button,
-  Container,
-  Grid,
-  TextField,
-  Typography,
-} from "@mui/material";
+/* src/pages/MenuPage.tsx */
+import { addDoc, collection } from "firebase/firestore";
 import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import PedidoForm from "../components/pedidos/PedidoForm";
 import { MenuItem } from "../context/AppContext";
 import { useMenu } from "../hooks/useMenu";
+import { COLLECTIONS } from "../utils/constants";
+import { db } from "../utils/firebase";
 
 interface Person {
   id: string;
@@ -23,8 +20,12 @@ const MenuPage: React.FC = () => {
   const [people, setPeople] = useState<Person[]>([]);
   const [showMenu, setShowMenu] = useState(false);
   const [, setOpenPedidoModal] = useState(false);
+  const [loadingAddSampleData, setLoadingAddSampleData] = useState(false); // Estado para el botón de carga de ejemplo
+  const [message, setMessage] = useState<string | null>(null); // Estado para mensajes de feedback
 
-  const handleNumPeopleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNumPeopleChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setNumPeople(Number(event.target.value));
   };
 
@@ -97,126 +98,266 @@ const MenuPage: React.FC = () => {
     setOpenPedidoModal(false);
   };
 
+  const generateSampleMenuItems = () => {
+    return [
+      {
+        name: "Hamburguesa Clásica",
+        description: "Carne de res, queso cheddar, lechuga, tomate y cebolla.",
+        price: 8.99,
+        imageUrl: "https://ejemplo.com/hamburguesa.jpg",
+        available: true,
+        recommendation: "Ideal con papas fritas.",
+        observations: "Se puede pedir sin cebolla.",
+      },
+      {
+        name: "Pizza Margarita",
+        description: "Salsa de tomate, mozzarella fresca y albahaca.",
+        price: 12.50,
+        imageUrl: "https://ejemplo.com/pizza.jpg",
+        available: true,
+        recommendation: "Perfecta para compartir.",
+        observations: "Opción vegana disponible con queso de almendras.",
+      },
+      {
+        name: "Ensalada César",
+        description: "Lechuga romana, crutones, parmesano y aderezo César.",
+        price: 6.75,
+        imageUrl: "https://ejemplo.com/ensalada.jpg",
+        available: true,
+        recommendation: "Ligera y refrescante.",
+        observations: "Se puede añadir pollo a la parrilla.",
+      },
+      {
+        name: "Pasta Carbonara",
+        description: "Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.",
+        price: 10.20,
+        imageUrl: "https://ejemplo.com/pasta_carbonara.jpg",
+        available: true,
+        recommendation: "Un clásico italiano.",
+        observations: "Sin gluten disponible con pasta de arroz.",
+      },
+      {
+        name: "Tacos al Pastor",
+        description: "Carne de cerdo adobada, piña, cebolla y cilantro.",
+        price: 9.50,
+        imageUrl: "https://ejemplo.com/tacos_pastor.jpg",
+        available: true,
+        recommendation: "Sabor auténtico mexicano.",
+        observations: "Picante medio.",
+      },
+      {
+        name: "Sushi Variado (12 piezas)",
+        description: "Selección de nigiris y makis variados.",
+        price: 15.99,
+        imageUrl: "https://ejemplo.com/sushi.jpg",
+        available: true,
+        recommendation: "Para amantes del sushi.",
+        observations: "Incluye salsa de soya, wasabi y jengibre.",
+      },
+      {
+        name: "Pollo Frito",
+        description: "Crujientes piezas de pollo frito, receta secreta.",
+        price: 7.80,
+        imageUrl: "https://ejemplo.com/pollo_frito.jpg",
+        available: true,
+        recommendation: "Ideal para niños y adultos.",
+        observations: "Opción extra crujiente disponible.",
+      },
+      {
+        name: "Sopa de Tomate",
+        description: "Sopa cremosa de tomate, hecha en casa.",
+        price: 5.50,
+        imageUrl: "https://ejemplo.com/sopa_tomate.jpg",
+        available: true,
+        recommendation: "Caliente y reconfortante.",
+        observations: "Servida con pan tostado.",
+      },
+      {
+        name: "Brownie con Helado",
+        description: "Brownie de chocolate caliente con helado de vainilla.",
+        price: 6.25,
+        imageUrl: "https://ejemplo.com/brownie_helado.jpg",
+        available: true,
+        recommendation: "Postre perfecto.",
+        observations: "Se puede pedir sin nueces.",
+      },
+      {
+        name: "Jugo de Naranja Natural",
+        description: "Jugo de naranja recién exprimido.",
+        price: 3.50,
+        imageUrl: "https://ejemplo.com/jugo_naranja.jpg",
+        available: true,
+        recommendation: "Bebida refrescante.",
+        observations: "Sin azúcar añadida.",
+      },
+    ];
+  };
+
+
+  const handleAddSampleData = async () => {
+    setLoadingAddSampleData(true);
+    setMessage("Agregando datos de ejemplo...");
+    try {
+      const sampleMenuItems = generateSampleMenuItems();
+      const menuCollectionRef = collection(db, COLLECTIONS.MENU);
+      for (const item of sampleMenuItems) {
+        await addDoc(menuCollectionRef, item);
+      }
+      setMessage("Datos de ejemplo agregados exitosamente!");
+    } catch (error) {
+      console.error("Error al agregar datos de ejemplo:", error);
+      setMessage("Error al agregar datos de ejemplo.");
+    } finally {
+      setLoadingAddSampleData(false);
+      setTimeout(() => setMessage(null), 5000); // Limpiar mensaje después de 5 segundos
+    }
+  };
+
+
   return (
-    <Container sx={{ marginY: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Menú
-      </Typography>
+    <div className="container mx-auto my-8 p-4 md:p-8">
+      {/* Container principal con Tailwind */}
+      <h1 className="text-3xl font-bold text-gray-900 mb-4">Menú</h1>
+      {/* Título principal */}
       {!showMenu ? (
-        <Grid container spacing={2} sx={{ marginBottom: 2 }}>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Número de personas"
+        <div className="grid gap-4 mb-4 md:grid-cols-2">
+          {/* Contenedor para selección de personas */}
+          <div className="mb-4">
+            <label
+              htmlFor="numPeople"
+              className="block text-gray-700 text-sm font-bold mb-2"
+            >
+              Número de personas:
+            </label>
+            <input
               type="number"
+              id="numPeople"
               value={numPeople}
               onChange={handleNumPeopleChange}
-              fullWidth
-              inputProps={{ min: 1 }}
+              min="1"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
-          </Grid>
+          </div>
           {people.map((person, index) => (
-            <Grid item xs={12} sm={6} key={person.id}>
-              <TextField
-                label={`Nombre de la persona ${index + 1} (Opcional)`}
+            <div key={person.id} className="mb-4">
+              <label
+                htmlFor={`personName-${index}`}
+                className="block text-gray-700 text-sm font-bold mb-2"
+              >
+                Nombre de la persona {index + 1} (Opcional):
+              </label>
+              <input
+                type="text"
+                id={`personName-${index}`}
                 value={person.name}
                 onChange={(e) => handleNameChange(index, e.target.value)}
-                fullWidth
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />
-            </Grid>
+            </div>
           ))}
-
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="primary"
+          <div>
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               onClick={handleStartOrder}
             >
               Empezar Pedido
-            </Button>
-          </Grid>
-        </Grid>
+            </button>
+          </div>
+        </div>
       ) : (
         <>
-          <Grid container spacing={2}>
+          <div className="mb-4"> {/* Contenedor para el botón "Agregar Datos de Ejemplo" */}
+            <button
+              onClick={handleAddSampleData}
+              disabled={loadingAddSampleData}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
+            >
+              {loadingAddSampleData ? "Agregando..." : "Agregar Datos de Ejemplo al Menú"}
+            </button>
+            {message && <p className="mt-2 text-sm text-gray-700">{message}</p>} {/* Mensaje de feedback */}
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {/* Grid para personas y menú */}
             {people.map((person) => (
-              <Grid item xs={12} md={4} key={person.id}>
-                <Typography variant="h6">
+              <div key={person.id} className="p-4 border rounded-lg shadow-md">
+                {/* Card persona */}
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
                   {person.name || "Persona sin nombre"}
-                </Typography>
-                <Typography variant="body2">
-                  Items:
-                </Typography>
-                  {person.items.length > 0 ? (
-                    <ul style={{ listStyleType: "none", paddingLeft: 0 }}>
-                      {person.items.map((item) => {
-                        const menuItem = menu.find((menuItem) => menuItem.id === item.id)
-                        return menuItem ?(
-                          <li key={item.id}>
-                            <Typography variant="body2">
-                            {menuItem.name} x{" "}
-                            <TextField
-                            type="number"
-                            value={item.quantity}
-                              onChange={(e) =>
-                                handleQuantityChange(
+                </h2>
+                {/* Título persona */}
+                <p className="text-gray-700 mb-2">Items:</p>
+                {person.items.length > 0 ? (
+                  <ul className="list-none pl-0 mb-4">
+                    {/* Lista de items */}
+                    {person.items.map((item) => {
+                      const menuItem = menu.find(
+                        (menuItem) => menuItem.id === item.id
+                      );
+                      return menuItem ? (
+                        <li key={item.id} className="mb-2">
+                          <div className="flex items-center justify-between">
+                            <p className="text-gray-700">{menuItem.name} x </p>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="number"
+                                value={item.quantity}
+                                onChange={(e) =>
+                                  handleQuantityChange(
                                     person.id,
-                                  item.id,
-                                  parseInt(e.target.value)
-                              )}
-                                sx={{ width: '60px' }}
-                                inputProps={{ min: 1 }}
+                                    item.id,
+                                    parseInt(e.target.value)
+                                  )
+                                }
+                                min="1"
+                                className="shadow appearance-none border rounded w-16 py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-center"
                               />
-                            <Button
-                                  variant="outlined"
-                                  color="secondary"
-                                  onClick={() =>
-                                    handleRemoveItemFromPerson(person.id, item.id)
-                                  }
-                                sx={{ marginLeft: 2, padding: '2px 5px', minWidth: 'auto' }}
+                              <button
+                                className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-sm"
+                                onClick={() =>
+                                  handleRemoveItemFromPerson(person.id, item.id)
+                                }
                               >
-                                  Eliminar
-                                </Button>
-                          </Typography>
-                          </li>
-                        ): null
+                                Eliminar
+                              </button>
+                            </div>
+                          </div>
+                        </li>
+                      ) : null;
                     })}
-                    </ul>
-                  ) : (
-                      <Typography variant="body2">
-                          Esta persona aun no tiene items
-                      </Typography>
-                  )}
-                <Typography variant="body2">
-                  Menu:
-                </Typography>
-
-                  <Grid container spacing={2}>
-                      {menu.map((item) => (
-                        <Grid item xs={12} sm={6} md={12} key={item.id}>
-                            <Button
-                                variant="outlined"
-                                color="primary"
-                              onClick={() => handleAddItemToPerson(person.id, item)}
-                              >
-                                {item.name}
-                              </Button>
-                        </Grid>
-                      ))}
-                  </Grid>
-              </Grid>
+                  </ul>
+                ) : (
+                  <p className="text-gray-500 mb-4">
+                    Esta persona aún no tiene items.
+                  </p>
+                )}
+                <p className="text-gray-700 font-semibold mb-2">Menú:</p>
+                <div className="grid gap-2 md:grid-cols-2">
+                  {/* Grid menú por persona */}
+                  {menu.map((item) => (
+                    <button
+                      key={item.id}
+                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                      onClick={() => handleAddItemToPerson(person.id, item)}
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
-          </Grid>
-           <Button
-            variant="contained"
-            color="primary"
-            onClick={handleOpenPedidoModal}
-          >
-            Realizar Pedido
-          </Button>
-           <PedidoForm onClose={handleClosePedidoModal} people={people} />
+          </div>
+          <div className="mt-6">
+            <button
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              onClick={handleOpenPedidoModal}
+            >
+              Realizar Pedido
+            </button>
+          </div>
+          <PedidoForm onClose={handleClosePedidoModal} people={people} />
         </>
       )}
-    </Container>
+    </div>
   );
 };
 

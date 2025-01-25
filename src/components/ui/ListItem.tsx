@@ -1,11 +1,8 @@
-import {
-  ListItem as MuiListItem,
-  ListItemProps as MuiListItemProps,
-} from "@mui/material";
-import { forwardRef, ReactNode } from "react";
+/* src\components\ui\ListItem.tsx */
+import React, { forwardRef, ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-interface ListItemProps extends Omit<MuiListItemProps, "children"> {
+interface ListItemProps extends React.LiHTMLAttributes<HTMLLIElement> {
   children: ReactNode;
   onClick?: () => void;
   to?: string;
@@ -14,26 +11,50 @@ interface ListItemProps extends Omit<MuiListItemProps, "children"> {
 }
 
 const ListItem = forwardRef<HTMLLIElement, ListItemProps>(
-  ({ children, onClick, to, href, button, ...props }, ref) => {
+  ({ children, onClick, to, href, button, className, ...props }, ref) => {
     const handleClick = () => {
       if (onClick) {
         onClick();
       }
     };
 
-    return (
-      <MuiListItem
-        component={to ? Link : "li"}
-        to={to}
-        href={to ? to : href}
-        onClick={handleClick}
+    const commonClasses = `block py-2 px-4 text-sm hover:bg-gray-100 text-gray-700`;
+    const buttonClasses = button
+      ? `${commonClasses} cursor-pointer`
+      : commonClasses;
+
+    const listItemContent = (
+      <li
         ref={ref}
-        button={button ? "true" : undefined}
+        onClick={handleClick}
+        className={`${buttonClasses} ${className || ""}`}
         {...props}
       >
         {children}
-      </MuiListItem>
+      </li>
     );
+
+    if (to) {
+      return (
+        <li ref={ref} className={className} {...props}>
+          <Link to={to} className={`${commonClasses} block`}>
+            {children}
+          </Link>
+        </li>
+      );
+    }
+
+    if (href) {
+      return (
+        <li ref={ref} className={className} {...props}>
+          <a href={href} className={`${commonClasses} block`}>
+            {children}
+          </a>
+        </li>
+      );
+    }
+
+    return listItemContent;
   }
 );
 

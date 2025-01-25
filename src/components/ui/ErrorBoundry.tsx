@@ -1,5 +1,6 @@
-import { Alert } from '@mui/material';
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+// src/components/ui/ErrorBoundry.tsx
+import { Alert } from "@mui/material";
+import React, { Component, ErrorInfo, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -23,16 +24,17 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Error caught by error boundary", error, errorInfo);
-      this.setState({ errorInfo });
+    this.setState({ errorInfo });
   }
-
 
   render() {
     if (this.state.hasError) {
       return (
-          <Alert severity="error">
-              Algo salio mal
-          </Alert>
+        <Alert severity="error" className="mt-4 rounded-md shadow-sm">
+          {" "}
+          {/* Added Tailwind classes to Alert */}
+          Algo salió mal
+        </Alert>
       );
     }
 

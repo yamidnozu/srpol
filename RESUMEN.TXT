@@ -1,42 +1,42 @@
 
 /* Directorio:  */
-├── eslint.config.js [29]
+├── eslint.config.js [30]
 ├── firebase.json [1]
 ├── index.html [17]
-├── package.json [44]
+├── package.json [47]
+├── postcss.config.js [9]
 ├── README.md [51]
 ├── 📂 src
-│   ├── App.tsx [147]
-│   ├── 📂 assets
-│   │   └── react.svg [1]
+│   ├── App.tsx [146]
 │   ├── 📂 components
 │   │   ├── 📂 auth
-│   │   │   ├── LoginForm.tsx [59]
-│   │   │   └── RegisterForm.tsx [59]
+│   │   │   ├── LoginForm.tsx [83]
+│   │   │   └── RegisterForm.tsx [83]
 │   │   ├── 📂 forms
-│   │   │   ├── MenuForm.tsx [104]
-│   │   │   └── PedidoForm.tsx [188]
+│   │   │   ├── MenuForm.tsx [203]
+│   │   │   └── PedidoForm.tsx [232]
 │   │   ├── 📂 layout
-│   │   │   ├── MainLayout.tsx [35]
-│   │   │   ├── Navbar.tsx [47]
-│   │   │   ├── PublicLayout.tsx [16]
-│   │   │   └── Sidebar.tsx [110]
+│   │   │   ├── MainLayout.tsx [44]
+│   │   │   ├── Navbar.tsx [54]
+│   │   │   ├── PublicLayout.tsx [19]
+│   │   │   └── Sidebar.tsx [96]
 │   │   ├── 📂 menu
-│   │   │   ├── MenuForm.tsx [128]
-│   │   │   ├── MenuItem.tsx [57]
-│   │   │   ├── MenuList.tsx [24]
-│   │   │   └── MenuModal.tsx [41]
+│   │   │   ├── MenuForm.tsx [189]
+│   │   │   ├── MenuItem.tsx [61]
+│   │   │   ├── MenuList.tsx [22]
+│   │   │   ├── MenuModal.tsx [67]
+│   │   │   └── PersonMenuModal.tsx [121]
 │   │   ├── 📂 payment
 │   │   │   └── PaymentForm.tsx [80]
 │   │   ├── 📂 pedidos
 │   │   │   ├── PedidoForm.tsx [181]
 │   │   │   ├── PedidoItem.tsx [9]
-│   │   │   └── PedidoList.tsx [298]
+│   │   │   └── PedidoList.tsx [290]
 │   │   └── 📂 ui
-│   │       ├── Button.tsx [14]
-│   │       ├── ErrorBoundry.tsx [43]
-│   │       ├── ListItem.tsx [43]
-│   │       └── TextField.tsx [14]
+│   │       ├── Button.tsx [80]
+│   │       ├── ErrorBoundry.tsx [46]
+│   │       ├── ListItem.tsx [64]
+│   │       └── TextField.tsx [34]
 │   ├── 📂 context
 │   │   ├── AppContext.tsx [65]
 │   │   └── AuthContext.tsx [164]
@@ -46,38 +46,40 @@
 │   ├── main.tsx [10]
 │   ├── 📂 pages
 │   │   ├── Dashboard.tsx [19]
-│   │   ├── GestionMenu.tsx [78]
+│   │   ├── GestionMenu.tsx [133]
 │   │   ├── GestionUsuarios.tsx [82]
-│   │   ├── Login.tsx [30]
-│   │   ├── MenuPage.tsx [223]
+│   │   ├── Login.tsx [56]
+│   │   ├── MenuPage.tsx [364]
 │   │   ├── PedidosPage.tsx [18]
-│   │   ├── Perfil.tsx [27]
+│   │   ├── Perfil.tsx [97]
 │   │   └── Success.tsx [41]
 │   ├── 📂 payment
 │   │   └── payment.ts [87]
 │   ├── 📂 styles
-│   │   └── global.css [14]
+│   │   └── global.css [17]
 │   ├── 📂 types
 │   │   ├── css.d.ts [1]
 │   │   └── global.d.ts [14]
 │   └── 📂 utils
 │       ├── constants.ts [4]
 │       ├── firebase.ts [16]
-│       └── theme.ts [1]
+│       └── theme.ts [43]
+├── tailwind.config.js [11]
 ├── tsconfig.app.json [31]
 ├── tsconfig.json [20]
 ├── tsconfig.node.json [25]
 └── vite.config.ts [34]
 
 
-Total de líneas resumidas: 2864
+Total de líneas resumidas: 3731
 
 
 /* Inicio eslint.config.js */
+
 import js from '@eslint/js'
-import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
+import globals from 'globals'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
@@ -147,6 +149,7 @@ export default tseslint.config(
     "@mercadopago/sdk-js": "^0.0.3",
     "@mui/icons-material": "^6.4.1",
     "@mui/material": "^6.4.1",
+    "@mui/x-data-grid": "^7.24.1",
     "@stripe/stripe-js": "^5.5.0",
     "axios": "^1.7.9",
     "firebase": "^11.2.0",
@@ -170,11 +173,25 @@ export default tseslint.config(
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.18.2",
     "vite": "^6.0.5",
-    "vite-plugin-pwa": "^0.21.1"
+    "vite-plugin-pwa": "^0.21.1",
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8.4.35",
+    "autoprefixer": "^10.4.17"
   }
 }
-
 /* Fin package.json */
+
+/* Inicio postcss.config.js */
+import autoprefixer from 'autoprefixer';
+import tailwindcss from 'tailwindcss';
+
+export default {
+  plugins: [
+    tailwindcss('./tailwind.config.js'),
+    autoprefixer,
+  ],
+};
+/* Fin postcss.config.js */
 
 /* Inicio README.md */
 # React + TypeScript + Vite
@@ -231,7 +248,6 @@ export default tseslint.config({
 /* Fin README.md */
 
 /* Inicio src\App.tsx */
-// src/App.tsx
 import React from "react";
 import {
   Navigate,
@@ -380,12 +396,7 @@ export default App;
 
 /* Fin src\App.tsx */
 
-/* Inicio src\assets\react.svg */
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--logos" width="35.93" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 228"><path fill="#00D8FF" d="M210.483 73.824a171.49 171.49 0 0 0-8.24-2.597c.465-1.9.893-3.777 1.273-5.621c6.238-30.281 2.16-54.676-11.769-62.708c-13.355-7.7-35.196.329-57.254 19.526a171.23 171.23 0 0 0-6.375 5.848a155.866 155.866 0 0 0-4.241-3.917C100.759 3.829 77.587-4.822 63.673 3.233C50.33 10.957 46.379 33.89 51.995 62.588a170.974 170.974 0 0 0 1.892 8.48c-3.28.932-6.445 1.924-9.474 2.98C17.309 83.498 0 98.307 0 113.668c0 15.865 18.582 31.778 46.812 41.427a145.52 145.52 0 0 0 6.921 2.165a167.467 167.467 0 0 0-2.01 9.138c-5.354 28.2-1.173 50.591 12.134 58.266c13.744 7.926 36.812-.22 59.273-19.855a145.567 145.567 0 0 0 5.342-4.923a168.064 168.064 0 0 0 6.92 6.314c21.758 18.722 43.246 26.282 56.54 18.586c13.731-7.949 18.194-32.003 12.4-61.268a145.016 145.016 0 0 0-1.535-6.842c1.62-.48 3.21-.974 4.76-1.488c29.348-9.723 48.443-25.443 48.443-41.52c0-15.417-17.868-30.326-45.517-39.844Zm-6.365 70.984c-1.4.463-2.836.91-4.3 1.345c-3.24-10.257-7.612-21.163-12.963-32.432c5.106-11 9.31-21.767 12.459-31.957c2.619.758 5.16 1.557 7.61 2.4c23.69 8.156 38.14 20.213 38.14 29.504c0 9.896-15.606 22.743-40.946 31.14Zm-10.514 20.834c2.562 12.94 2.927 24.64 1.23 33.787c-1.524 8.219-4.59 13.698-8.382 15.893c-8.067 4.67-25.32-1.4-43.927-17.412a156.726 156.726 0 0 1-6.437-5.87c7.214-7.889 14.423-17.06 21.459-27.246c12.376-1.098 24.068-2.894 34.671-5.345a134.17 134.17 0 0 1 1.386 6.193ZM87.276 214.515c-7.882 2.783-14.16 2.863-17.955.675c-8.075-4.657-11.432-22.636-6.853-46.752a156.923 156.923 0 0 1 1.869-8.499c10.486 2.32 22.093 3.988 34.498 4.994c7.084 9.967 14.501 19.128 21.976 27.15a134.668 134.668 0 0 1-4.877 4.492c-9.933 8.682-19.886 14.842-28.658 17.94ZM50.35 144.747c-12.483-4.267-22.792-9.812-29.858-15.863c-6.35-5.437-9.555-10.836-9.555-15.216c0-9.322 13.897-21.212 37.076-29.293c2.813-.98 5.757-1.905 8.812-2.773c3.204 10.42 7.406 21.315 12.477 32.332c-5.137 11.18-9.399 22.249-12.634 32.792a134.718 134.718 0 0 1-6.318-1.979Zm12.378-84.26c-4.811-24.587-1.616-43.134 6.425-47.789c8.564-4.958 27.502 2.111 47.463 19.835a144.318 144.318 0 0 1 3.841 3.545c-7.438 7.987-14.787 17.08-21.808 26.988c-12.04 1.116-23.565 2.908-34.161 5.309a160.342 160.342 0 0 1-1.76-7.887Zm110.427 27.268a347.8 347.8 0 0 0-7.785-12.803c8.168 1.033 15.994 2.404 23.343 4.08c-2.206 7.072-4.956 14.465-8.193 22.045a381.151 381.151 0 0 0-7.365-13.322Zm-45.032-43.861c5.044 5.465 10.096 11.566 15.065 18.186a322.04 322.04 0 0 0-30.257-.006c4.974-6.559 10.069-12.652 15.192-18.18ZM82.802 87.83a323.167 323.167 0 0 0-7.227 13.238c-3.184-7.553-5.909-14.98-8.134-22.152c7.304-1.634 15.093-2.97 23.209-3.984a321.524 321.524 0 0 0-7.848 12.897Zm8.081 65.352c-8.385-.936-16.291-2.203-23.593-3.793c2.26-7.3 5.045-14.885 8.298-22.6a321.187 321.187 0 0 0 7.257 13.246c2.594 4.48 5.28 8.868 8.038 13.147Zm37.542 31.03c-5.184-5.592-10.354-11.779-15.403-18.433c4.902.192 9.899.29 14.978.29c5.218 0 10.376-.117 15.453-.343c-4.985 6.774-10.018 12.97-15.028 18.486Zm52.198-57.817c3.422 7.8 6.306 15.345 8.596 22.52c-7.422 1.694-15.436 3.058-23.88 4.071a382.417 382.417 0 0 0 7.859-13.026a347.403 347.403 0 0 0 7.425-13.565Zm-16.898 8.101a358.557 358.557 0 0 1-12.281 19.815a329.4 329.4 0 0 1-23.444.823c-7.967 0-15.716-.248-23.178-.732a310.202 310.202 0 0 1-12.513-19.846h.001a307.41 307.41 0 0 1-10.923-20.627a310.278 310.278 0 0 1 10.89-20.637l-.001.001a307.318 307.318 0 0 1 12.413-19.761c7.613-.576 15.42-.876 23.31-.876H128c7.926 0 15.743.303 23.354.883a329.357 329.357 0 0 1 12.335 19.695a358.489 358.489 0 0 1 11.036 20.54a329.472 329.472 0 0 1-11 20.722Zm22.56-122.124c8.572 4.944 11.906 24.881 6.52 51.026c-.344 1.668-.73 3.367-1.15 5.09c-10.622-2.452-22.155-4.275-34.23-5.408c-7.034-10.017-14.323-19.124-21.64-27.008a160.789 160.789 0 0 1 5.888-5.4c18.9-16.447 36.564-22.941 44.612-18.3ZM128 90.808c12.625 0 22.86 10.235 22.86 22.86s-10.235 22.86-22.86 22.86s-22.86-10.235-22.86-22.86s10.235-22.86 22.86-22.86Z"></path></svg>
-/* Fin src\assets\react.svg */
-
 /* Inicio src\components\auth\LoginForm.tsx */
-import { Alert, Button, Grid, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -406,38 +417,63 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Typography variant="h4" gutterBottom>
-        Iniciar Sesión
-      </Typography>
-      <Grid container spacing={2} sx={{ marginBottom: 2 }}>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Correo electrónico"
-            variant="outlined"
+    <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+      <h2 className="text-xl font-bold text-gray-900">Iniciar Sesión</h2>
+      <div>
+        <div>
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Correo electrónico
+          </label>
+          <input
+            id="email"
+            name="email"
             type="email"
+            autoComplete="email"
+            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Contraseña"
-            variant="outlined"
+        </div>
+        <div>
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Contraseña
+          </label>
+          <input
+            id="password"
+            name="password"
             type="password"
+            autoComplete="current-password"
+            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
-        </Grid>
-      </Grid>
-      {error && <Alert severity="error">{error}</Alert>}
-      <Button type="submit" variant="contained" color="primary">
-        Iniciar Sesión
-      </Button>
+        </div>
+      </div>
+      {error && (
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-2"
+          role="alert"
+        >
+          <strong className="font-bold">Error!</strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      )}
+      <div>
+        <button
+          type="submit"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Iniciar Sesión
+        </button>
+      </div>
     </form>
   );
 };
@@ -447,7 +483,6 @@ export default LoginForm;
 /* Fin src\components\auth\LoginForm.tsx */
 
 /* Inicio src\components\auth\RegisterForm.tsx */
-import { Alert, Button, Grid, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -468,38 +503,63 @@ const RegisterForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Typography variant="h4" gutterBottom>
-        Registrarse
-      </Typography>
-      <Grid container spacing={2} sx={{ marginBottom: 2 }}>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Correo electrónico"
-            variant="outlined"
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <h2 className="text-xl font-bold text-gray-900">Registrarse</h2>
+      <div className="space-y-4">
+        <div>
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Correo electrónico
+          </label>
+          <input
+            id="email"
+            name="email"
             type="email"
+            autoComplete="email"
+            required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
-        </Grid>
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Contraseña"
-            variant="outlined"
+        </div>
+        <div>
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Contraseña
+          </label>
+          <input
+            id="password"
+            name="password"
             type="password"
+            autoComplete="current-password"
+            required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
-        </Grid>
-      </Grid>
-      {error && <Alert severity="error">{error}</Alert>}
-      <Button type="submit" variant="contained" color="primary">
-        Registrarse
-      </Button>
+        </div>
+      </div>
+      {error && (
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-2"
+          role="alert"
+        >
+          <strong className="font-bold">Error!</strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      )}
+      <div>
+        <button
+          type="submit"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Registrarse
+        </button>
+      </div>
     </form>
   );
 };
@@ -509,532 +569,6 @@ export default RegisterForm;
 /* Fin src\components\auth\RegisterForm.tsx */
 
 /* Inicio src\components\forms\MenuForm.tsx */
-import { Button, Grid, TextField, Typography } from "@mui/material";
-import React, { useState } from "react";
-import { MenuItem } from "../../context/AppContext";
-import { useMenu } from "../../hooks/useMenu";
-
-interface MenuFormProps {
-  initialValues?: Partial<MenuItem>;
-  onSubmit: (values: Partial<MenuItem>) => void;
-}
-
-const MenuForm: React.FC<MenuFormProps> = ({ initialValues, onSubmit }) => {
-  const { loading } = useMenu();
-  const [name, setName] = useState(initialValues?.name || "");
-  const [description, setDescription] = useState(initialValues?.description || "");
-  const [price, setPrice] = useState(initialValues?.price || 0);
-  const [imageUrl, setImageUrl] = useState(initialValues?.imageUrl || "");
-  const [recommendation, setRecommendation] = useState(
-    initialValues?.recommendation || ""
-  );
-  const [observations, setObservations] = useState(
-    initialValues?.observations || ""
-  );
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    onSubmit({
-      name,
-      description,
-      price,
-      imageUrl,
-      available: true,
-      recommendation,
-      observations,
-    });
-  };
-
-  if (loading) {
-    return <div>Cargando...</div>;
-  }
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <Typography variant="h5" sx={{ marginBottom: 2 }}>
-        {initialValues?.id ? "Editar Item" : "Agregar Item"}
-      </Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Nombre del Item"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Descripción del Item"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Precio del Item"
-            type="number"
-            value={price}
-            onChange={(e) => setPrice(Number(e.target.value))}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Url de la imagen"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            required
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Recomendaciones"
-            value={recommendation}
-            onChange={(e) => setRecommendation(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Observaciones"
-            value={observations}
-            onChange={(e) => setObservations(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12}>
-          <Button type="submit" variant="contained" color="primary">
-            {initialValues?.id ? "Guardar Cambios" : "Agregar Item"}
-          </Button>
-        </Grid>
-      </Grid>
-    </form>
-  );
-};
-
-export default MenuForm;
-/* Fin src\components\forms\MenuForm.tsx */
-
-/* Inicio src\components\forms\PedidoForm.tsx */
-// src/components/pedidos/PedidoForm.tsx
-import {
-    Button,
-    Checkbox,
-    FormControl,
-    FormControlLabel,
-    InputLabel,
-    MenuItem,
-    Select,
-    TextField,
-    Typography,
-} from "@mui/material";
-import { addDoc, collection, Timestamp } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { useAuth } from "../../hooks/useAuth";
-import { useMenu } from "../../hooks/useMenu";
-import { db } from "../../utils/firebase";
-
-interface PedidoFormProps {
-  onClose: () => void;
-  people?: {
-    id: string;
-    name: string;
-    items: { id: string; quantity: number }[];
-  }[];
-}
-
-const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
-  const { menu } = useMenu();
-  const { user, addPoints } = useAuth();
-
-  const [items, setItems] = useState<
-    { id: string; quantity: number; assignedTo: string }[]
-  >([]);
-  const [peopleOrder, setPeopleOrder] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [sede, setSede] = useState("");
-  const [deliveryFee, setDeliveryFee] = useState(0);
-  const [deliveryIncluded, setDeliveryIncluded] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState("contraentrega");
-
-  useEffect(() => {
-    if (people) {
-      setPeopleOrder(
-        people.map((person) => ({ id: person.id, name: person.name }))
-      );
-      const newItems = people.flatMap((person) =>
-        person.items.map((item) => ({
-          id: item.id,
-          quantity: item.quantity,
-          assignedTo: person.name,
-        }))
-      );
-      setItems(newItems);
-    }
-  }, [people]);
-
-  // Simulación de sedes disponibles (puedes obtenerlas de Firestore)
-  const sedesDisponibles = ["Sede Norte", "Sede Sur", "Sede Centro"];
-
-  useEffect(() => {
-    if (sedesDisponibles.length === 1) {
-      setSede(sedesDisponibles[0]);
-    }
-  }, [sedesDisponibles]);
-
-  const calculateTotal = () => {
-    let total = 0;
-    items.forEach((item) => {
-      const menuItem = menu.find((m) => m.id === item.id);
-      if (menuItem) {
-        total += menuItem.price * item.quantity;
-      }
-    });
-    return total + deliveryFee;
-  };
-
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!user) return;
-
-    try {
-      const total = calculateTotal();
-      const orderId = uuidv4();
-      const orderData = {
-        userId: user.uid,
-        items: items.map((item) => ({
-          id: item.id,
-          quantity: item.quantity,
-          assignedTo: item.assignedTo,
-        })),
-        people: peopleOrder,
-        sede: sede,
-        status: "pendiente",
-        total: total,
-        deliveryFee: deliveryFee,
-        deliveryIncluded: deliveryIncluded,
-        paymentMethod: paymentMethod,
-        orderDate: Timestamp.now(),
-        orderId: orderId,
-      };
-
-      await addDoc(collection(db, "pedidos"), orderData);
-      handlePaymentSuccess();
-    } catch (error) {
-      console.error("Error al agregar el pedido:", error);
-    }
-  };
-
-  const handlePaymentSuccess = async () => {
-    // Sumar puntos al usuario
-    await addPoints();
-    alert("Pedido realizado con éxito y puntos sumados.");
-    onClose();
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <Typography variant="h5" sx={{ marginBottom: 2 }}>
-        Realizar Pedido
-      </Typography>
-
-      {/* Seleccionar Sede */}
-      <FormControl fullWidth sx={{ marginBottom: 2 }}>
-        <InputLabel>Sede</InputLabel>
-        <Select
-          value={sede}
-          label="Sede"
-          onChange={(e) => setSede(e.target.value)}
-          required
-        >
-          {sedesDisponibles.map((sedeItem) => (
-            <MenuItem value={sedeItem} key={sedeItem}>
-              {sedeItem}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      {/* Costo de Envío */}
-      <TextField
-        label="Costo de Envío"
-        type="number"
-        value={deliveryFee}
-        onChange={(e) => setDeliveryFee(parseFloat(e.target.value))}
-        fullWidth
-        sx={{ marginBottom: 2 }}
-        required
-        inputProps={{ min: 0 }}
-      />
-
-      {/* Domicilio Incluido */}
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={deliveryIncluded}
-            onChange={(e) => setDeliveryIncluded(e.target.checked)}
-          />
-        }
-        label="¿El domicilio está incluido?"
-        sx={{ marginBottom: 2 }}
-      />
-
-      {/* Método de Pago */}
-      <FormControl fullWidth sx={{ marginBottom: 2 }}>
-        <InputLabel>Método de Pago</InputLabel>
-        <Select
-          value={paymentMethod}
-          label="Método de Pago"
-          onChange={(e) => setPaymentMethod(e.target.value)}
-          required
-        >
-          <MenuItem value="contraentrega">Contraentrega</MenuItem>
-          {/* Puedes añadir otros métodos de pago si lo deseas */}
-        </Select>
-      </FormControl>
-
-      <Button type="submit" variant="contained" color="primary" fullWidth>
-        Realizar Pedido
-      </Button>
-    </form>
-  );
-};
-
-export default PedidoForm;
-
-/* Fin src\components\forms\PedidoForm.tsx */
-
-/* Inicio src\components\layout\MainLayout.tsx */
-import { Box, Grid, } from '@mui/material';
-import React, { useState } from 'react';
-import Navbar from './Navbar';
-import Sidebar from './Sidebar';
-
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
-
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-    const [drawerOpen, setDrawerOpen] = useState(false);
-
-  const handleDrawerToggle = () => {
-    setDrawerOpen(!drawerOpen);
-  };
-
-  const handleDrawerClose = () => {
-    setDrawerOpen(false);
-  };
-  return (
-    <Box sx={{ display: 'flex' }}>
-      <Navbar toggleDrawer={handleDrawerToggle} />
-      <Sidebar  drawerOpen={drawerOpen} handleDrawerClose={handleDrawerClose} />
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-         <Grid container spacing={3} >
-            <Grid item xs={12}>
-                 {children}
-            </Grid>
-        </Grid>
-      </Box>
-    </Box>
-  );
-};
-
-export default MainLayout;
-/* Fin src\components\layout\MainLayout.tsx */
-
-/* Inicio src\components\layout\Navbar.tsx */
-import MenuIcon from '@mui/icons-material/Menu';
-import { AppBar, Box, IconButton, Toolbar, Typography } from '@mui/material';
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-
-interface NavbarProps {
-    toggleDrawer: () => void
-}
-
-const Navbar: React.FC<NavbarProps> = ({ toggleDrawer }) => {
-    const { logout, user } = useAuth();
-    const navigate = useNavigate();
-    const handleLogout = async () => {
-        await logout();
-        navigate('/login');
-    }
-    return (
-        <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-            <Toolbar>
-                <IconButton
-                    color="inherit"
-                    aria-label="open drawer"
-                    edge="start"
-                    onClick={toggleDrawer}
-                    sx={{ mr: 2, display: { md: 'none' } }}
-                >
-                    <MenuIcon />
-                </IconButton>
-                <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-                    SrPol
-                </Typography>
-                 <Box sx={{display: 'flex', alignItems: 'center'}}>
-                    <Typography variant="body1" sx={{mr: 2}}>{user?.email}</Typography>
-                     <IconButton
-                         color="inherit"
-                         onClick={handleLogout}
-                     >
-                       Cerrar Sesión
-                    </IconButton>
-                 </Box>
-            </Toolbar>
-        </AppBar>
-    );
-};
-
-export default Navbar;
-/* Fin src\components\layout\Navbar.tsx */
-
-/* Inicio src\components\layout\PublicLayout.tsx */
-import { Box } from '@mui/material';
-import React, { ReactNode } from 'react';
-
-interface PublicLayoutProps {
-  children: ReactNode;
-}
-
-const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
-  return (
-      <Box  sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        {children}
-      </Box>
-  );
-};
-
-export default PublicLayout;
-/* Fin src\components\layout\PublicLayout.tsx */
-
-/* Inicio src\components\layout\Sidebar.tsx */
-// src/components/layout/Sidebar.tsx
-
-import {
-  ChevronLeft as ChevronLeftIcon,
-  Menu as MenuIcon,
-  Person as PersonIcon,
-  RestaurantMenu as RestaurantMenuIcon,
-  Settings as SettingsIcon,
-  ShoppingCart as ShoppingCartIcon,
-} from "@mui/icons-material";
-import {
-  Box,
-  Drawer,
-  IconButton,
-  List,
-  ListItemIcon,
-  ListItemText,
-  Toolbar,
-} from "@mui/material";
-import React from "react";
-import { useAuth } from "../../hooks/useAuth";
-import ListItem from "../ui/ListItem";
-
-interface SidebarProps {
-  drawerOpen: boolean;
-  handleDrawerClose: () => void;
-}
-
-const Sidebar: React.FC<SidebarProps> = ({ drawerOpen, handleDrawerClose }) => {
-  const { userRole } = useAuth();
-  const menuItems = [
-    {
-      text: "Dashboard",
-      icon: <MenuIcon />,
-      path: "/",
-      roles: ["admin", "encargado", "client"],
-    },
-    {
-      text: "Menú",
-      icon: <RestaurantMenuIcon />,
-      path: "/menu",
-      roles: ["admin", "encargado", "client", "public"],
-    }, // Añadimos 'public'
-    {
-      text: "Pedidos",
-      icon: <ShoppingCartIcon />,
-      path: "/pedidos",
-      roles: ["admin", "encargado", "client"],
-    },
-    {
-      text: "Gestionar Menú",
-      icon: <SettingsIcon />,
-      path: "/gestion-menu",
-      roles: ["admin", "encargado"],
-    },
-    {
-      text: "Perfil",
-      icon: <PersonIcon />,
-      path: "/perfil",
-      roles: ["admin", "encargado", "client"],
-    },
-    {
-      text: "Gestión de Usuarios",
-      icon: <PersonIcon />,
-      path: "/gestion-usuarios",
-      roles: ["admin"],
-    },
-  ];
-
-  return (
-    <Drawer
-      sx={{
-        width: 240,
-        flexShrink: 0,
-        "& .MuiDrawer-paper": {
-          width: 240,
-          boxSizing: "border-box",
-        },
-      }}
-      variant="persistent"
-      anchor="left"
-      open={drawerOpen}
-    >
-      <Toolbar>
-        <IconButton onClick={handleDrawerClose}>
-          <ChevronLeftIcon />
-        </IconButton>
-      </Toolbar>
-      <Box sx={{ overflow: "auto" }}>
-        <List>
-          {menuItems
-            .filter(
-              (item) =>
-                item.roles.includes(userRole || "public") ||
-                item.roles.includes("public")
-            )
-            .map((item) => (
-              <ListItem to={item.path} button key={item.text}>
-                <ListItemIcon>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItem>
-            ))}
-        </List>
-      </Box>
-    </Drawer>
-  );
-};
-
-export default Sidebar;
-
-/* Fin src\components\layout\Sidebar.tsx */
-
-/* Inicio src\components\menu\MenuForm.tsx */
-import {
-    Button,
-    Checkbox,
-    FormControlLabel,
-    Grid,
-    TextField,
-    Typography,
-} from "@mui/material";
 import React, { useState } from "react";
 import { MenuItem } from "../../context/AppContext";
 import { useMenu } from "../../hooks/useMenu";
@@ -1080,75 +614,810 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialValues, onSubmit }) => {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Typography variant="h5" sx={{ marginBottom: 2 }}>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {" "}
+      {/* Reemplaza form y añade spacing vertical */}
+      <h2 className="text-xl font-bold text-gray-900">
+        {" "}
+        {/* Reemplaza Typography h5 */}
         {initialValues?.id ? "Editar Item" : "Agregar Item"}
-      </Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Nombre del Item"
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {" "}
+        {/* Reemplaza Grid container con grid y spacing */}
+        <div>
+          {" "}
+          {/* Reemplaza Grid item */}
+          <label
+            htmlFor="name"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Nombre del Item
+          </label>{" "}
+          {/* Reemplaza TextField label */}
+          <input
+            type="text"
+            id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField input
           />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Descripción del Item"
+        </div>
+        <div>
+          {" "}
+          {/* Reemplaza Grid item */}
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Descripción del Item
+          </label>{" "}
+          {/* Reemplaza TextField label */}
+          <input
+            type="text"
+            id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField input
           />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Precio del Item"
+        </div>
+        <div>
+          {" "}
+          {/* Reemplaza Grid item */}
+          <label
+            htmlFor="price"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Precio del Item
+          </label>{" "}
+          {/* Reemplaza TextField label */}
+          <input
             type="number"
+            id="price"
             value={price}
             onChange={(e) => setPrice(Number(e.target.value))}
             required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField input
           />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Url de la imagen"
+        </div>
+        <div>
+          {" "}
+          {/* Reemplaza Grid item */}
+          <label
+            htmlFor="imageUrl"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Url de la imagen
+          </label>{" "}
+          {/* Reemplaza TextField label */}
+          <input
+            type="url"
+            id="imageUrl"
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
             required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField input
           />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Recomendaciones"
+        </div>
+        <div>
+          {" "}
+          {/* Reemplaza Grid item */}
+          <label
+            htmlFor="recommendation"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Recomendaciones
+          </label>{" "}
+          {/* Reemplaza TextField label */}
+          <input
+            type="text"
+            id="recommendation"
             value={recommendation}
             onChange={(e) => setRecommendation(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField input
           />
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <TextField
-            label="Observaciones"
+        </div>
+        <div>
+          {" "}
+          {/* Reemplaza Grid item */}
+          <label
+            htmlFor="observations"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Observaciones
+          </label>{" "}
+          {/* Reemplaza TextField label */}
+          <input
+            type="text"
+            id="observations"
             value={observations}
             onChange={(e) => setObservations(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField input
           />
-        </Grid>
-        <Grid item xs={12}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={available}
-                onChange={(e) => setAvailable(e.target.checked)}
-              />
-            }
-            label="Disponible"
+        </div>
+      </div>
+      <div className="flex items-center space-x-2 mb-4">
+        {" "}
+        {/* Reemplaza FormControlLabel y Checkbox con div flex */}
+        <input
+          type="checkbox"
+          id="available"
+          checked={available}
+          onChange={(e) => setAvailable(e.target.checked)}
+          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" // Reemplaza Checkbox input
+        />
+        <label
+          htmlFor="available"
+          className="block text-gray-700 text-sm font-bold"
+        >
+          Disponible
+        </label>{" "}
+        {/* Reemplaza FormControlLabel label */}
+      </div>
+      <div>
+        {" "}
+        {/* Reemplaza Grid item button container */}
+        <button
+          type="submit"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" // Reemplaza Button
+        >
+          {initialValues?.id ? "Guardar Cambios" : "Agregar Item"}
+        </button>
+      </div>
+    </form>
+  );
+};
+
+export default MenuForm;
+
+/* Fin src\components\forms\MenuForm.tsx */
+
+/* Inicio src\components\forms\PedidoForm.tsx */
+// src/components/forms/PedidoForm.tsx
+import { Timestamp, addDoc, collection } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { useAuth } from "../../hooks/useAuth";
+import { useMenu } from "../../hooks/useMenu";
+import { db } from "../../utils/firebase";
+
+interface PedidoFormProps {
+  onClose: () => void;
+  people?: {
+    id: string;
+    name: string;
+    items: { id: string; quantity: number }[];
+  }[];
+}
+
+const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
+  const { menu } = useMenu();
+  const { user, addPoints } = useAuth();
+
+  const [items, setItems] = useState<
+    { id: string; quantity: number; assignedTo: string }[]
+  >([]);
+  const [peopleOrder, setPeopleOrder] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [sede, setSede] = useState("");
+  const [deliveryFee, setDeliveryFee] = useState(0);
+  const [deliveryIncluded, setDeliveryIncluded] = useState(true);
+  const [paymentMethod, setPaymentMethod] = useState("contraentrega");
+
+  useEffect(() => {
+    /* ... useEffect hook same ... */
+    if (people) {
+      setPeopleOrder(
+        people.map((person) => ({ id: person.id, name: person.name }))
+      );
+      const newItems = people.flatMap((person) =>
+        person.items.map((item) => ({
+          id: item.id,
+          quantity: item.quantity,
+          assignedTo: person.name,
+        }))
+      );
+      setItems(newItems);
+    }
+  }, [people]);
+
+  // Simulación de sedes disponibles (puedes obtenerlas de Firestore)
+  const sedesDisponibles = ["Sede Norte", "Sede Sur", "Sede Centro"];
+
+  useEffect(() => {
+    /* ... useEffect hook same ... */
+    if (sedesDisponibles.length === 1) {
+      setSede(sedesDisponibles[0]);
+    }
+  }, [sedesDisponibles]);
+
+  const calculateTotal = () => {
+    /* ... calculateTotal function same ... */
+    let total = 0;
+    items.forEach((item) => {
+      const menuItem = menu.find((m) => m.id === item.id);
+      if (menuItem) {
+        total += menuItem.price * item.quantity;
+      }
+    });
+    return total + deliveryFee;
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    /* ... handleSubmit function same ... */
+    event.preventDefault();
+    if (!user) return;
+
+    try {
+      const total = calculateTotal();
+      const orderId = uuidv4();
+      const orderData = {
+        userId: user.uid,
+        items: items.map((item) => ({
+          id: item.id,
+          quantity: item.quantity,
+          assignedTo: item.assignedTo,
+        })),
+        people: peopleOrder,
+        sede: sede,
+        status: "pendiente",
+        total: total,
+        deliveryFee: deliveryFee,
+        deliveryIncluded: deliveryIncluded,
+        paymentMethod: paymentMethod,
+        orderDate: Timestamp.now(),
+        orderId: orderId,
+      };
+
+      await addDoc(collection(db, "pedidos"), orderData);
+      handlePaymentSuccess();
+    } catch (error) {
+      console.error("Error al agregar el pedido:", error);
+    }
+  };
+
+  const handlePaymentSuccess = async () => {
+    /* ... handlePaymentSuccess function same ... */
+    // Sumar puntos al usuario
+    await addPoints();
+    alert("Pedido realizado con éxito y puntos sumados.");
+    onClose();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {" "}
+      {/* Reemplaza form and add vertical spacing */}
+      <h2 className="text-xl font-bold text-gray-900">Realizar Pedido</h2>{" "}
+      {/* Reemplaza Typography h5 */}
+      {/* Seleccionar Sede */}
+      <div>
+        {" "}
+        {/* Reemplaza FormControl */}
+        <label
+          htmlFor="sede"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Sede
+        </label>{" "}
+        {/* Reemplaza InputLabel */}
+        <select
+          id="sede"
+          value={sede}
+          onChange={(e) => setSede(e.target.value)}
+          required
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza Select
+        >
+          {sedesDisponibles.map((sedeItem) => (
+            <option key={sedeItem} value={sedeItem}>
+              {sedeItem}
+            </option>
+          ))}
+        </select>
+      </div>
+      {/* Costo de Envío */}
+      <div>
+        {" "}
+        {/* Reemplaza FormControl */}
+        <label
+          htmlFor="deliveryFee"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Costo de Envío
+        </label>{" "}
+        {/* Reemplaza InputLabel */}
+        <input
+          type="number"
+          id="deliveryFee"
+          value={deliveryFee}
+          onChange={(e) => setDeliveryFee(parseFloat(e.target.value))}
+          required
+          min="0"
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField
+        />
+      </div>
+      {/* Domicilio Incluido */}
+      <div className="flex items-start">
+        {" "}
+        {/* Reemplaza FormControlLabel with div flex */}
+        <div className="flex items-center h-5">
+          {" "}
+          {/* Container for checkbox */}
+          <input
+            id="deliveryIncluded"
+            name="deliveryIncluded"
+            type="checkbox"
+            checked={deliveryIncluded}
+            onChange={(e) => setDeliveryIncluded(e.target.checked)}
+            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" // Reemplaza Checkbox
           />
-        </Grid>
-        <Grid item xs={12}>
-          <Button type="submit" variant="contained" color="primary">
-            {initialValues?.id ? "Guardar Cambios" : "Agregar Item"}
-          </Button>
-        </Grid>
-      </Grid>
+        </div>
+        <div className="ml-2 text-sm">
+          {" "}
+          {/* Container for label text */}
+          <label
+            htmlFor="deliveryIncluded"
+            className="font-medium text-gray-700"
+          >
+            {" "}
+            {/* Reemplaza FormControlLabel label */}
+            ¿El domicilio está incluido?
+          </label>
+        </div>
+      </div>
+      {/* Método de Pago */}
+      <div>
+        {" "}
+        {/* Reemplaza FormControl */}
+        <label
+          htmlFor="paymentMethod"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Método de Pago
+        </label>{" "}
+        {/* Reemplaza InputLabel */}
+        <select
+          id="paymentMethod"
+          value={paymentMethod}
+          onChange={(e) => setPaymentMethod(e.target.value)}
+          required
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza Select
+        >
+          <option value="contraentrega">Contraentrega</option>{" "}
+          {/* Reemplaza MenuItem with option */}
+          {/* Puedes añadir otros métodos de pago si lo deseas */}
+        </select>
+      </div>
+      <div>
+        {" "}
+        {/* Reemplaza container for Button */}
+        <button
+          type="submit"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" // Reemplaza Button
+        >
+          Realizar Pedido
+        </button>
+      </div>
+    </form>
+  );
+};
+
+export default PedidoForm;
+
+/* Fin src\components\forms\PedidoForm.tsx */
+
+/* Inicio src\components\layout\MainLayout.tsx */
+// src/components/layout/MainLayout.tsx
+import React, { useState } from "react";
+import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
+
+interface MainLayoutProps {
+  children: React.ReactNode;
+}
+
+const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setDrawerOpen(!drawerOpen);
+  };
+
+  const handleDrawerClose = () => {
+    setDrawerOpen(false);
+  };
+  return (
+    <div className="flex h-screen bg-gray-100">
+      {" "}
+      {/* Reemplaza Box con div y clases Tailwind para layout flex y altura de pantalla */}
+      <Navbar toggleDrawer={handleDrawerToggle} />
+      <Sidebar drawerOpen={drawerOpen} handleDrawerClose={handleDrawerClose} />
+      <main className="flex-1 overflow-x-hidden overflow-y-auto p-4">
+        {" "}
+        {/* Reemplaza Box main con main y clases flex-grow y padding */}
+        <div className="container mx-auto">
+          {" "}
+          {/* Reemplaza Grid container con div container para centrar contenido */}
+          <div className="w-full">
+            {" "}
+            {/* Reemplaza Grid item con div full width */}
+            {children}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default MainLayout;
+
+/* Fin src\components\layout\MainLayout.tsx */
+
+/* Inicio src\components\layout\Navbar.tsx */
+// src/components/layout/Navbar.tsx
+import MenuIcon from "@mui/icons-material/Menu"; // Mantendremos el icono de MUI por ahora o puedes buscar uno de Tailwind o Heroicons
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+
+interface NavbarProps {
+  toggleDrawer: () => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ toggleDrawer }) => {
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
+  return (
+    <header className="bg-white shadow-md fixed w-full top-0 z-50"> {/* Reemplaza AppBar con header y clases Tailwind */}
+      <div className="container mx-auto px-4 sm:px-6 py-3 flex justify-between items-center"> {/* Reemplaza Toolbar y Box container */}
+        <div className="flex items-center"> {/* Reemplaza Box flex container */}
+          <button
+            className="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700 md:hidden" // Clases para el IconButton, oculto en md y superior
+            aria-label="Abrir menú"
+            onClick={toggleDrawer}
+          >
+            <MenuIcon /> {/* Mantenemos MenuIcon de MUI o reemplaza con un SVG de Heroicons */}
+          </button>
+          <img
+            src="/public/SrPolForYouSinTitle.svg"
+            alt="SrPol Logo"
+            className="h-10 mr-2" // Clases para la imagen
+          />
+          <span className="text-xl font-semibold text-gray-900">SrPol</span> {/* Reemplaza Typography */}
+        </div>
+        {user && (
+          <div className="hidden md:flex items-center"> {/* Reemplaza Box usuario, oculto en mobile */}
+            <span className="text-gray-700 mr-4">{user.email}</span> {/* Reemplaza Typography usuario */}
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" // Reemplaza Button
+              onClick={handleLogout}
+            >
+              Cerrar Sesión
+            </button>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+};
+
+export default Navbar;
+/* Fin src\components\layout\Navbar.tsx */
+
+/* Inicio src\components\layout\PublicLayout.tsx */
+// src/components/layout/PublicLayout.tsx
+import React, { ReactNode } from "react";
+
+interface PublicLayoutProps {
+  children: ReactNode;
+}
+
+const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
+  return (
+    <div className="flex justify-center items-center h-screen bg-gray-100">
+      {" "}
+      {/* Clases Tailwind para centrar y fondo */}
+      {children}
+    </div>
+  );
+};
+
+export default PublicLayout;
+
+/* Fin src\components\layout\PublicLayout.tsx */
+
+/* Inicio src\components\layout\Sidebar.tsx */
+// src/components/layout/Sidebar.tsx
+import {
+  Dashboard as DashboardIcon,
+  People as PeopleIcon,
+  Person as PersonIcon,
+  RestaurantMenu as RestaurantMenuIcon,
+  Settings as SettingsIcon,
+  ShoppingCart as ShoppingCartIcon,
+} from "@mui/icons-material"; // Mantendremos iconos de MUI por ahora
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'; // Icono de MUI, puedes reemplazarlo
+import {
+  Divider,
+  IconButton,
+} from "@mui/material"; // Mantenemos Divider e IconButton de MUI para facilitar la migración o puedes buscar alternativas Tailwind
+import React from "react";
+import { useAuth } from "../../hooks/useAuth";
+import ListItem from "../ui/ListItem";
+
+interface SidebarProps {
+  drawerOpen: boolean;
+  handleDrawerClose: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ drawerOpen, handleDrawerClose }) => {
+  const { userRole } = useAuth();
+  const menuItems = [ /* ... menuItems igual ... */
+    {
+      text: "Dashboard",
+      icon: <DashboardIcon />,
+      path: "/",
+      roles: ["admin", "encargado", "client"],
+    },
+    {
+      text: "Menú",
+      icon: <RestaurantMenuIcon />,
+      path: "/menu",
+      roles: ["admin", "encargado", "client"],
+    },
+    {
+      text: "Pedidos",
+      icon: <ShoppingCartIcon />,
+      path: "/pedidos",
+      roles: ["admin", "encargado", "client"],
+    },
+    {
+      text: "Gestionar Menú",
+      icon: <SettingsIcon />,
+      path: "/gestion-menu",
+      roles: ["admin", "encargado"],
+    },
+    {
+      text: "Perfil",
+      icon: <PersonIcon />,
+      path: "/perfil",
+      roles: ["admin", "encargado", "client"],
+    },
+    {
+      text: "Gestión de Usuarios",
+      icon: <PeopleIcon />,
+      path: "/gestion-usuarios",
+      roles: ["admin"],
+    },
+  ];
+
+  return (
+    <aside
+      className={`bg-gray-50 w-60 flex-shrink-0 overflow-y-auto fixed top-16 md:top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out md:translate-x-0 ${drawerOpen ? 'translate-x-0' : '-translate-x-full'}`} // Reemplaza Drawer con aside y clases Tailwind, lógica para drawerOpen
+    >
+      <div className="py-4 px-3 flex justify-between items-center"> {/* Reemplaza Toolbar */}
+        <span className="text-lg font-semibold text-gray-900">Navegación</span> {/* Reemplaza Typography */}
+        <IconButton onClick={handleDrawerClose} className="md:hidden"> {/* IconButton para cerrar en mobile, oculto en md y superior */}
+          <ChevronLeftIcon /> {/* Icono de MUI */}
+        </IconButton>
+      </div>
+      <Divider /> {/* Mantenemos Divider de MUI o puedes usar una hr con estilos Tailwind */}
+      <ul className="pt-4"> {/* Reemplaza List con ul */}
+        {menuItems
+          .filter(
+            (item) =>
+              item.roles.includes(userRole || "public") ||
+              item.roles.includes("public")
+          )
+          .map((item) => (
+            <li key={item.text} className="mb-1"> {/* Reemplaza ListItem con li y margen bottom */}
+              <ListItem to={item.path} button onClick={handleDrawerClose}> {/* Mantenemos ListItem custom component */}
+                <span className="ml-3 mr-2">{item.icon}</span> {/* Reemplaza ListItemIcon con span para el icono */}
+                <span className="text-gray-700 hover:text-gray-900">{item.text}</span> {/* Reemplaza ListItemText con span para el texto */}
+              </ListItem>
+            </li>
+          ))}
+      </ul>
+    </aside>
+  );
+};
+
+export default Sidebar;
+/* Fin src\components\layout\Sidebar.tsx */
+
+/* Inicio src\components\menu\MenuForm.tsx */
+/* src\components\menu\MenuForm.tsx */
+import React, { useState } from "react";
+import { MenuItem } from "../../context/AppContext";
+import { useMenu } from "../../hooks/useMenu";
+
+interface MenuFormProps {
+  initialValues?: Partial<MenuItem>;
+  onSubmit: (values: Partial<MenuItem>) => void;
+  onClose: () => void; // Add onClose prop
+}
+
+const MenuForm: React.FC<MenuFormProps> = ({
+  initialValues,
+  onSubmit,
+  onClose,
+}) => {
+  const { loading } = useMenu();
+  const [name, setName] = useState(initialValues?.name || "");
+  const [description, setDescription] = useState(
+    initialValues?.description || ""
+  );
+  const [price, setPrice] = useState(initialValues?.price || 0);
+  const [imageUrl, setImageUrl] = useState(initialValues?.imageUrl || "");
+  const [recommendation, setRecommendation] = useState(
+    initialValues?.recommendation || ""
+  );
+  const [observations, setObservations] = useState(
+    initialValues?.observations || ""
+  );
+  const [available, setAvailable] = useState(
+    initialValues?.available !== undefined ? initialValues.available : true
+  );
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    onSubmit({
+      name,
+      description,
+      price,
+      imageUrl,
+      available,
+      recommendation,
+      observations,
+    });
+    onClose(); // Close modal on submit
+  };
+
+  if (loading) {
+    return <div>Cargando...</div>;
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {" "}
+      {/* Formulario con espaciado vertical */}
+      <div className="grid grid-cols-1 gap-4">
+        {" "}
+        {/* Grid para los campos */}
+        <div>
+          <label
+            htmlFor="name"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Nombre del Item
+          </label>
+          <input
+            type="text"
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Descripción
+          </label>
+          <textarea /* Usamos textarea para la descripción */
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="price"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Precio
+          </label>
+          <input
+            type="number"
+            id="price"
+            value={price}
+            onChange={(e) => setPrice(Number(e.target.value))}
+            required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="imageUrl"
+            className="block text-sm font-medium text-gray-700"
+          >
+            URL de Imagen
+          </label>
+          <input
+            type="url"
+            id="imageUrl"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="recommendation"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Recomendaciones (Opcional)
+          </label>
+          <input
+            type="text"
+            id="recommendation"
+            value={recommendation}
+            onChange={(e) => setRecommendation(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="observations"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Observaciones (Opcional)
+          </label>
+          <input
+            type="text"
+            id="observations"
+            value={observations}
+            onChange={(e) => setObservations(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          />
+        </div>
+      </div>
+      <div className="flex items-center justify-between mt-4">
+        {" "}
+        {/* Contenedor para checkbox y botones */}
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="available"
+            className="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+            checked={available}
+            onChange={(e) => setAvailable(e.target.checked)}
+          />
+          <label htmlFor="available" className="ml-2 text-sm text-gray-700">
+            Disponible
+          </label>
+        </div>
+        <div className="space-x-2">
+          <button
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            onClick={onClose}
+            type="button" /* Importante: type="button" para evitar submit del form al cancelar */
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          >
+            {initialValues?.id ? "Guardar" : "Agregar"}
+          </button>
+        </div>
+      </div>
     </form>
   );
 };
@@ -1158,10 +1427,9 @@ export default MenuForm;
 /* Fin src\components\menu\MenuForm.tsx */
 
 /* Inicio src\components\menu\MenuItem.tsx */
-import { Delete, Edit } from '@mui/icons-material';
-import { Box, Card, CardActions, CardContent, CardMedia, IconButton, Typography } from '@mui/material';
+/* src\components\menu\MenuItem.tsx */
 import React from "react";
-import { MenuItem as MenuItemType } from '../../context/AppContext';
+import { MenuItem as MenuItemType } from "../../context/AppContext";
 
 interface MenuItemProps {
   item: MenuItemType;
@@ -1169,75 +1437,78 @@ interface MenuItemProps {
   onDelete: (item: MenuItemType) => void;
 }
 
-
 const MenuItem: React.FC<MenuItemProps> = ({ item, onEdit, onDelete }) => {
-    return (
-        <Card sx={{ maxWidth: 345, minWidth: 345 }}>
-            <CardMedia
-                component="img"
-                height="194"
-                image={item.imageUrl}
-                alt={item.name}
-            />
-            <CardContent>
-                <Typography gutterBottom variant="h5" component="div">
-                {item.name}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                 {item.description}
-                </Typography>
-                <Typography variant="h6" color="text.secondary">
-                 Precio: {item.price}
-                </Typography>
-                <Box>
-                   {item.recommendation && (
-                        <Typography variant="body2" color="text.secondary">
-                         Recomendaciones: {item.recommendation}
-                        </Typography>
-                    )}
-                      {item.observations && (
-                        <Typography variant="body2" color="text.secondary">
-                        Observaciones: {item.observations}
-                        </Typography>
-                    )}
-                </Box>
-            </CardContent>
-             <CardActions sx={{justifyContent: 'flex-end'}}>
-                 <IconButton onClick={() => onEdit(item)}>
-                     <Edit />
-                 </IconButton>
-                <IconButton onClick={() => onDelete(item)}>
-                    <Delete />
-                </IconButton>
-            </CardActions>
-        </Card>
-    );
+  return (
+    <div className="max-w-sm rounded overflow-hidden shadow-lg">
+      {" "}
+      {/* Card principal con Tailwind */}
+      <img className="w-full" src={item.imageUrl} alt={item.name} />{" "}
+      {/* Imagen responsive */}
+      <div className="px-6 py-4">
+        {" "}
+        {/* Contenido principal card */}
+        <div className="font-bold text-xl mb-2">{item.name}</div>{" "}
+        {/* Nombre del item */}
+        <p className="text-gray-700 text-base">{item.description}</p>{" "}
+        {/* Descripción */}
+        <p className="text-gray-700 text-lg mt-2">Precio: ${item.price}</p>{" "}
+        {/* Precio */}
+        <div>
+          {item.recommendation && (
+            <p className="text-gray-600 text-sm mt-1">
+              Recomendaciones: {item.recommendation}
+            </p>
+          )}
+          {item.observations && (
+            <p className="text-gray-600 text-sm mt-1">
+              Observaciones: {item.observations}
+            </p>
+          )}
+        </div>
+      </div>
+      <div className="px-6 py-4 flex justify-end space-x-2">
+        {" "}
+        {/* Contenedor acciones */}
+        <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          onClick={() => onEdit(item)}
+        >
+          Editar
+        </button>
+        <button
+          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          onClick={() => onDelete(item)}
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default MenuItem;
+
 /* Fin src\components\menu\MenuItem.tsx */
 
 /* Inicio src\components\menu\MenuList.tsx */
-import { Grid } from '@mui/material';
-import React from 'react';
-import { MenuItem as MenuItemType } from '../../context/AppContext';
-import MenuItem from './MenuItem';
+/* src\components\menu\MenuList.tsx */
+import React from "react";
+import { MenuItem as MenuItemType } from "../../context/AppContext";
+import MenuItemComponent from "./MenuItem";
 
 interface MenuListProps {
   menu: MenuItemType[];
   onEdit: (item: MenuItemType) => void;
-  onDelete: (item: MenuItemType) => void;
+  onDelete: (item: MenuItemType) => Promise<void>;
 }
 
 const MenuList: React.FC<MenuListProps> = ({ menu, onEdit, onDelete }) => {
   return (
-    <Grid container spacing={2}>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"> {/* Grid responsive para la lista */}
       {menu.map((item) => (
-        <Grid item xs={12} sm={6} md={4} key={item.id}>
-          <MenuItem item={item} onEdit={onEdit} onDelete={onDelete} />
-        </Grid>
+        <MenuItemComponent key={item.id} item={item} onEdit={onEdit} onDelete={onDelete} />
       ))}
-    </Grid>
+    </div>
   );
 };
 
@@ -1245,48 +1516,198 @@ export default MenuList;
 /* Fin src\components\menu\MenuList.tsx */
 
 /* Inicio src\components\menu\MenuModal.tsx */
-import { Box, Modal, } from '@mui/material';
-import React from 'react';
-import { MenuItem } from '../../context/AppContext';
-import MenuForm from '../forms/MenuForm';
+/* src\components\menu\MenuModal.tsx */
+import React from "react";
+import { MenuItem } from "../../context/AppContext";
+import MenuFormComponent from "./MenuForm";
 
 interface MenuModalProps {
   open: boolean;
   onClose: () => void;
   initialValues?: Partial<MenuItem>;
-  onSubmit: (values: Partial<MenuItem>) => void
+  onSubmit: (values: Partial<MenuItem>) => void;
 }
 
-const style = {
-    position: 'absolute' as const,
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 600,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-    outline: 'none'
-};
+const MenuModal: React.FC<MenuModalProps> = ({
+  open,
+  onClose,
+  initialValues,
+  onSubmit,
+}) => {
+  if (!open) return null;
 
-const MenuModal: React.FC<MenuModalProps> = ({ open, onClose, initialValues, onSubmit }) => {
   return (
-    <Modal
-      open={open}
-      onClose={onClose}
-      aria-labelledby="modal-modal-title"
-      aria-describedby="modal-modal-description"
-    >
-      <Box sx={style}>
-        <MenuForm initialValues={initialValues} onSubmit={onSubmit} />
-      </Box>
-    </Modal>
+    <div className="fixed z-50 inset-0 overflow-y-auto">
+      {" "}
+      {/* Overlay y contenedor modal */}
+      {/* Overlay */}
+      <div
+        className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        onClick={onClose}
+        aria-hidden="true"
+      ></div>
+      {/* Modal container */}
+      <div className="flex items-center justify-center min-h-screen px-4 py-8">
+        {" "}
+        {/* Centrado vertical y horizontal */}
+        {/* Modal panel */}
+        <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden transform transition-all sm:w-full sm:mx-auto">
+          {" "}
+          {/* Panel modal */}
+          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+            {" "}
+            {/* Header modal */}
+            <h3
+              className="text-lg font-semibold text-gray-900"
+              id="modal-headline"
+            >
+              {initialValues?.id
+                ? "Editar Item del Menú"
+                : "Agregar Nuevo Item al Menú"}
+            </h3>
+          </div>
+          <div className="p-6">
+            {" "}
+            {/* Body modal */}
+            <MenuFormComponent
+              initialValues={initialValues}
+              onSubmit={onSubmit}
+              onClose={onClose}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
 export default MenuModal;
+
 /* Fin src\components\menu\MenuModal.tsx */
+
+/* Inicio src\components\menu\PersonMenuModal.tsx */
+import React from 'react';
+import { MenuItem as MenuItemType } from '../../context/AppContext'; // Ajusta la ruta según tus types
+import MenuItemComponent from './MenuItem'; // Asegúrate de que la ruta a MenuItemComponent sea correcta
+
+interface PersonMenuModalProps {
+    personId: string;
+    menu: MenuItemType[];
+    people: { id: string; name: string; items: { id: string; quantity: number }[] }[]; // Tipo para people
+    setPeople: React.Dispatch<React.SetStateAction<{ id: string; name: string; items: { id: string; quantity: number }[] }[]>>; // Tipo para setPeople
+    onClose: () => void;
+    isOpen: boolean;
+}
+
+const PersonMenuModal: React.FC<PersonMenuModalProps> = ({ personId, menu, people, setPeople, onClose, isOpen }) => {
+    if (!isOpen) return null;
+
+    const currentPerson = people.find(p => p.id === personId);
+    if (!currentPerson) return null; // Handle error case
+
+    const handleAddItemToPerson = (item: MenuItemType) => {
+        setPeople(prevPeople =>
+            prevPeople.map(person =>
+                person.id === personId
+                    ? {
+                        ...person,
+                        items: [...person.items, { id: item.id, quantity: 1 }],
+                    }
+                    : person
+            )
+        );
+    };
+
+    const handleQuantityChange = (itemId: string, quantity: number) => {
+        if (quantity < 1) return; // Prevent negative or zero quantities
+        setPeople(prevPeople =>
+            prevPeople.map(person =>
+                person.id === personId
+                    ? {
+                        ...person,
+                        items: person.items.map(item =>
+                            item.id === itemId ? { ...item, quantity: quantity } : item
+                        ),
+                    }
+                    : person
+            )
+        );
+    };
+
+    const handleRemoveItemFromPerson = (itemId: string) => {
+        setPeople(prevPeople =>
+            prevPeople.map(person =>
+                person.id === personId
+                    ? {
+                        ...person,
+                        items: person.items.filter(item => item.id !== itemId),
+                    }
+                    : person
+            )
+        );
+    };
+
+
+    return (
+        <div className="fixed z-50 inset-0 overflow-y-auto"> {/* Modal overlay y container */}
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={onClose}></div>
+            <div className="flex items-center justify-center min-h-screen px-4 py-8"> {/* Modal panel container */}
+                <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden transform transition-all sm:w-full sm:mx-auto"> {/* Modal panel */}
+                    <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <h3 className="text-lg font-semibold text-gray-900">Menú y Orden de {currentPerson.name || 'Persona'}</h3>
+                    </div>
+                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Grid layout for menu and order */}
+                        <div> {/* Menu Section */}
+                            <h4 className="text-md font-semibold text-gray-900 mb-2">Menú</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {menu.map(item => (
+                                    <div key={item.id}>
+                                        {/* MenuItem component (mejorado) */}
+                                        <MenuItemComponent item={item} onEdit={() => {}} onDelete={() => {}} /> {/* Omitiendo onEdit y onDelete aquí, si no son necesarias en el modal */}
+                                        <button onClick={() => handleAddItemToPerson(item)} className="mt-2 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Añadir a la Orden</button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div> {/* Current Order Section */}
+                            <h4 className="text-md font-semibold text-gray-900 mb-2">Su Orden Actual</h4>
+                            {currentPerson.items.length > 0 ? (
+                                <ul className="space-y-2">
+                                    {currentPerson.items.map(item => {
+                                        const menuItem = menu.find(m => m.id === item.id);
+                                        return menuItem ? (
+                                            <li key={item.id} className="flex items-center justify-between">
+                                                <span className="text-gray-700">{menuItem.name}</span>
+                                                <div className="flex items-center space-x-2">
+                                                    <input
+                                                        type="number"
+                                                        value={item.quantity}
+                                                        onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value))}
+                                                        min="1"
+                                                        className="w-16 px-2 py-1 border rounded text-center"
+                                                    />
+                                                    <button onClick={() => handleRemoveItemFromPerson(item.id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-sm">Eliminar</button>
+                                                </div>
+                                            </li>
+                                        ) : null;
+                                    })}
+                                </ul>
+                            ) : (
+                                <p className="text-gray-500">No hay items en su orden aún.</p>
+                            )}
+                        </div>
+                    </div>
+                    <div className="px-6 py-4 flex justify-end">
+                        <button onClick={onClose} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Volver</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default PersonMenuModal;
+/* Fin src\components\menu\PersonMenuModal.tsx */
 
 /* Inicio src\components\payment\PaymentForm.tsx */
 import { Alert, Button } from "@mui/material";
@@ -1575,17 +1996,20 @@ import {
   CircularProgress,
   Dialog,
   DialogTitle,
-  Divider,
+
   FormControl,
+  Grid,
   InputLabel,
   List,
   ListItem,
   ListItemText,
   MenuItem,
+  Paper,
   Select,
   Typography,
 } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import {
   collection,
   doc,
@@ -1619,8 +2043,7 @@ const PedidoList: React.FC = () => {
   const { user, userRole } = useAuth();
   const [selectedStatus, setSelectedStatus] = useState("pendiente");
   const [openDetails, setOpenDetails] = useState(false);
-  const [selectedPedidoDetails, setSelectedPedidoDetails] =
-    useState<Pedido | null>(null);
+  const [selectedPedidoDetails, setSelectedPedidoDetails] = useState<Pedido | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -1655,7 +2078,7 @@ const PedidoList: React.FC = () => {
           deliveryFee: data.deliveryFee,
           deliveryIncluded: data.deliveryIncluded,
           paymentMethod: data.paymentMethod,
-          orderDate: data.orderDate ? data.orderDate.toDate() : new Date(),
+          orderDate: data.orderDate ? (data.orderDate).toDate() : new Date(),
           orderId: data.orderId,
         } as Pedido;
       });
@@ -1693,6 +2116,76 @@ const PedidoList: React.FC = () => {
     setOpenDetails(false);
   };
 
+  // Definir columnas para DataGrid
+  const columns: GridColDef[] = [
+    { field: 'id', headerName: 'ID del Pedido', width: 150 },
+    { field: 'sede', headerName: 'Sede', width: 120 },
+    { field: 'status', headerName: 'Estado', width: 120 },
+    { field: 'total', headerName: 'Total ($)', width: 100 },
+    { field: 'deliveryFee', headerName: 'Envío ($)', width: 100 },
+    { field: 'paymentMethod', headerName: 'Pago', width: 150 },
+    { 
+      field: 'orderDate', 
+      headerName: 'Fecha', 
+      width: 180, 
+      valueFormatter: (params) => new Date((params as {value: string}).value).toLocaleString(),
+    },
+    {
+      field: 'actions',
+      headerName: 'Acciones',
+      width: 200,
+      sortable: false,
+      renderCell: (params) => {
+        const order: Pedido = params.row;
+        return (
+          <Box>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => handleOpenDetails(order)}
+              sx={{ mr: 1 }}
+            >
+              Ver Detalles
+            </Button>
+            {(userRole === "admin" || userRole === "encargado") && (
+              <>
+                <Button
+                  variant="contained"
+                  size="small"
+                  color="primary"
+                  onClick={() => handleStatusUpdate(order.id, "atendiendo")}
+                  disabled={order.status === "atendiendo"}
+                  sx={{ mr: 1 }}
+                >
+                  Atender
+                </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  color="warning"
+                  onClick={() => handleStatusUpdate(order.id, "preparando")}
+                  disabled={order.status === "preparando"}
+                  sx={{ mr: 1 }}
+                >
+                  Preparar
+                </Button>
+                <Button
+                  variant="contained"
+                  size="small"
+                  color="success"
+                  onClick={() => handleStatusUpdate(order.id, "enviado")}
+                  disabled={order.status === "enviado"}
+                >
+                  Enviar
+                </Button>
+              </>
+            )}
+          </Box>
+        );
+      },
+    },
+  ];
+
   return (
     <Box>
       <Typography variant="h5" component="h2" gutterBottom>
@@ -1713,150 +2206,70 @@ const PedidoList: React.FC = () => {
           </Select>
         </FormControl>
       )}
-      {loading && <CircularProgress />}
-      <List>
-        {pedidos.map((pedido) => (
-          <Box
-            key={pedido.id}
-            sx={{ marginBottom: 2, padding: 2, border: "1px solid #eee" }}
-          >
-            <ListItem>
-              <ListItemText primary={`ID del pedido: ${pedido.id}`} />
-              <Button
-                sx={{ marginLeft: 2 }}
-                color="primary"
-                variant="outlined"
-                onClick={() => handleOpenDetails(pedido)}
-              >
-                Ver Detalles
-              </Button>
-            </ListItem>
-            <Divider />
-            <ListItem>
-              <ListItemText primary={`Estado del pedido: ${pedido.status}`} />
-            </ListItem>
-            <Divider />
-            <ListItem>
-              <ListItemText primary={`Total: $${pedido.total}`} />
-            </ListItem>
-            <Divider />
-            <ListItem>
-              <ListItemText
-                primary={`Costo de Envío: $${pedido.deliveryFee}`}
-              />
-            </ListItem>
-            <Divider />
-            <ListItem>
-              <ListItemText
-                primary={`Método de Pago: ${pedido.paymentMethod}`}
-              />
-            </ListItem>
-            <Divider />
-            <ListItem>
-              <ListItemText
-                primary={`Domicilio Incluido: ${
-                  pedido.deliveryIncluded ? "Sí" : "No"
-                }`}
-              />
-            </ListItem>
-            <Divider />
-            <ListItem>
-              <ListItemText primary={`Sede: ${pedido.sede}`} />
-            </ListItem>
-            <Divider />
-            <ListItem>
-              <ListItemText
-                primary={`Personas: ${pedido.people
-                  .map((p) => p.name)
-                  .join(", ")}`}
-              />
-            </ListItem>
-            <Divider />
-            <ListItem>
-              <ListItemText primary={`Items:`} />
-            </ListItem>
-            {pedido.items.map((item) => (
-              <ListItem key={item.id}>
-                <ListItemText
-                  primary={`- ${item.id} (Cantidad: ${item.quantity})`}
-                  secondary={`Asignado a: ${item.assignedTo || "N/A"}`}
-                />
-              </ListItem>
-            ))}
-            {userRole !== "client" && (
-              <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                <Button
-                  color="primary"
-                  variant="contained"
-                  onClick={() => handleStatusUpdate(pedido.id, "atendiendo")}
-                  disabled={pedido.status === "atendiendo"}
-                >
-                  Atendiendo
-                </Button>
-                <Button
-                  color="primary"
-                  variant="contained"
-                  onClick={() => handleStatusUpdate(pedido.id, "preparando")}
-                  disabled={pedido.status === "preparando"}
-                  sx={{ ml: 1 }}
-                >
-                  Preparando
-                </Button>
-                <Button
-                  color="primary"
-                  variant="contained"
-                  onClick={() => handleStatusUpdate(pedido.id, "enviado")}
-                  disabled={pedido.status === "enviado"}
-                  sx={{ ml: 1 }}
-                >
-                  Enviado
-                </Button>
-              </Box>
-            )}
-          </Box>
-        ))}
-      </List>
-      <Dialog open={openDetails} onClose={handleCloseDetails}>
+      {loading ? (
+        <CircularProgress />
+      ) : (
+        <Paper sx={{ height: 600, width: '100%' }}>
+          <DataGrid
+            rows={pedidos}
+            columns={columns}
+            pageSize={10} 
+            rowsPerPageOptions={[10, 25, 50]}
+            disableSelectionOnClick
+            getRowId={(row) => row.id}
+          />
+        </Paper>
+      )}
+      <Dialog open={openDetails} onClose={handleCloseDetails} fullWidth maxWidth="md">
         <DialogTitle>Detalle del Pedido</DialogTitle>
         {selectedPedidoDetails && (
           <Box sx={{ padding: 2 }}>
-            <Typography variant="body1">
-              <strong>ID del Pedido:</strong> {selectedPedidoDetails.id}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Estado:</strong> {selectedPedidoDetails.status}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Total:</strong> ${selectedPedidoDetails.total}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Costo de Envío:</strong> $
-              {selectedPedidoDetails.deliveryFee}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Método de Pago:</strong>{" "}
-              {selectedPedidoDetails.paymentMethod}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Domicilio Incluido:</strong>{" "}
-              {selectedPedidoDetails.deliveryIncluded ? "Sí" : "No"}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Sede:</strong> {selectedPedidoDetails.sede}
-            </Typography>
-            <Typography variant="body1">
-              <strong>Personas:</strong>{" "}
-              {selectedPedidoDetails.people.map((p) => p.name).join(", ")}
-            </Typography>
-            <Typography variant="h6" sx={{ marginTop: 2 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1">
+                  <strong>ID del Pedido:</strong> {selectedPedidoDetails.id}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Estado:</strong> {selectedPedidoDetails.status}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Total:</strong> ${selectedPedidoDetails.total}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Costo de Envío:</strong> ${selectedPedidoDetails.deliveryFee}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Método de Pago:</strong> {selectedPedidoDetails.paymentMethod}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Domicilio Incluido:</strong> {selectedPedidoDetails.deliveryIncluded ? "Sí" : "No"}
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body1">
+                  <strong>Sede:</strong> {selectedPedidoDetails.sede}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Personas:</strong> {selectedPedidoDetails.people.map((p) => p.name).join(", ")}
+                </Typography>
+                <Typography variant="body1">
+                  <strong>Fecha del Pedido:</strong> {selectedPedidoDetails.orderDate.toLocaleString()}
+                </Typography>
+              </Grid>
+            </Grid>
+            <Typography variant="h6" sx={{ mt: 3 }}>
               Items:
             </Typography>
-            {selectedPedidoDetails.items.map((item) => (
-              <Typography variant="body1" key={item.id}>
-                - {item.id} (Cantidad: {item.quantity}){" "}
-                {item.assignedTo && `Asignado a: ${item.assignedTo}`}
-              </Typography>
-            ))}
+            <List>
+              {selectedPedidoDetails.items.map((item, index) => (
+                <ListItem key={index}>
+                  <ListItemText
+                    primary={`- ${item.id} (Cantidad: ${item.quantity})`}
+                    secondary={`Asignado a: ${item.assignedTo || "N/A"}`}
+                  />
+                </ListItem>
+              ))}
+            </List>
           </Box>
         )}
       </Dialog>
@@ -1869,16 +2282,82 @@ export default PedidoList;
 /* Fin src\components\pedidos\PedidoList.tsx */
 
 /* Inicio src\components\ui\Button.tsx */
-import {
-    Button as MuiButton,
-    ButtonProps as MuiButtonProps,
-} from "@mui/material";
-import React, { ButtonHTMLAttributes } from "react";
+// src/components/ui/Button.tsx
+import React, { ButtonHTMLAttributes, ReactNode } from "react";
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & MuiButtonProps;
+type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+  children: ReactNode;
+  variant?: "primary" | "secondary" | "text" | "outlined" | "contained"; // Define variants if needed
+  color?:
+    | "primary"
+    | "secondary"
+    | "error"
+    | "warning"
+    | "info"
+    | "success"
+    | "inherit"; // Define colors if needed
+};
 
-const Button: React.FC<ButtonProps> = ({ children, ...props }) => {
-  return <MuiButton {...props}>{children}</MuiButton>;
+const Button: React.FC<ButtonProps> = ({
+  children,
+  variant = "contained", // Default variant
+  color = "primary", // Default color
+  className,
+  ...props
+}) => {
+  let buttonClasses =
+    "font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50";
+
+  // Color and variant styles (customize as needed)
+  if (variant === "contained") {
+    if (color === "primary") {
+      buttonClasses += " bg-blue-500 hover:bg-blue-700 text-white";
+    } else if (color === "secondary") {
+      buttonClasses += " bg-red-500 hover:bg-red-700 text-white";
+    } else if (color === "error") {
+      buttonClasses += " bg-red-600 hover:bg-red-800 text-white";
+    } else if (color === "warning") {
+      buttonClasses += " bg-yellow-500 hover:bg-yellow-700 text-gray-800";
+    } else if (color === "success") {
+      buttonClasses += " bg-green-500 hover:bg-green-700 text-white";
+    } else {
+      // Default primary
+      buttonClasses += " bg-blue-500 hover:bg-blue-700 text-white";
+    }
+  } else if (variant === "outlined") {
+    if (color === "primary") {
+      buttonClasses +=
+        " border border-blue-500 hover:bg-blue-100 text-blue-700";
+    } else if (color === "secondary") {
+      buttonClasses += " border border-red-500 hover:bg-red-100 text-red-700";
+    } else if (color === "error") {
+      buttonClasses += " border border-red-600 hover:bg-red-100 text-red-800";
+    } else if (color === "warning") {
+      buttonClasses +=
+        " border border-yellow-500 hover:bg-yellow-100 text-yellow-700";
+    } else if (color === "success") {
+      buttonClasses +=
+        " border border-green-500 hover:bg-green-100 text-green-700";
+    } else {
+      // Default primary
+      buttonClasses +=
+        " border border-blue-500 hover:bg-blue-100 text-blue-700";
+    }
+  } else {
+    // Default contained
+    if (color === "primary") {
+      buttonClasses += " bg-blue-500 hover:bg-blue-700 text-white";
+    } else {
+      // Default primary
+      buttonClasses += " bg-blue-500 hover:bg-blue-700 text-white";
+    }
+  }
+
+  return (
+    <button {...props} className={`${buttonClasses} ${className || ""}`}>
+      {children}
+    </button>
+  );
 };
 
 export default Button;
@@ -1886,8 +2365,9 @@ export default Button;
 /* Fin src\components\ui\Button.tsx */
 
 /* Inicio src\components\ui\ErrorBoundry.tsx */
-import { Alert } from '@mui/material';
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+// src/components/ui/ErrorBoundry.tsx
+import { Alert } from "@mui/material";
+import React, { Component, ErrorInfo, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -1911,16 +2391,17 @@ class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Error caught by error boundary", error, errorInfo);
-      this.setState({ errorInfo });
+    this.setState({ errorInfo });
   }
-
 
   render() {
     if (this.state.hasError) {
       return (
-          <Alert severity="error">
-              Algo salio mal
-          </Alert>
+        <Alert severity="error" className="mt-4 rounded-md shadow-sm">
+          {" "}
+          {/* Added Tailwind classes to Alert */}
+          Algo salió mal
+        </Alert>
       );
     }
 
@@ -1929,17 +2410,15 @@ class ErrorBoundary extends Component<Props, State> {
 }
 
 export default ErrorBoundary;
+
 /* Fin src\components\ui\ErrorBoundry.tsx */
 
 /* Inicio src\components\ui\ListItem.tsx */
-import {
-  ListItem as MuiListItem,
-  ListItemProps as MuiListItemProps,
-} from "@mui/material";
-import { forwardRef, ReactNode } from "react";
+/* src\components\ui\ListItem.tsx */
+import React, { forwardRef, ReactNode } from "react";
 import { Link } from "react-router-dom";
 
-interface ListItemProps extends Omit<MuiListItemProps, "children"> {
+interface ListItemProps extends React.LiHTMLAttributes<HTMLLIElement> {
   children: ReactNode;
   onClick?: () => void;
   to?: string;
@@ -1948,26 +2427,50 @@ interface ListItemProps extends Omit<MuiListItemProps, "children"> {
 }
 
 const ListItem = forwardRef<HTMLLIElement, ListItemProps>(
-  ({ children, onClick, to, href, button, ...props }, ref) => {
+  ({ children, onClick, to, href, button, className, ...props }, ref) => {
     const handleClick = () => {
       if (onClick) {
         onClick();
       }
     };
 
-    return (
-      <MuiListItem
-        component={to ? Link : "li"}
-        to={to}
-        href={to ? to : href}
-        onClick={handleClick}
+    const commonClasses = `block py-2 px-4 text-sm hover:bg-gray-100 text-gray-700`;
+    const buttonClasses = button
+      ? `${commonClasses} cursor-pointer`
+      : commonClasses;
+
+    const listItemContent = (
+      <li
         ref={ref}
-        button={button ? "true" : undefined}
+        onClick={handleClick}
+        className={`${buttonClasses} ${className || ""}`}
         {...props}
       >
         {children}
-      </MuiListItem>
+      </li>
     );
+
+    if (to) {
+      return (
+        <li ref={ref} className={className} {...props}>
+          <Link to={to} className={`${commonClasses} block`}>
+            {children}
+          </Link>
+        </li>
+      );
+    }
+
+    if (href) {
+      return (
+        <li ref={ref} className={className} {...props}>
+          <a href={href} className={`${commonClasses} block`}>
+            {children}
+          </a>
+        </li>
+      );
+    }
+
+    return listItemContent;
   }
 );
 
@@ -1978,16 +2481,36 @@ export default ListItem;
 /* Fin src\components\ui\ListItem.tsx */
 
 /* Inicio src\components\ui\TextField.tsx */
-import {
-    TextField as MuiTextField,
-    TextFieldProps as MuiTextFieldProps,
-} from "@mui/material";
+/* src\components\ui\TextField.tsx */
 import React, { InputHTMLAttributes } from "react";
 
-type TextFieldProps = InputHTMLAttributes<HTMLInputElement> & MuiTextFieldProps;
+type TextFieldProps = InputHTMLAttributes<HTMLInputElement> & {
+  label?: string;
+};
 
-const TextField: React.FC<TextFieldProps> = ({ ...props }) => {
-  return <MuiTextField fullWidth variant="outlined" {...props} />;
+const TextField: React.FC<TextFieldProps> = ({
+  label,
+  className,
+  ...props
+}) => {
+  return (
+    <div>
+      {label && (
+        <label
+          htmlFor={props.id}
+          className="block text-sm font-medium text-gray-700"
+        >
+          {label}
+        </label>
+      )}
+      <input
+        {...props}
+        className={`mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+          className || ""
+        }`}
+      />
+    </div>
+  );
 };
 
 export default TextField;
@@ -2291,13 +2814,13 @@ export default Dashboard;
 /* Fin src\pages\Dashboard.tsx */
 
 /* Inicio src\pages\GestionMenu.tsx */
-import { Button, Container } from "@mui/material";
+import { Alert, Button, Container, Snackbar } from "@mui/material";
 import {
-    addDoc,
-    collection,
-    deleteDoc,
-    doc,
-    updateDoc,
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  updateDoc,
 } from "firebase/firestore";
 import React, { useState } from "react";
 import MenuList from "../components/menu/MenuList";
@@ -2311,6 +2834,11 @@ const GestionMenu: React.FC = () => {
   const { menu, loading } = useMenu();
   const [openModal, setOpenModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({ open: false, message: "", severity: "success" });
 
   if (loading) {
     return <div>Cargando...</div>;
@@ -2320,6 +2848,7 @@ const GestionMenu: React.FC = () => {
     setOpenModal(true);
     setSelectedItem(null);
   };
+
   const handleCloseModal = () => {
     setOpenModal(false);
     setSelectedItem(null);
@@ -2331,10 +2860,22 @@ const GestionMenu: React.FC = () => {
   };
 
   const handleDelete = async (item: MenuItem) => {
+    if (!window.confirm(`¿Estás seguro de eliminar el item "${item.name}"?`))
+      return;
     try {
       await deleteDoc(doc(db, COLLECTIONS.MENU, item.id));
+      setSnackbar({
+        open: true,
+        message: "Item eliminado exitosamente.",
+        severity: "success",
+      });
     } catch (error) {
       console.error(error);
+      setSnackbar({
+        open: true,
+        message: "Error al eliminar el item.",
+        severity: "error",
+      });
     }
   };
 
@@ -2342,27 +2883,64 @@ const GestionMenu: React.FC = () => {
     try {
       if (selectedItem) {
         await updateDoc(doc(db, COLLECTIONS.MENU, selectedItem.id), values);
+        setSnackbar({
+          open: true,
+          message: "Item actualizado exitosamente.",
+          severity: "success",
+        });
       } else {
         await addDoc(collection(db, COLLECTIONS.MENU), values);
+        setSnackbar({
+          open: true,
+          message: "Item agregado exitosamente.",
+          severity: "success",
+        });
       }
       handleCloseModal();
     } catch (error) {
       console.error(error);
+      setSnackbar({
+        open: true,
+        message: "Error al guardar el item.",
+        severity: "error",
+      });
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
     <Container sx={{ marginY: 3 }}>
-      <Button variant="contained" color="primary" onClick={handleOpenModal}>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleOpenModal}
+        sx={{ mb: 2 }}
+      >
         Agregar Item
       </Button>
       <MenuList menu={menu} onEdit={handleEdit} onDelete={handleDelete} />
       <MenuModal
         open={openModal}
-        onClose={handleCloseModal}
+        onClose={handleCloseModal} // Pass handleCloseModal as onClose
         initialValues={selectedItem || undefined}
         onSubmit={handleSubmit}
       />
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
@@ -2457,51 +3035,74 @@ export default GestionUsuarios;
 /* Fin src\pages\GestionUsuarios.tsx */
 
 /* Inicio src\pages\Login.tsx */
-import { Grid, Paper, Tab, Tabs } from '@mui/material';
-import React, { useState } from 'react';
-import LoginForm from '../components/auth/LoginForm';
-import RegisterForm from '../components/auth/RegisterForm';
-import PublicLayout from '../components/layout/PublicLayout';
+// src/pages/Login.tsx
+import React, { useState } from "react";
+import LoginForm from "../components/auth/LoginForm";
+import RegisterForm from "../components/auth/RegisterForm";
+import PublicLayout from "../components/layout/PublicLayout";
 
 const Login: React.FC = () => {
-    const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState(0);
 
-    const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-        setTabValue(newValue);
-    };
+  const handleChange = (newValue: number) => {
+    // Simplificamos el handler
+    setTabValue(newValue);
+  };
 
   return (
     <PublicLayout>
-    <Grid item xs={10} sm={8} md={6} lg={4}>
-        <Paper elevation={3} sx={{ padding: 3 }}>
-            <Tabs value={tabValue} onChange={handleChange} centered>
-                <Tab label="Iniciar Sesión" />
-                <Tab label="Registrarse" />
-            </Tabs>
-            {tabValue === 0 && <LoginForm />}
-            {tabValue === 1 && <RegisterForm />}
-        </Paper>
-      </Grid>
+      <div className="max-w-md w-full">
+        {" "}
+        {/* Contenedor principal con Tailwind */}
+        <div className="bg-white shadow-md rounded-lg p-6">
+          {" "}
+          {/* Reemplaza Paper con div y clases */}
+          <div className="flex justify-center border-b border-gray-200 mb-4">
+            {" "}
+            {/* Reemplaza Tabs con divs */}
+            <button
+              className={`py-2 px-4 -mb-px border-b-2 ${
+                tabValue === 0
+                  ? "border-blue-500 text-blue-500"
+                  : "border-transparent hover:border-gray-300"
+              } font-semibold`}
+              onClick={() => handleChange(0)}
+            >
+              Iniciar Sesión
+            </button>
+            <button
+              className={`py-2 px-4 -mb-px border-b-2 ${
+                tabValue === 1
+                  ? "border-blue-500 text-blue-500"
+                  : "border-transparent hover:border-gray-300"
+              } font-semibold`}
+              onClick={() => handleChange(1)}
+            >
+              Registrarse
+            </button>
+          </div>
+          {tabValue === 0 && <LoginForm />}
+          {tabValue === 1 && <RegisterForm />}
+        </div>
+      </div>
     </PublicLayout>
   );
 };
 
 export default Login;
+
 /* Fin src\pages\Login.tsx */
 
 /* Inicio src\pages\MenuPage.tsx */
-import {
-  Button,
-  Container,
-  Grid,
-  TextField,
-  Typography,
-} from "@mui/material";
+/* src/pages/MenuPage.tsx */
+import { addDoc, collection } from "firebase/firestore";
 import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import PedidoForm from "../components/pedidos/PedidoForm";
 import { MenuItem } from "../context/AppContext";
 import { useMenu } from "../hooks/useMenu";
+import { COLLECTIONS } from "../utils/constants";
+import { db } from "../utils/firebase";
 
 interface Person {
   id: string;
@@ -2515,8 +3116,12 @@ const MenuPage: React.FC = () => {
   const [people, setPeople] = useState<Person[]>([]);
   const [showMenu, setShowMenu] = useState(false);
   const [, setOpenPedidoModal] = useState(false);
+  const [loadingAddSampleData, setLoadingAddSampleData] = useState(false); // Estado para el botón de carga de ejemplo
+  const [message, setMessage] = useState<string | null>(null); // Estado para mensajes de feedback
 
-  const handleNumPeopleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNumPeopleChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setNumPeople(Number(event.target.value));
   };
 
@@ -2589,126 +3194,266 @@ const MenuPage: React.FC = () => {
     setOpenPedidoModal(false);
   };
 
+  const generateSampleMenuItems = () => {
+    return [
+      {
+        name: "Hamburguesa Clásica",
+        description: "Carne de res, queso cheddar, lechuga, tomate y cebolla.",
+        price: 8.99,
+        imageUrl: "https://ejemplo.com/hamburguesa.jpg",
+        available: true,
+        recommendation: "Ideal con papas fritas.",
+        observations: "Se puede pedir sin cebolla.",
+      },
+      {
+        name: "Pizza Margarita",
+        description: "Salsa de tomate, mozzarella fresca y albahaca.",
+        price: 12.50,
+        imageUrl: "https://ejemplo.com/pizza.jpg",
+        available: true,
+        recommendation: "Perfecta para compartir.",
+        observations: "Opción vegana disponible con queso de almendras.",
+      },
+      {
+        name: "Ensalada César",
+        description: "Lechuga romana, crutones, parmesano y aderezo César.",
+        price: 6.75,
+        imageUrl: "https://ejemplo.com/ensalada.jpg",
+        available: true,
+        recommendation: "Ligera y refrescante.",
+        observations: "Se puede añadir pollo a la parrilla.",
+      },
+      {
+        name: "Pasta Carbonara",
+        description: "Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.",
+        price: 10.20,
+        imageUrl: "https://ejemplo.com/pasta_carbonara.jpg",
+        available: true,
+        recommendation: "Un clásico italiano.",
+        observations: "Sin gluten disponible con pasta de arroz.",
+      },
+      {
+        name: "Tacos al Pastor",
+        description: "Carne de cerdo adobada, piña, cebolla y cilantro.",
+        price: 9.50,
+        imageUrl: "https://ejemplo.com/tacos_pastor.jpg",
+        available: true,
+        recommendation: "Sabor auténtico mexicano.",
+        observations: "Picante medio.",
+      },
+      {
+        name: "Sushi Variado (12 piezas)",
+        description: "Selección de nigiris y makis variados.",
+        price: 15.99,
+        imageUrl: "https://ejemplo.com/sushi.jpg",
+        available: true,
+        recommendation: "Para amantes del sushi.",
+        observations: "Incluye salsa de soya, wasabi y jengibre.",
+      },
+      {
+        name: "Pollo Frito",
+        description: "Crujientes piezas de pollo frito, receta secreta.",
+        price: 7.80,
+        imageUrl: "https://ejemplo.com/pollo_frito.jpg",
+        available: true,
+        recommendation: "Ideal para niños y adultos.",
+        observations: "Opción extra crujiente disponible.",
+      },
+      {
+        name: "Sopa de Tomate",
+        description: "Sopa cremosa de tomate, hecha en casa.",
+        price: 5.50,
+        imageUrl: "https://ejemplo.com/sopa_tomate.jpg",
+        available: true,
+        recommendation: "Caliente y reconfortante.",
+        observations: "Servida con pan tostado.",
+      },
+      {
+        name: "Brownie con Helado",
+        description: "Brownie de chocolate caliente con helado de vainilla.",
+        price: 6.25,
+        imageUrl: "https://ejemplo.com/brownie_helado.jpg",
+        available: true,
+        recommendation: "Postre perfecto.",
+        observations: "Se puede pedir sin nueces.",
+      },
+      {
+        name: "Jugo de Naranja Natural",
+        description: "Jugo de naranja recién exprimido.",
+        price: 3.50,
+        imageUrl: "https://ejemplo.com/jugo_naranja.jpg",
+        available: true,
+        recommendation: "Bebida refrescante.",
+        observations: "Sin azúcar añadida.",
+      },
+    ];
+  };
+
+
+  const handleAddSampleData = async () => {
+    setLoadingAddSampleData(true);
+    setMessage("Agregando datos de ejemplo...");
+    try {
+      const sampleMenuItems = generateSampleMenuItems();
+      const menuCollectionRef = collection(db, COLLECTIONS.MENU);
+      for (const item of sampleMenuItems) {
+        await addDoc(menuCollectionRef, item);
+      }
+      setMessage("Datos de ejemplo agregados exitosamente!");
+    } catch (error) {
+      console.error("Error al agregar datos de ejemplo:", error);
+      setMessage("Error al agregar datos de ejemplo.");
+    } finally {
+      setLoadingAddSampleData(false);
+      setTimeout(() => setMessage(null), 5000); // Limpiar mensaje después de 5 segundos
+    }
+  };
+
+
   return (
-    <Container sx={{ marginY: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Menú
-      </Typography>
+    <div className="container mx-auto my-8 p-4 md:p-8">
+      {/* Container principal con Tailwind */}
+      <h1 className="text-3xl font-bold text-gray-900 mb-4">Menú</h1>
+      {/* Título principal */}
       {!showMenu ? (
-        <Grid container spacing={2} sx={{ marginBottom: 2 }}>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              label="Número de personas"
+        <div className="grid gap-4 mb-4 md:grid-cols-2">
+          {/* Contenedor para selección de personas */}
+          <div className="mb-4">
+            <label
+              htmlFor="numPeople"
+              className="block text-gray-700 text-sm font-bold mb-2"
+            >
+              Número de personas:
+            </label>
+            <input
               type="number"
+              id="numPeople"
               value={numPeople}
               onChange={handleNumPeopleChange}
-              fullWidth
-              inputProps={{ min: 1 }}
+              min="1"
+              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
-          </Grid>
+          </div>
           {people.map((person, index) => (
-            <Grid item xs={12} sm={6} key={person.id}>
-              <TextField
-                label={`Nombre de la persona ${index + 1} (Opcional)`}
+            <div key={person.id} className="mb-4">
+              <label
+                htmlFor={`personName-${index}`}
+                className="block text-gray-700 text-sm font-bold mb-2"
+              >
+                Nombre de la persona {index + 1} (Opcional):
+              </label>
+              <input
+                type="text"
+                id={`personName-${index}`}
                 value={person.name}
                 onChange={(e) => handleNameChange(index, e.target.value)}
-                fullWidth
+                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />
-            </Grid>
+            </div>
           ))}
-
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="primary"
+          <div>
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               onClick={handleStartOrder}
             >
               Empezar Pedido
-            </Button>
-          </Grid>
-        </Grid>
+            </button>
+          </div>
+        </div>
       ) : (
         <>
-          <Grid container spacing={2}>
+          <div className="mb-4"> {/* Contenedor para el botón "Agregar Datos de Ejemplo" */}
+            <button
+              onClick={handleAddSampleData}
+              disabled={loadingAddSampleData}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
+            >
+              {loadingAddSampleData ? "Agregando..." : "Agregar Datos de Ejemplo al Menú"}
+            </button>
+            {message && <p className="mt-2 text-sm text-gray-700">{message}</p>} {/* Mensaje de feedback */}
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {/* Grid para personas y menú */}
             {people.map((person) => (
-              <Grid item xs={12} md={4} key={person.id}>
-                <Typography variant="h6">
+              <div key={person.id} className="p-4 border rounded-lg shadow-md">
+                {/* Card persona */}
+                <h2 className="text-xl font-semibold text-gray-900 mb-2">
                   {person.name || "Persona sin nombre"}
-                </Typography>
-                <Typography variant="body2">
-                  Items:
-                </Typography>
-                  {person.items.length > 0 ? (
-                    <ul style={{ listStyleType: "none", paddingLeft: 0 }}>
-                      {person.items.map((item) => {
-                        const menuItem = menu.find((menuItem) => menuItem.id === item.id)
-                        return menuItem ?(
-                          <li key={item.id}>
-                            <Typography variant="body2">
-                            {menuItem.name} x{" "}
-                            <TextField
-                            type="number"
-                            value={item.quantity}
-                              onChange={(e) =>
-                                handleQuantityChange(
+                </h2>
+                {/* Título persona */}
+                <p className="text-gray-700 mb-2">Items:</p>
+                {person.items.length > 0 ? (
+                  <ul className="list-none pl-0 mb-4">
+                    {/* Lista de items */}
+                    {person.items.map((item) => {
+                      const menuItem = menu.find(
+                        (menuItem) => menuItem.id === item.id
+                      );
+                      return menuItem ? (
+                        <li key={item.id} className="mb-2">
+                          <div className="flex items-center justify-between">
+                            <p className="text-gray-700">{menuItem.name} x </p>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="number"
+                                value={item.quantity}
+                                onChange={(e) =>
+                                  handleQuantityChange(
                                     person.id,
-                                  item.id,
-                                  parseInt(e.target.value)
-                              )}
-                                sx={{ width: '60px' }}
-                                inputProps={{ min: 1 }}
+                                    item.id,
+                                    parseInt(e.target.value)
+                                  )
+                                }
+                                min="1"
+                                className="shadow appearance-none border rounded w-16 py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-center"
                               />
-                            <Button
-                                  variant="outlined"
-                                  color="secondary"
-                                  onClick={() =>
-                                    handleRemoveItemFromPerson(person.id, item.id)
-                                  }
-                                sx={{ marginLeft: 2, padding: '2px 5px', minWidth: 'auto' }}
+                              <button
+                                className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-sm"
+                                onClick={() =>
+                                  handleRemoveItemFromPerson(person.id, item.id)
+                                }
                               >
-                                  Eliminar
-                                </Button>
-                          </Typography>
-                          </li>
-                        ): null
+                                Eliminar
+                              </button>
+                            </div>
+                          </div>
+                        </li>
+                      ) : null;
                     })}
-                    </ul>
-                  ) : (
-                      <Typography variant="body2">
-                          Esta persona aun no tiene items
-                      </Typography>
-                  )}
-                <Typography variant="body2">
-                  Menu:
-                </Typography>
-
-                  <Grid container spacing={2}>
-                      {menu.map((item) => (
-                        <Grid item xs={12} sm={6} md={12} key={item.id}>
-                            <Button
-                                variant="outlined"
-                                color="primary"
-                              onClick={() => handleAddItemToPerson(person.id, item)}
-                              >
-                                {item.name}
-                              </Button>
-                        </Grid>
-                      ))}
-                  </Grid>
-              </Grid>
+                  </ul>
+                ) : (
+                  <p className="text-gray-500 mb-4">
+                    Esta persona aún no tiene items.
+                  </p>
+                )}
+                <p className="text-gray-700 font-semibold mb-2">Menú:</p>
+                <div className="grid gap-2 md:grid-cols-2">
+                  {/* Grid menú por persona */}
+                  {menu.map((item) => (
+                    <button
+                      key={item.id}
+                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                      onClick={() => handleAddItemToPerson(person.id, item)}
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
-          </Grid>
-           <Button
-            variant="contained"
-            color="primary"
-            onClick={handleOpenPedidoModal}
-          >
-            Realizar Pedido
-          </Button>
-           <PedidoForm onClose={handleClosePedidoModal} people={people} />
+          </div>
+          <div className="mt-6">
+            <button
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              onClick={handleOpenPedidoModal}
+            >
+              Realizar Pedido
+            </button>
+          </div>
+          <PedidoForm onClose={handleClosePedidoModal} people={people} />
         </>
       )}
-    </Container>
+    </div>
   );
 };
 
@@ -2737,27 +3482,97 @@ export default PedidosPage;
 /* Fin src\pages\PedidosPage.tsx */
 
 /* Inicio src\pages\Perfil.tsx */
-import { Button, Container, Typography } from "@mui/material";
-import React from "react";
+// src/pages/Perfil.tsx
+import {
+  Alert,
+  Avatar,
+  Button,
+  Container,
+  Grid,
+  Paper,
+  Snackbar,
+  Typography,
+} from "@mui/material";
+import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 
 const Perfil: React.FC = () => {
   const { user, addPoints, points } = useAuth();
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({ open: false, message: "", severity: "success" });
+
+  const handleAddPoints = async () => {
+    try {
+      await addPoints();
+      setSnackbar({
+        open: true,
+        message: "Puntos agregados exitosamente.",
+        severity: "success",
+      });
+    } catch {
+      setSnackbar({
+        open: true,
+        message: "Error al agregar puntos.",
+        severity: "error",
+      });
+    }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   return (
     <Container sx={{ marginY: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Perfil
-      </Typography>
-      {user && (
-        <>
-          <Typography variant="body1">Correo: {user.email}</Typography>
-          <Typography variant="body1">UID: {user.uid}</Typography>
-          <Typography variant="body1">Puntos: {points}</Typography>
-          <Button variant="contained" color="primary" onClick={addPoints}>
-            Sumar puntos
-          </Button>
-        </>
-      )}
+      <Paper sx={{ padding: 4 }}>
+        <Grid container spacing={4}>
+          <Grid item xs={12} sm={4} sx={{ textAlign: "center" }}>
+            <Avatar
+              alt={user?.email}
+              src="/static/images/avatar/1.jpg"
+              sx={{ width: 120, height: 120, margin: "0 auto" }}
+            />
+            <Typography variant="h6" sx={{ mt: 2 }}>
+              {user?.email}
+            </Typography>
+          </Grid>
+          <Grid item xs={12} sm={8}>
+            <Typography variant="h5" gutterBottom>
+              Información del Perfil
+            </Typography>
+            <Typography variant="body1">
+              <strong>UID:</strong> {user?.uid}
+            </Typography>
+            <Typography variant="body1">
+              <strong>Puntos:</strong> {points}
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleAddPoints}
+              sx={{ mt: 2 }}
+            >
+              Sumar 10 Puntos
+            </Button>
+          </Grid>
+        </Grid>
+      </Paper>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
@@ -2901,6 +3716,10 @@ export const processPayment = async (sessionId: string, publicKey: string) => {
 /* Fin src\payment\payment.ts */
 
 /* Inicio src\styles\global.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
@@ -2914,7 +3733,6 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
-
 /* Fin src\styles\global.css */
 
 /* Inicio src\types\css.d.ts */
@@ -2965,8 +3783,64 @@ export const auth = getAuth(app);
 /* Fin src\utils\firebase.ts */
 
 /* Inicio src\utils\theme.ts */
+// src/utils/theme.ts
+import { createTheme } from '@mui/material/styles';
+
+const theme = createTheme({
+    palette: {
+        primary: {
+            main: '#1976d2', // Color primario
+        },
+        secondary: {
+            main: '#dc004e', // Color secundario
+        },
+        background: {
+            default: '#f4f6f8', // Fondo general
+            paper: '#ffffff', // Fondos de componentes
+        },
+    },
+    typography: {
+        fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+        h5: {
+            fontWeight: 600,
+        },
+    },
+    components: {
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    textTransform: 'none', // Mantener el texto en su forma original
+                },
+            },
+        },
+        MuiTextField: {
+            styleOverrides: {
+                root: {
+                    marginTop: '8px',
+                    marginBottom: '8px',
+                },
+            },
+        },
+    },
+});
+
+export default theme;
 
 /* Fin src\utils\theme.ts */
+
+/* Inicio tailwind.config.js */
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+/* Fin tailwind.config.js */
 
 /* Inicio tsconfig.app.json */
 {

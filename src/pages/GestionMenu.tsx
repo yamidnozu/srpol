@@ -1,4 +1,3 @@
-// src/pages/GestionMenu.tsx
 import { Alert, Button, Container, Snackbar } from "@mui/material";
 import {
   addDoc,
@@ -109,7 +108,7 @@ const GestionMenu: React.FC = () => {
       <MenuList menu={menu} onEdit={handleEdit} onDelete={handleDelete} />
       <MenuModal
         open={openModal}
-        onClose={handleCloseModal}
+        onClose={handleCloseModal} // Pass handleCloseModal as onClose
         initialValues={selectedItem || undefined}
         onSubmit={handleSubmit}
       />
