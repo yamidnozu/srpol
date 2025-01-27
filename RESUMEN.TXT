@@ -13,19 +13,24 @@
 │   │   │   ├── LoginForm.tsx [83]
 │   │   │   └── RegisterForm.tsx [83]
 │   │   ├── 📂 forms
-│   │   │   ├── MenuForm.tsx [203]
-│   │   │   └── PedidoForm.tsx [232]
+│   │   │   ├── MenuForm.tsx [222]
+│   │   │   └── PedidoForm.tsx [233]
 │   │   ├── 📂 layout
 │   │   │   ├── MainLayout.tsx [37]
 │   │   │   ├── Navbar.tsx [59]
 │   │   │   ├── PublicLayout.tsx [19]
 │   │   │   └── Sidebar.tsx [120]
 │   │   ├── 📂 menu
-│   │   │   ├── GroupOrderPage.tsx [667]
-│   │   │   ├── MenuForm.tsx [189]
-│   │   │   ├── MenuItem.tsx [61]
-│   │   │   ├── MenuList.tsx [22]
+│   │   │   ├── GroupOrderPage.tsx [432]
+│   │   │   ├── MenuForm.tsx [221]
+│   │   │   ├── MenuItem.tsx [84]
+│   │   │   ├── MenuList.tsx [29]
 │   │   │   ├── MenuModal.tsx [67]
+│   │   │   ├── 📂 partials
+│   │   │   │   ├── OrderReview.tsx [106]
+│   │   │   │   ├── PeopleSelection.tsx [64]
+│   │   │   │   ├── PersonOrder.tsx [164]
+│   │   │   │   └── SharedOrder.tsx [156]
 │   │   │   └── PersonMenuModal.tsx [223]
 │   │   ├── 📂 payment
 │   │   │   └── PaymentForm.tsx [80]
@@ -35,11 +40,12 @@
 │   │   │   └── PedidoList.tsx [290]
 │   │   └── 📂 ui
 │   │       ├── Button.tsx [79]
+│   │       ├── Container.tsx [17]
 │   │       ├── ErrorBoundry.tsx [46]
 │   │       ├── ListItem.tsx [64]
 │   │       └── TextField.tsx [34]
 │   ├── 📂 context
-│   │   ├── AppContext.tsx [65]
+│   │   ├── AppContext.tsx [66]
 │   │   └── AuthContext.tsx [164]
 │   ├── 📂 hooks
 │   │   ├── useAuth.ts [10]
@@ -47,10 +53,10 @@
 │   ├── main.tsx [10]
 │   ├── 📂 pages
 │   │   ├── Dashboard.tsx [672]
-│   │   ├── GestionMenu.tsx [133]
+│   │   ├── GestionMenu.tsx [306]
 │   │   ├── GestionUsuarios.tsx [82]
 │   │   ├── Login.tsx [56]
-│   │   ├── MenuPage.tsx [364]
+│   │   ├── MenuPage.tsx [390]
 │   │   ├── PedidosPage.tsx [18]
 │   │   ├── Perfil.tsx [97]
 │   │   └── Success.tsx [41]
@@ -69,10 +75,10 @@
 ├── tsconfig.app.json [31]
 ├── tsconfig.json [20]
 ├── tsconfig.node.json [25]
-└── vite.config.ts [37]
+└── vite.config.ts [38]
 
 
-Total de líneas resumidas: 5282
+Total de líneas resumidas: 5837
 
 
 /* Inicio eslint.config.js */
@@ -120,7 +126,7 @@ export default tseslint.config(
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <link rel="apple-touch-icon" href="/logo192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="manifest" href="/manifest.json" />
+    <!-- <link rel="manifest" href="/manifest.json" /> -->
     <meta name="theme-color" content="#ffffff" />
     <title>SrPol</title>
   </head>
@@ -575,6 +581,7 @@ export default RegisterForm;
 /* Fin src\components\auth\RegisterForm.tsx */
 
 /* Inicio src\components\forms\MenuForm.tsx */
+/* Inicio src\components\forms\MenuForm.tsx */
 import React, { useState } from "react";
 import { MenuItem } from "../../context/AppContext";
 import { useMenu } from "../../hooks/useMenu";
@@ -582,9 +589,14 @@ import { useMenu } from "../../hooks/useMenu";
 interface MenuFormProps {
   initialValues?: Partial<MenuItem>;
   onSubmit: (values: Partial<MenuItem>) => void;
+  onClose: () => void; // Add onClose prop
 }
 
-const MenuForm: React.FC<MenuFormProps> = ({ initialValues, onSubmit }) => {
+const MenuForm: React.FC<MenuFormProps> = ({
+  initialValues,
+  onSubmit,
+  onClose,
+}) => {
   const { loading } = useMenu();
   const [name, setName] = useState(initialValues?.name || "");
   const [description, setDescription] = useState(
@@ -601,6 +613,10 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialValues, onSubmit }) => {
   const [available, setAvailable] = useState(
     initialValues?.available !== undefined ? initialValues.available : true
   );
+  // Nuevo estado para el estado de disponibilidad
+  const [availabilityStatus, setAvailabilityStatus] = useState<
+    "disponible" | "noDisponibleMomento" | "noDisponibleLargoPlazo"
+  >(initialValues?.availabilityStatus || "disponible");
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -612,7 +628,9 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialValues, onSubmit }) => {
       available,
       recommendation,
       observations,
+      availabilityStatus, // Incluir el nuevo estado en los valores enviados
     });
+    onClose(); // Close modal on submit
   };
 
   if (loading) {
@@ -622,155 +640,162 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialValues, onSubmit }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {" "}
-      {/* Reemplaza form y añade spacing vertical */}
-      <h2 className="text-xl font-bold text-gray-900">
+      {/* Formulario con espaciado vertical */}
+      <div className="grid grid-cols-1 gap-4">
         {" "}
-        {/* Reemplaza Typography h5 */}
-        {initialValues?.id ? "Editar Item" : "Agregar Item"}
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {" "}
-        {/* Reemplaza Grid container con grid y spacing */}
+        {/* Grid para los campos */}
         <div>
-          {" "}
-          {/* Reemplaza Grid item */}
           <label
             htmlFor="name"
             className="block text-sm font-medium text-gray-700"
           >
             Nombre del Item
-          </label>{" "}
-          {/* Reemplaza TextField label */}
+          </label>
           <input
             type="text"
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField input
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
         <div>
-          {" "}
-          {/* Reemplaza Grid item */}
           <label
             htmlFor="description"
             className="block text-sm font-medium text-gray-700"
           >
-            Descripción del Item
-          </label>{" "}
-          {/* Reemplaza TextField label */}
-          <input
-            type="text"
+            Descripción
+          </label>
+          <textarea /* Usamos textarea para la descripción */
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField input
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
         <div>
-          {" "}
-          {/* Reemplaza Grid item */}
           <label
             htmlFor="price"
             className="block text-sm font-medium text-gray-700"
           >
-            Precio del Item
-          </label>{" "}
-          {/* Reemplaza TextField label */}
+            Precio
+          </label>
           <input
             type="number"
             id="price"
             value={price}
             onChange={(e) => setPrice(Number(e.target.value))}
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField input
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
         <div>
-          {" "}
-          {/* Reemplaza Grid item */}
           <label
             htmlFor="imageUrl"
             className="block text-sm font-medium text-gray-700"
           >
-            Url de la imagen
-          </label>{" "}
-          {/* Reemplaza TextField label */}
+            URL de Imagen
+          </label>
           <input
             type="url"
             id="imageUrl"
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
             required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField input
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
         <div>
-          {" "}
-          {/* Reemplaza Grid item */}
           <label
             htmlFor="recommendation"
             className="block text-sm font-medium text-gray-700"
           >
-            Recomendaciones
-          </label>{" "}
-          {/* Reemplaza TextField label */}
+            Recomendaciones (Opcional)
+          </label>
           <input
             type="text"
             id="recommendation"
             value={recommendation}
             onChange={(e) => setRecommendation(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField input
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
         <div>
-          {" "}
-          {/* Reemplaza Grid item */}
           <label
             htmlFor="observations"
             className="block text-sm font-medium text-gray-700"
           >
-            Observaciones
-          </label>{" "}
-          {/* Reemplaza TextField label */}
+            Observaciones (Opcional)
+          </label>
           <input
             type="text"
             id="observations"
             value={observations}
             onChange={(e) => setObservations(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField input
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
+        {/* Nuevo campo para el estado de disponibilidad */}
+        <div>
+          <label
+            htmlFor="availabilityStatus"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Estado de Disponibilidad
+          </label>
+          <select
+            id="availabilityStatus"
+            value={availabilityStatus}
+            onChange={(e) =>
+              setAvailabilityStatus(
+                e.target.value as
+                  | "disponible"
+                  | "noDisponibleMomento"
+                  | "noDisponibleLargoPlazo"
+              )
+            }
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          >
+            <option value="disponible">Disponible</option>
+            <option value="noDisponibleMomento">
+              No disponible en el momento
+            </option>
+            <option value="noDisponibleLargoPlazo">Ya no disponible</option>
+          </select>
+        </div>
       </div>
-      <div className="flex items-center space-x-2 mb-4">
+      <div className="flex items-center justify-between mt-4">
         {" "}
-        {/* Reemplaza FormControlLabel y Checkbox con div flex */}
-        <input
-          type="checkbox"
-          id="available"
-          checked={available}
-          onChange={(e) => setAvailable(e.target.checked)}
-          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" // Reemplaza Checkbox input
-        />
-        <label
-          htmlFor="available"
-          className="block text-gray-700 text-sm font-bold"
-        >
-          Disponible
-        </label>{" "}
-        {/* Reemplaza FormControlLabel label */}
-      </div>
-      <div>
-        {" "}
-        {/* Reemplaza Grid item button container */}
-        <button
-          type="submit"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" // Reemplaza Button
-        >
-          {initialValues?.id ? "Guardar Cambios" : "Agregar Item"}
-        </button>
+        {/* Contenedor para checkbox y botones */}
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="available"
+            className="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+            checked={available}
+            onChange={(e) => setAvailable(e.target.checked)}
+          />
+          <label htmlFor="available" className="ml-2 text-sm text-gray-700">
+            Disponible (Visible en Menu)
+          </label>
+        </div>
+        <div className="space-x-2">
+          <button
+            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            onClick={onClose}
+            type="button" /* Importante: type="button" para evitar submit del form al cancelar */
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          >
+            {initialValues?.id ? "Guardar" : "Agregar"}
+          </button>
+        </div>
       </div>
     </form>
   );
@@ -781,6 +806,8 @@ export default MenuForm;
 /* Fin src\components\forms\MenuForm.tsx */
 
 /* Inicio src\components\forms\PedidoForm.tsx */
+// src/components/pedidos/PedidoForm.tsx
+/* Directorio: src\components\forms\PedidoForm.tsx */
 // src/components/forms/PedidoForm.tsx
 import { Timestamp, addDoc, collection } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
@@ -796,9 +823,18 @@ interface PedidoFormProps {
     name: string;
     items: { id: string; quantity: number }[];
   }[];
+  sharedOrderItems?: {
+    itemId: string;
+    quantity: number;
+    personIds: string[];
+  }[];
 }
 
-const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
+const PedidoForm: React.FC<PedidoFormProps> = ({
+  onClose,
+  people,
+  sharedOrderItems,
+}) => {
   const { menu } = useMenu();
   const { user, addPoints } = useAuth();
 
@@ -814,34 +850,48 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
   const [paymentMethod, setPaymentMethod] = useState("contraentrega");
 
   useEffect(() => {
-    /* ... useEffect hook same ... */
     if (people) {
       setPeopleOrder(
         people.map((person) => ({ id: person.id, name: person.name }))
       );
-      const newItems = people.flatMap((person) =>
+      // Flatten person items and assign person name
+      const personItems = people.flatMap((person) =>
         person.items.map((item) => ({
           id: item.id,
           quantity: item.quantity,
           assignedTo: person.name,
         }))
       );
-      setItems(newItems);
+      setItems(personItems);
     }
   }, [people]);
+
+  useEffect(() => {
+    if (sharedOrderItems) {
+      // Flatten shared items and assign 'Compartido' as assignedTo
+      const sharedItemsForDisplay = sharedOrderItems.flatMap((sharedItem) =>
+        Array(sharedItem.quantity)
+          .fill(null)
+          .map(() => ({
+            id: sharedItem.itemId,
+            quantity: 1,
+            assignedTo: "Compartido",
+          }))
+      );
+      setItems((prevItems) => [...prevItems, ...sharedItemsForDisplay]);
+    }
+  }, [sharedOrderItems]);
 
   // Simulación de sedes disponibles (puedes obtenerlas de Firestore)
   const sedesDisponibles = ["Sede Norte", "Sede Sur", "Sede Centro"];
 
   useEffect(() => {
-    /* ... useEffect hook same ... */
     if (sedesDisponibles.length === 1) {
       setSede(sedesDisponibles[0]);
     }
   }, [sedesDisponibles]);
 
   const calculateTotal = () => {
-    /* ... calculateTotal function same ... */
     let total = 0;
     items.forEach((item) => {
       const menuItem = menu.find((m) => m.id === item.id);
@@ -853,7 +903,6 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
-    /* ... handleSubmit function same ... */
     event.preventDefault();
     if (!user) return;
 
@@ -876,6 +925,13 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
         paymentMethod: paymentMethod,
         orderDate: Timestamp.now(),
         orderId: orderId,
+        sharedItems: sharedOrderItems
+          ? sharedOrderItems.map((si) => ({
+              itemId: si.itemId,
+              quantity: si.quantity, // Quantity here represents how many of shared items are in total
+              personIds: si.personIds,
+            }))
+          : [],
       };
 
       await addDoc(collection(db, "pedidos"), orderData);
@@ -886,8 +942,6 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
   };
 
   const handlePaymentSuccess = async () => {
-    /* ... handlePaymentSuccess function same ... */
-    // Sumar puntos al usuario
     await addPoints();
     alert("Pedido realizado con éxito y puntos sumados.");
     onClose();
@@ -895,27 +949,20 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {" "}
-      {/* Reemplaza form and add vertical spacing */}
-      <h2 className="text-xl font-bold text-gray-900">Realizar Pedido</h2>{" "}
-      {/* Reemplaza Typography h5 */}
-      {/* Seleccionar Sede */}
+      <h2 className="text-xl font-bold text-gray-900">Realizar Pedido</h2>
       <div>
-        {" "}
-        {/* Reemplaza FormControl */}
         <label
           htmlFor="sede"
           className="block text-sm font-medium text-gray-700"
         >
           Sede
-        </label>{" "}
-        {/* Reemplaza InputLabel */}
+        </label>
         <select
           id="sede"
           value={sede}
           onChange={(e) => setSede(e.target.value)}
           required
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza Select
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         >
           {sedesDisponibles.map((sedeItem) => (
             <option key={sedeItem} value={sedeItem}>
@@ -924,17 +971,13 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
           ))}
         </select>
       </div>
-      {/* Costo de Envío */}
       <div>
-        {" "}
-        {/* Reemplaza FormControl */}
         <label
           htmlFor="deliveryFee"
           className="block text-sm font-medium text-gray-700"
         >
           Costo de Envío
-        </label>{" "}
-        {/* Reemplaza InputLabel */}
+        </label>
         <input
           type="number"
           id="deliveryFee"
@@ -942,67 +985,50 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
           onChange={(e) => setDeliveryFee(parseFloat(e.target.value))}
           required
           min="0"
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         />
       </div>
-      {/* Domicilio Incluido */}
       <div className="flex items-start">
-        {" "}
-        {/* Reemplaza FormControlLabel with div flex */}
         <div className="flex items-center h-5">
-          {" "}
-          {/* Container for checkbox */}
           <input
             id="deliveryIncluded"
             name="deliveryIncluded"
             type="checkbox"
             checked={deliveryIncluded}
             onChange={(e) => setDeliveryIncluded(e.target.checked)}
-            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" // Reemplaza Checkbox
+            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
           />
         </div>
         <div className="ml-2 text-sm">
-          {" "}
-          {/* Container for label text */}
           <label
             htmlFor="deliveryIncluded"
             className="font-medium text-gray-700"
           >
-            {" "}
-            {/* Reemplaza FormControlLabel label */}
             ¿El domicilio está incluido?
           </label>
         </div>
       </div>
-      {/* Método de Pago */}
       <div>
-        {" "}
-        {/* Reemplaza FormControl */}
         <label
           htmlFor="paymentMethod"
           className="block text-sm font-medium text-gray-700"
         >
           Método de Pago
-        </label>{" "}
-        {/* Reemplaza InputLabel */}
+        </label>
         <select
           id="paymentMethod"
           value={paymentMethod}
           onChange={(e) => setPaymentMethod(e.target.value)}
           required
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza Select
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         >
-          <option value="contraentrega">Contraentrega</option>{" "}
-          {/* Reemplaza MenuItem with option */}
-          {/* Puedes añadir otros métodos de pago si lo deseas */}
+          <option value="contraentrega">Contraentrega</option>
         </select>
       </div>
       <div>
-        {" "}
-        {/* Reemplaza container for Button */}
         <button
           type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" // Reemplaza Button
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200" // Added transition
         >
           Realizar Pedido
         </button>
@@ -1263,684 +1289,448 @@ export default Sidebar;
 /* Fin src\components\layout\Sidebar.tsx */
 
 /* Inicio src\components\menu\GroupOrderPage.tsx */
-/* Directorio: src\components\menu\GroupOrderPage.tsx */
-/* Directorio: src\components\menu\GroupOrderPage.tsx */
+/* src\components\menu\GroupOrderPage.tsx */
 import React, { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { MenuItem } from "../../context/AppContext";
+import { MenuItem as MenuItemType } from "../../context/AppContext";
 import { useMenu } from "../../hooks/useMenu";
-import PedidoForm from "../forms/PedidoForm"; // Correct import path
+
+import OrderReview from "./partials/OrderReview";
+import PeopleSelection from "./partials/PeopleSelection";
+import PersonOrder from "./partials/PersonOrder";
+import SharedOrder from "./partials/SharedOrder";
 
 interface Person {
-    id: string;
-    name: string;
-    items: { id: string; quantity: number }[];
+  id: string;
+  name: string;
+  items: { id: string; quantity: number }[];
 }
 
-const GroupOrderPage: React.FC = () => {
-    const { menu } = useMenu();
-    const [numPeople, setNumPeople] = useState<number>(1);
-    const [people, setPeople] = useState<Person[]>([]);
-    const [showPeopleNames, setShowPeopleNames] = useState(false);
-    const [showPedidoForm, setShowPedidoForm] = useState(false);
-    const [sharedOrderItems, setSharedOrderItems] = useState<
-        { itemId: string; quantity: number; personIds: string[] }[]
-    >([]);
-    const [activeTab, setActiveTab] = useState<string>("shared");
+interface SharedOrderItem {
+  itemId: string;
+  quantity: number;
+  personIds: string[];
+}
 
-    const sharedOrderSummaryRef = useRef<HTMLDivElement>(null);
-    const personOrderSummaryRef = useRef<HTMLDivElement>(null);
-    const [, setIsMobile] = useState(false);
-    const [, setIsSummaryVisible] = useState(true);
+export interface GroupOrderPageProps {
+    name: string;
+}
 
-    // Nuevos estados añadidos
-    const [activeItemId, setActiveItemId] = useState<string | null>(null);
-    const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
-    const [feedbackMessage, setFeedbackMessage] = useState<string>("");
+const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
+  const { menu } = useMenu();
+  const [numPeople, setNumPeople] = useState<number>(1);
+  const [people, setPeople] = useState<Person[]>([]);
+  const [showPeopleNames, setShowPeopleNames] = useState(false);
+  const [showPedidoForm, setShowPedidoForm] = useState(false);
+  const [sharedOrderItems, setSharedOrderItems] = useState<SharedOrderItem[]>(
+    []
+  );
+  const [activeTab, setActiveTab] = useState<string>("shared");
+  const [feedbackMessage] = useState<string>("");
 
-    useEffect(() => {
-        const checkMobile = () => window.innerWidth < 768;
-        setIsMobile(checkMobile());
-        const handleResize = () => setIsMobile(checkMobile());
-        window.addEventListener("resize", handleResize);
-        setIsSummaryVisible(!checkMobile());
-        return () => window.removeEventListener("resize", handleResize);
-    }, []);
+  const sharedOrderSummaryRef = useRef<HTMLDivElement>(null);
+  const personOrderSummaryRef = useRef<HTMLDivElement>(null);
+  const [, setIsMobile] = useState(false);
+  const [, setIsSummaryVisible] = useState(true);
 
+  // Filtra el menú para mostrar solo disponibles y no disponibles en el momento (excluye "Ya no disponible")
+  const filteredMenu = menu.filter(
+    (item) => item.availabilityStatus !== "noDisponibleLargoPlazo"
+  );
 
-    const handleNumPeopleChange = (
-        event: React.ChangeEvent<HTMLInputElement>
-    ) => {
-        const num = Number(event.target.value);
-        setNumPeople(num);
+  // Agrupa el menú filtrado por categoría (usando recommendation como categoría)
+  const menuCategories = filteredMenu.reduce((categories, item) => {
+    const category = item.recommendation || "General";
+    if (!categories[category]) {
+      categories[category] = [];
+    }
+    categories[category].push(item);
+    return categories;
+  }, {} as { [category: string]: MenuItemType[] });
 
-        setPeople((prevPeople) => {
-            const currentPeopleCount = prevPeople.length;
-            if (num > currentPeopleCount) {
-                const newPeople = Array.from({ length: num - currentPeopleCount }, (_, index) => ({
-                    id: uuidv4(),
-                    name: `Persona ${currentPeopleCount + index + 1}`,
-                    items: [],
-                }));
-                return [...prevPeople, ...newPeople];
-            } else if (num < currentPeopleCount) {
-                return prevPeople.slice(0, num);
-            } else {
-                return prevPeople;
-            }
-        });
-    };
+  useEffect(() => {
+    const checkMobile = () => window.innerWidth < 768;
+    setIsMobile(checkMobile());
+    const handleResize = () => setIsMobile(checkMobile());
+    window.addEventListener("resize", handleResize);
+    setIsSummaryVisible(!checkMobile());
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-    const handlePersonNameChange = (index: number, name: string) => {
-        const updatedPeople = [...people];
-        updatedPeople[index].name = name;
-        setPeople(updatedPeople);
-    };
+  const handleNumPeopleChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const num = Number(event.target.value);
+    setNumPeople(num);
 
-
-    const handleStartOrder = () => {
-        if (people.every(person => person.name.trim() !== "")) {
-            setShowPeopleNames(true);
-            setActiveTab("shared");
-        } else {
-            alert("Por favor, ingresa el nombre de cada persona.");
-        }
-
-    };
-
-
-    const handleReviewOrder = () => {
-        distributeSharedOrderItems();
-        setShowPedidoForm(true);
-    };
-
-    const calculateSubtotal = (
-        personItems: { id: string; quantity: number }[]
-    ) => {
-        let total = 0;
-        personItems.forEach((item) => {
-            const menuItem = menu.find((m) => m.id === item.id);
-            if (menuItem) {
-                total += menuItem.price * item.quantity;
-            }
-        });
-        return total;
-    };
-
-    const calculateSharedSubtotal = () => {
-        let total = 0;
-        sharedOrderItems.forEach((sharedItem) => {
-            const menuItem = menu.find((m) => m.id === sharedItem.itemId);
-            if (menuItem) {
-                total += menuItem.price * sharedItem.quantity;
-            }
-        });
-        return total;
-    };
-
-    const handleAddToSharedOrder = (item: MenuItem) => {
-        const existingItemIndex = sharedOrderItems.findIndex(
-            (sharedItem) => sharedItem.itemId === item.id
+    setPeople((prevPeople) => {
+      const currentPeopleCount = prevPeople.length;
+      if (num > currentPeopleCount) {
+        const newPeople = Array.from(
+          { length: num - currentPeopleCount },
+          (_, index) => ({
+            id: uuidv4(),
+            name: `Persona ${currentPeopleCount + index + 1}`,
+            items: [],
+          })
         );
-        if (existingItemIndex > -1) {
-            const updatedSharedOrderItems = [...sharedOrderItems];
-            updatedSharedOrderItems[existingItemIndex].quantity += 1;
-            setSharedOrderItems(updatedSharedOrderItems);
-        } else {
-            setSharedOrderItems([
-                ...sharedOrderItems,
-                { itemId: item.id, quantity: 1, personIds: [] },
-            ]);
-        }
-    };
+        return [...prevPeople, ...newPeople];
+      } else if (num < currentPeopleCount) {
+        return prevPeople.slice(0, num);
+      } else {
+        return prevPeople;
+      }
+    });
+    // Asegurar que haya al menos una persona en el array people al cambiar numPeople
+    if (num >= 1 && people.length === 0) {
+      setPeople([
+        {
+          id: uuidv4(),
+          name: `Persona 1`,
+          items: [],
+        },
+      ]);
+    }
+  };
 
-    const handleSharedOrderItemQuantityChange = (
-        itemId: string,
-        quantity: number
-    ) => {
-        if (quantity < 0) return;
-        const updatedSharedOrderItems = sharedOrderItems.map((sharedItem) =>
-            sharedItem.itemId === itemId ? { ...sharedItem, quantity } : sharedItem
-        );
-        setSharedOrderItems(updatedSharedOrderItems);
-    };
+  const handlePersonNameChange = (index: number, name: string) => {
+    const updatedPeople = [...people];
+    updatedPeople[index].name = name;
+    setPeople(updatedPeople);
+  };
 
-    const handleRemoveSharedOrderItem = (itemId: string) => {
-        const updatedSharedOrderItems = sharedOrderItems.filter(
-            (item) => item.itemId !== itemId
-        );
-        setSharedOrderItems(updatedSharedOrderItems);
-    };
+  const handleStartOrder = () => {
+    if (people.every((person) => person.name.trim() !== "")) {
+      setShowPeopleNames(true);
+      setActiveTab("shared");
+    } else {
+      alert("Por favor, ingresa el nombre de cada persona.");
+    }
+  };
 
-    const distributeSharedOrderItems = () => {
-        const itemsToDistribute = [...sharedOrderItems];
-        const updatedPeople = people.map((person) => ({
-            ...person,
-            items: [...person.items],
-        }));
+  const handleReviewOrder = () => {
+    distributeSharedOrderItems();
+    setShowPedidoForm(true);
+  };
 
-        itemsToDistribute.forEach((sharedItem) => {
-            const menuItem = menu.find((m) => m.id === sharedItem.itemId);
-            if (menuItem) {
-                for (let i = 0; i < sharedItem.quantity; i++) {
-                    const personToAssign = updatedPeople.reduce(
-                        (bestPerson, currentPerson) => {
-                            const bestPersonItemsCount = bestPerson.items.reduce(
-                                (sum, item) => sum + item.quantity,
-                                0
-                            );
-                            const currentPersonItemsCount = currentPerson.items.reduce(
-                                (sum, item) => sum + item.quantity,
-                                0
-                            );
-                            return currentPersonItemsCount < bestPersonItemsCount
-                                ? currentPerson
-                                : bestPerson;
-                        },
-                        updatedPeople[0]
-                    );
+  const calculateSubtotal = (
+    personItems: { id: string; quantity: number }[]
+  ) => {
+    let total = 0;
+    personItems.forEach((item) => {
+      const menuItem = menu.find((m) => m.id === item.id);
+      if (menuItem) {
+        total += menuItem.price * item.quantity;
+      }
+    });
+    return total;
+  };
 
-                    personToAssign.items.push({ id: sharedItem.itemId, quantity: 1 });
-                }
-            }
-        });
-        setPeople(updatedPeople);
-        setSharedOrderItems([]);
-    };
+  const calculateSharedSubtotal = () => {
+    let total = 0;
+    sharedOrderItems.forEach((sharedItem) => {
+      const menuItem = menu.find((m) => m.id === sharedItem.itemId);
+      if (menuItem) {
+        total += menuItem.price * sharedItem.quantity;
+      }
+    });
+    return total;
+  };
 
-    const handleAddItemToPerson = (personId: string, item: MenuItem) => {
-        setPeople((prevPeople) => {
-            return prevPeople.map((person) => {
-                if (person.id === personId) {
-                    const itemExists = person.items.some(
-                        (orderItem) => orderItem.id === item.id
-                    );
-                    if (itemExists) {
-                        return {
-                            ...person,
-                            items: person.items.map((orderItem) =>
-                                orderItem.id === item.id
-                                    ? { ...orderItem, quantity: orderItem.quantity + 1 }
-                                    : orderItem
-                            ),
-                        };
-                    } else {
-                        return {
-                            ...person,
-                            items: [...person.items, { id: item.id, quantity: 1 }],
-                        };
-                    }
-                }
-                return person;
-            });
-        });
-    };
-
-    const handlePersonOrderItemQuantityChange = (personId: string, itemId: string, quantity: number) => {
-        if (quantity < 0) return;
-        setPeople(prevPeople =>
-            prevPeople.map(person => {
-                if (person.id === personId) {
-                    return {
-                        ...person,
-                        items: person.items.map(item =>
-                            item.id === itemId ? { ...item, quantity } : item
-                        )
-                    };
-                }
-                return person;
-            })
-        );
-    };
-
-
-    const handleRemoveItemFromPerson = (personId: string, itemId: string) => {
-        setPeople((prevPeople) =>
-            prevPeople.map((person) =>
-                person.id === personId
-                    ? {
-                        ...person,
-                        items: person.items.filter((item) => item.id !== itemId),
-                    }
-                    : person
-            )
-        );
-    };
-
-
-    const handleToggleSelectPerson = (personId: string) => {
-        setSelectedPeople((prev) =>
-            prev.includes(personId)
-                ? prev.filter((id) => id !== personId)
-                : [...prev, personId]
-        );
-    };
-
-    const handleAddToSelected = (item: MenuItem) => {
-        const targetPeople = people.filter((person) =>
-            selectedPeople.includes(person.id)
-        );
-
-        setPeople((prevPeople) =>
-            prevPeople.map((person) => {
-                if (selectedPeople.includes(person.id)) {
-                    const itemExists = person.items.some(
-                        (orderItem) => orderItem.id === item.id
-                    );
-                    if (itemExists) {
-                        return {
-                            ...person,
-                            items: person.items.map((orderItem) =>
-                                orderItem.id === item.id
-                                    ? { ...orderItem, quantity: orderItem.quantity + 1 }
-                                    : orderItem
-                            ),
-                        };
-                    } else {
-                        return {
-                            ...person,
-                            items: [...person.items, { id: item.id, quantity: 1 }],
-                        };
-                    }
-                }
-                return person;
-            })
-        );
-
-        setSharedOrderItems(prevSharedOrderItems =>
-            prevSharedOrderItems.map(sharedItem => {
-                if (sharedItem.itemId === item.id) {
-                    return {
-                        ...sharedItem,
-                        personIds: [...sharedItem.personIds, ...selectedPeople]
-                    };
-                }
-                return sharedItem;
-            })
-        );
-
-        setSelectedPeople([]);
-        setActiveItemId(null);
-
-        const names = targetPeople.map((p) => p.name).join(", ");
-        setFeedbackMessage(`Añadido a las órdenes de: ${names}`);
-
-        setTimeout(() => {
-            setFeedbackMessage("");
-        }, 3000);
-    };
-
-
-    const menuCategories = menu.reduce((categories, item) => {
-        const category = item.recommendation || "General";
-        if (!categories[category]) {
-            categories[category] = [];
-        }
-        categories[category].push(item);
-        return categories;
-    }, {});
-
-    return (
-        <div className="container mx-auto my-8 p-6 bg-white rounded-xl shadow-md relative">
-            <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center text-indigo-700">
-                ¡Pedido Grupal Fácil y Divertido! 🎉
-            </h1>
-
-            {!showPeopleNames ? (
-                <div className="mb-8 text-center">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                        ¿Cuántos son hoy?
-                    </h2>
-                    <div className="flex flex-col items-center space-y-4">
-                        <div className="flex items-center space-x-4">
-                            <label
-                                htmlFor="numPeople"
-                                className="block text-gray-700 text-sm font-bold"
-                            >
-                                Somos:
-                            </label>
-                            <input
-                                type="number"
-                                id="numPeople"
-                                value={numPeople}
-                                onChange={handleNumPeopleChange}
-                                min="1"
-                                className="shadow appearance-none border rounded w-20 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-center"
-                            />
-                            <span className="text-gray-700 text-sm font-bold">
-                                Personas
-                            </span>
-                        </div>
-                        {Array.from({ length: numPeople }).map((_, index) => (
-                            <input
-                                key={index}
-                                type="text"
-                                placeholder={`Nombre Persona ${index + 1}`}
-                                className="shadow appearance-none border rounded w-full max-w-sm py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                value={people[index]?.name || ""}
-                                onChange={(e) => handlePersonNameChange(index, e.target.value)}
-                            />
-                        ))}
-                    </div>
-
-                    <button
-                        className="mt-6 bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl focus:outline-none focus:shadow-outline transition-colors duration-300"
-                        onClick={handleStartOrder}
-                    >
-                        ¡A Pedir! 🚀
-                    </button>
-                </div>
-            ) : !showPedidoForm ? (
-                <>
-                    <div className="border-b border-gray-200 mb-4">
-                        <nav
-                            className="-mb-px flex space-x-8 overflow-x-auto md:overflow-x-hidden"
-                            aria-label="Tabs"
-                        >
-                            <button
-                                onClick={() => setActiveTab("shared")}
-                                className={`${
-                                    activeTab === "shared"
-                                        ? "border-indigo-500 text-indigo-600"
-                                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300`}
-                            >
-                                🍕 Para Compartir
-                            </button>
-                            {people.map((person, index) => (
-                                <button
-                                    key={person.id}
-                                    onClick={() => setActiveTab(person.id)}
-                                    className={`${
-                                        activeTab === person.id
-                                            ? "border-indigo-500 text-indigo-600"
-                                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300`}
-                                >
-                                    {person.name || `Persona ${index + 1}`}
-                                </button>
-                            ))}
-                        </nav>
-                    </div>
-
-                    {activeTab === "shared" && (
-                        <div className="mb-8">
-                            <div className="sticky top-16 bg-white p-4 shadow-md z-20 rounded-md transition-transform duration-200 ease-out transform translate-y-0 hover:translate-y-[-2px] ring-2 ring-indigo-500 ring-opacity-50 hover:ring-opacity-100" ref={sharedOrderSummaryRef}>
-                                <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
-                                    Pedido para Compartir 🤝
-                                </h2>
-                                <ul className="mb-4">
-                                    {sharedOrderItems.map((sharedItem) => {
-                                        const menuItem = menu.find(
-                                            (m) => m.id === sharedItem.itemId
-                                        );
-                                        return menuItem ? (
-                                            <li
-                                                key={sharedItem.itemId}
-                                                className="flex justify-between items-center py-2 border-b border-gray-200"
-                                            >
-                                                <span className="flex-1 min-w-0"> {/* Item name takes available space */}
-                                                    {menuItem.name}
-                                                </span>
-                                                <div className="flex items-center space-x-2">
-                                                    <button
-                                                        onClick={() => handleSharedOrderItemQuantityChange(sharedItem.itemId, sharedItem.quantity - 1)}
-                                                        className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
-                                                    >
-                                                        -
-                                                    </button>
-                                                    <span className="w-6 text-center">{sharedItem.quantity}</span>
-                                                    <button
-                                                        onClick={() => handleSharedOrderItemQuantityChange(sharedItem.itemId, sharedItem.quantity + 1)}
-                                                        className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
-                                                    >
-                                                        +
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleRemoveSharedOrderItem(sharedItem.itemId)}
-                                                        className="text-red-500 hover:text-red-700 transition-colors duration-200"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-.478 0l-.345-9m7.021-2.01C18.692 6.905 17.127 5.536 15.313 5.536H8.687C6.873 5.536 5.308 6.905 5.308 8.72v.81c0 1.18.914 2.12 2.094 2.201l1.652.072m7.324 0l1.652-.072a2.094 2.094 0 002.094-2.201v-.81c0-1.814-1.365-3.183-3.187-3.183zm-2.961 8.903L15.7 11.855m-2.606 5.15l-2.796-5.15m5.136 0l-2.794 5.15z" />
-                                                        </svg>
-                                                    </button>
-                                                </div>
-                                                <span className="w-12 text-right"> {/* Price with fixed width and right alignment */}
-                                                    ${(menuItem.price * sharedItem.quantity).toFixed(2)}
-                                                </span>
-                                            </li>
-                                        ) : null;
-                                    })}
-                                    {sharedOrderItems.length > 0 && (
-                                        <li className="font-semibold text-right mt-2">
-                                            Subtotal: <span className="text-indigo-700">${calculateSharedSubtotal().toFixed(2)}</span>
-                                        </li>
-                                    )}
-                                </ul>
-                            </div>
-                            <p className="text-gray-600 mb-4 text-center mt-4">
-                                ¿Algo más para compartir? ¡Elige del menú!
-                            </p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                                {Object.entries(menuCategories).map(
-                                    ([categoryName, items]) => (
-                                        <div key={categoryName} className="transition-all duration-300 transform hover:scale-105"> {/* Card animation */}
-                                            <h3 className="font-bold text-lg text-gray-900 mb-2 text-indigo-500">
-                                                {categoryName}
-                                            </h3>
-                                            <div className="flex flex-col space-y-2">
-                                                {(items as MenuItem[]).map(
-                                                    (item) => (
-                                                        <button
-                                                            key={item.id}
-                                                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-left transition-colors duration-300"
-                                                            onClick={() =>
-                                                                handleAddToSharedOrder(
-                                                                    item
-                                                                )
-                                                            }
-                                                        >
-                                                            {item.name} - ${item.price}
-                                                        </button>
-                                                    )
-                                                )}
-                                            </div>
-                                        </div>
-                                    )
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {people.map(
-                        (person, index) =>
-                            activeTab === person.id && (
-                                <div
-                                    key={person.id}
-                                    className="mb-8"
-                                    ref={personOrderSummaryRef}
-                                >
-                                    <div className="sticky top-16 bg-white p-4 shadow-md z-20 rounded-md transition-transform duration-200 ease-out transform translate-y-0 hover:translate-y-[-2px] ring-2 ring-indigo-500 ring-opacity-50 hover:ring-opacity-100">
-                                        <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">
-                                            Pedido de {person.name || `Persona ${index + 1}`} 😋
-                                        </h2>
-                                        <ul className="mb-4">
-                                            {person.items.map((item) => {
-                                                const menuItem = menu.find((m) => m.id === item.id);
-                                                return menuItem ? (
-                                                    <li
-                                                        key={item.id}
-                                                        className="flex justify-between items-center py-2 border-b border-gray-200"
-                                                    >
-                                                        <span className="flex-1 min-w-0">
-                                                            {menuItem.name}
-                                                        </span>
-                                                        <div className="flex items-center space-x-2">
-                                                            <button
-                                                                onClick={() => handlePersonOrderItemQuantityChange(person.id, item.id, item.quantity - 1)}
-                                                                className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
-                                                            >
-                                                                -
-                                                            </button>
-                                                            <span className="w-6 text-center">{item.quantity}</span>
-                                                            <button
-                                                                onClick={() => handlePersonOrderItemQuantityChange(person.id, item.id, item.quantity + 1)}
-                                                                className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
-                                                            >
-                                                                +
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleRemoveItemFromPerson(person.id, item.id)}
-                                                                className="text-red-500 hover:text-red-700 transition-colors duration-200"
-                                                            >
-                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
-                                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-.478 0l-.345-9m7.021-2.01C18.692 6.905 17.127 5.536 15.313 5.536H8.687C6.873 5.536 5.308 6.905 5.308 8.72v.81c0 1.18.914 2.12 2.094 2.201l1.652.072m7.324 0l1.652-.072a2.094 2.094 0 002.094-2.201v-.81c0-1.814-1.365-3.183-3.187-3.183zm-2.961 8.903L15.7 11.855m-2.606 5.15l-2.796-5.15m5.136 0l-2.794 5.15z" />
-                                                                </svg>
-                                                            </button>
-                                                        </div>
-                                                        <span className="w-12 text-right">
-                                                            ${(menuItem.price * item.quantity).toFixed(2)}
-                                                        </span>
-                                                    </li>
-                                                ) : null;
-                                            })}
-                                            {person.items.length > 0 && (
-                                                <li className="font-semibold text-right mt-2">
-                                                    Subtotal: <span className="text-indigo-700">${calculateSubtotal(person.items).toFixed(2)}</span>
-                                                </li>
-                                            )}
-                                        </ul>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {Object.entries(menuCategories).map(
-                                            ([categoryName, items]) => (
-                                                <div key={categoryName} className="transition-all duration-300 transform hover:scale-105"> {/* Card animation */}
-                                                    <h3 className="font-bold text-lg text-gray-900 mb-2 text-indigo-500">
-                                                        {categoryName}
-                                                    </h3>
-                                                    <div className="flex flex-col space-y-2">
-                                                        {(items as MenuItem[]).map(
-                                                            (item) => (
-                                                                <button
-                                                                    key={item.id}
-                                                                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-left transition-colors duration-300"
-                                                                    onClick={() =>
-                                                                        handleAddItemToPerson(
-                                                                            person.id,
-                                                                            item
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    {item.name} - ${item.price}
-                                                                </button>
-                                                            )
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )
-                                        )}
-                                    </div>
-                                </div>
-                            )
-                    )}
-
-                    <div className="flex justify-center mt-8">
-                        <button
-                            className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl focus:outline-none focus:shadow-outline disabled:opacity-50 transition-colors duration-300 animate-pulse hover:animate-none"  // Button pulse animation
-                            onClick={handleReviewOrder}
-                            disabled={
-                                people.some((person) => person.items.length === 0) &&
-                                sharedOrderItems.length === 0
-                            }
-                        >
-                            ¡Revisar Pedido Grupal! ✅
-                        </button>
-                    </div>
-                </>
-            ) : (
-                <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-md animate-fade-in"> {/* Fade in animation for review */}
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center text-indigo-700">
-                        ¡Revisa tu Pedido Grupal! 🧐
-                    </h2>
-                    {sharedOrderItems.length > 0 && (
-                        <div className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-50">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-3 text-indigo-600">
-                                Pedido Compartido 🤝
-                            </h3>
-                            <ul>
-                                {sharedOrderItems.map((sharedItem) => {
-                                    const menuItem = menu.find(
-                                        (m) => m.id === sharedItem.itemId
-                                    );
-                                    return menuItem ? (
-                                        <li key={sharedItem.itemId} className="py-1 flex justify-between"> {/* Flex for alignment */}
-                                            <span className="flex-1">{menuItem.name} x {sharedItem.quantity}</span> {/* Item name takes space */}
-                                            <span className="w-12 text-right">${(menuItem.price * sharedItem.quantity).toFixed(2)}</span> {/* Price right aligned */}
-                                        </li>
-                                    ) : null;
-                                })}
-                            </ul>
-                            <div className="font-semibold text-right">
-                                Subtotal: <span className="text-indigo-700">${calculateSharedSubtotal().toFixed(2)}</span>
-                            </div>
-                        </div>
-                    )}
-                    {people.map((person) => (
-                        <div
-                            key={person.id}
-                            className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-50"
-                        >
-                            <h3 className="text-lg font-semibold text-gray-900 mb-3 text-indigo-600">
-                                {person.name || "Persona"}
-                            </h3>
-                            <ul>
-                                {person.items.map((item) => {
-                                    const menuItem = menu.find(
-                                        (m) => m.id === item.id
-                                    );
-                                    return menuItem ? (
-                                        <li key={item.id} className="py-1 flex justify-between"> {/* Flex for alignment */}
-                                            <span className="flex-1">{menuItem.name} x {item.quantity}</span> {/* Item name takes space */}
-                                            <span className="w-12 text-right">${(menuItem.price * item.quantity).toFixed(2)}</span> {/* Price right aligned */}
-                                        </li>
-                                    ) : null;
-                                })}
-                            </ul>
-                            <div className="font-semibold text-right">
-                                Subtotal: <span className="text-indigo-700">${calculateSubtotal(person.items).toFixed(2)}</span>
-                            </div>
-                        </div>
-                    ))}
-                    <PedidoForm
-                        onClose={() => setShowPedidoForm(false)}
-                        people={people}
-                        sharedOrderItems={sharedOrderItems}
-                    />
-                </div>
-            )}
-
-            {feedbackMessage && (
-                <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg animate-fade-in">
-                    {feedbackMessage}
-                </div>
-            )}
-        </div>
+  const handleAddToSharedOrder = (item: MenuItemType) => {
+    if (item.availabilityStatus !== "disponible") {
+      return;
+    }
+    const existingItemIndex = sharedOrderItems.findIndex(
+      (sharedItem) => sharedItem.itemId === item.id
     );
+    if (existingItemIndex > -1) {
+      const updatedSharedOrderItems = [...sharedOrderItems];
+      updatedSharedOrderItems[existingItemIndex].quantity += 1;
+      setSharedOrderItems(updatedSharedOrderItems);
+    } else {
+      setSharedOrderItems([
+        ...sharedOrderItems,
+        { itemId: item.id, quantity: 1, personIds: [] },
+      ]);
+    }
+  };
+
+  const handleSharedOrderItemQuantityChange = (
+    itemId: string,
+    quantity: number
+  ) => {
+    if (quantity < 0) return;
+    const updatedSharedOrderItems = sharedOrderItems.map((sharedItem) =>
+      sharedItem.itemId === itemId ? { ...sharedItem, quantity } : sharedItem
+    );
+    setSharedOrderItems(updatedSharedOrderItems);
+  };
+
+  const handleRemoveSharedOrderItem = (itemId: string) => {
+    const updatedSharedOrderItems = sharedOrderItems.filter(
+      (item) => item.itemId !== itemId
+    );
+    setSharedOrderItems(updatedSharedOrderItems);
+  };
+
+  const distributeSharedOrderItems = () => {
+    const itemsToDistribute = [...sharedOrderItems];
+    if (!people || people.length === 0) {
+      console.error(
+        "Error: People array is empty when distributing shared items."
+      );
+      return;
+    }
+
+    const updatedPeople = people.map((person) => ({
+      ...person,
+      items: [...person.items],
+    }));
+
+    itemsToDistribute.forEach((sharedItem) => {
+      const menuItem = menu.find((m) => m.id === sharedItem.itemId);
+      if (menuItem) {
+        for (let i = 0; i < sharedItem.quantity; i++) {
+          if (updatedPeople.length === 0) {
+            console.error(
+              "Error: updatedPeople array is empty during item distribution."
+            );
+            return;
+          }
+          const personToAssign = updatedPeople.reduce(
+            (bestPerson, currentPerson) => {
+              if (
+                !bestPerson ||
+                !bestPerson.items ||
+                !currentPerson ||
+                !currentPerson.items
+              ) {
+                console.error(
+                  "Error: Undefined person object encountered in reduce function.",
+                  { bestPerson, currentPerson }
+                );
+                return bestPerson;
+              }
+
+              const bestPersonItemsCount = bestPerson.items.reduce(
+                (sum, item) => sum + item.quantity,
+                0
+              );
+              const currentPersonItemsCount = currentPerson.items.reduce(
+                (sum, item) => sum + item.quantity,
+                0
+              );
+              return currentPersonItemsCount < bestPersonItemsCount
+                ? currentPerson
+                : bestPerson;
+            },
+            updatedPeople[0]
+          );
+          if (personToAssign && personToAssign.items) {
+            personToAssign.items.push({ id: sharedItem.itemId, quantity: 1 });
+          }
+        }
+      }
+    });
+    setPeople(updatedPeople);
+    setSharedOrderItems([]);
+  };
+
+  const handleAddItemToPerson = (personId: string, item: MenuItemType) => {
+    if (item.availabilityStatus !== "disponible") {
+      return;
+    }
+    setPeople((prevPeople) => {
+      return prevPeople.map((person) => {
+        if (person.id === personId) {
+          const itemExists = person.items.some(
+            (orderItem) => orderItem.id === item.id
+          );
+          if (itemExists) {
+            return {
+              ...person,
+              items: person.items.map((orderItem) =>
+                orderItem.id === item.id
+                  ? { ...orderItem, quantity: orderItem.quantity + 1 }
+                  : orderItem
+              ),
+            };
+          } else {
+            return {
+              ...person,
+              items: [...person.items, { id: item.id, quantity: 1 }],
+            };
+          }
+        }
+        return person;
+      });
+    });
+  };
+
+  const handlePersonOrderItemQuantityChange = (
+    personId: string,
+    itemId: string,
+    quantity: number
+  ) => {
+    if (quantity < 0) return;
+    setPeople((prevPeople) =>
+      prevPeople.map((person) => {
+        if (person.id === personId) {
+          return {
+            ...person,
+            items: person.items.map((it) =>
+              it.id === itemId ? { ...it, quantity } : it
+            ),
+          };
+        }
+        return person;
+      })
+    );
+  };
+
+  const handleRemoveItemFromPerson = (personId: string, itemId: string) => {
+    setPeople((prevPeople) =>
+      prevPeople.map((person) =>
+        person.id === personId
+          ? {
+              ...person,
+              items: person.items.filter((item) => item.id !== itemId),
+            }
+          : person
+      )
+    );
+  };
+
+  return (
+    <div className="container mx-auto my-8 p-6 bg-white rounded-xl shadow-md relative">
+      <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center text-indigo-700">
+        ¡Pedido Grupal Fácil y Divertido! 🎉
+      </h1>
+
+      {!showPeopleNames ? (
+        <PeopleSelection
+          numPeople={numPeople}
+          people={people}
+          onNumPeopleChange={handleNumPeopleChange}
+          onPersonNameChange={handlePersonNameChange}
+          onStartOrder={handleStartOrder}
+        />
+      ) : !showPedidoForm ? (
+        <>
+          <div className="border-b border-gray-200 mb-4">
+            <nav
+              className="-mb-px flex space-x-8 overflow-x-auto md:overflow-x-hidden"
+              aria-label="Tabs"
+            >
+              <button
+                onClick={() => setActiveTab("shared")}
+                className={`${
+                  activeTab === "shared"
+                    ? "border-indigo-500 text-indigo-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300`}
+              >
+                🍕 Para Compartir
+              </button>
+              {people.map((person) => (
+                <button
+                  key={person.id}
+                  onClick={() => setActiveTab(person.id)}
+                  className={`${
+                    activeTab === person.id
+                      ? "border-indigo-500 text-indigo-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300`}
+                >
+                  {person.name}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {activeTab === "shared" && (
+            <SharedOrder
+              menuCategories={menuCategories}
+              sharedOrderItems={sharedOrderItems}
+              onAddToSharedOrder={handleAddToSharedOrder}
+              onSharedOrderItemQuantityChange={
+                handleSharedOrderItemQuantityChange
+              }
+              onRemoveSharedOrderItem={handleRemoveSharedOrderItem}
+              calculateSharedSubtotal={calculateSharedSubtotal}
+              sharedOrderSummaryRef={sharedOrderSummaryRef}
+              activeTab={activeTab}
+              menu={menu}
+            />
+          )}
+
+          {people.map(
+            (person, index) =>
+              activeTab === person.id && (
+                <PersonOrder
+                  key={person.id}
+                  person={person}
+                  index={index}
+                  menuCategories={menuCategories}
+                  menu={menu}
+                  onAddItemToPerson={handleAddItemToPerson}
+                  onPersonOrderItemQuantityChange={
+                    handlePersonOrderItemQuantityChange
+                  }
+                  onRemoveItemFromPerson={handleRemoveItemFromPerson}
+                  calculateSubtotal={calculateSubtotal}
+                  personOrderSummaryRef={personOrderSummaryRef}
+                  activeTab={activeTab}
+                />
+              )
+          )}
+
+          <div className="flex justify-center mt-8">
+            <button
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl focus:outline-none focus:shadow-outline disabled:opacity-50 transition-colors duration-300 animate-pulse hover:animate-none"
+              onClick={handleReviewOrder}
+              disabled={
+                people.some((person) => person.items.length === 0) &&
+                sharedOrderItems.length === 0
+              }
+            >
+              ¡Revisar Pedido Grupal! ✅
+            </button>
+          </div>
+        </>
+      ) : (
+        <OrderReview
+          people={people}
+          sharedOrderItems={sharedOrderItems}
+          menu={menu}
+          onClosePedidoForm={() => setShowPedidoForm(false)}
+          calculateSharedSubtotal={calculateSharedSubtotal}
+          calculateSubtotal={calculateSubtotal}
+        />
+      )}
+
+      {feedbackMessage && (
+        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg animate-fade-in">
+          {feedbackMessage}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default GroupOrderPage;
+
 /* Fin src\components\menu\GroupOrderPage.tsx */
 
 /* Inicio src\components\menu\MenuForm.tsx */
-/* src\components\menu\MenuForm.tsx */
 import React, { useState } from "react";
-import { MenuItem } from "../../context/AppContext";
+import { MenuItem as MenuItemType } from "../../context/AppContext";
 import { useMenu } from "../../hooks/useMenu";
 
 interface MenuFormProps {
-  initialValues?: Partial<MenuItem>;
-  onSubmit: (values: Partial<MenuItem>) => void;
+  initialValues?: Partial<MenuItemType>;
+  onSubmit: (values: Partial<MenuItemType>) => void;
   onClose: () => void; // Add onClose prop
 }
 
@@ -1965,6 +1755,10 @@ const MenuForm: React.FC<MenuFormProps> = ({
   const [available, setAvailable] = useState(
     initialValues?.available !== undefined ? initialValues.available : true
   );
+  // Nueva estado para el estado de disponibilidad
+  const [availabilityStatus, setAvailabilityStatus] = useState<
+    "disponible" | "noDisponibleMomento" | "noDisponibleLargoPlazo"
+  >(initialValues?.availabilityStatus || "disponible");
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -1976,6 +1770,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
       available,
       recommendation,
       observations,
+      availabilityStatus, // Incluir el nuevo estado en los valores enviados
     });
     onClose(); // Close modal on submit
   };
@@ -2084,6 +1879,34 @@ const MenuForm: React.FC<MenuFormProps> = ({
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
+        {/* Nuevo campo para el estado de disponibilidad */}
+        <div>
+          <label
+            htmlFor="availabilityStatus"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Estado de Disponibilidad
+          </label>
+          <select
+            id="availabilityStatus"
+            value={availabilityStatus}
+            onChange={(e) =>
+              setAvailabilityStatus(
+                e.target.value as
+                  | "disponible"
+                  | "noDisponibleMomento"
+                  | "noDisponibleLargoPlazo"
+              )
+            }
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          >
+            <option value="disponible">Disponible</option>
+            <option value="noDisponibleMomento">
+              No disponible en el momento
+            </option>
+            <option value="noDisponibleLargoPlazo">Ya no disponible</option>
+          </select>
+        </div>
       </div>
       <div className="flex items-center justify-between mt-4">
         {" "}
@@ -2097,7 +1920,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
             onChange={(e) => setAvailable(e.target.checked)}
           />
           <label htmlFor="available" className="ml-2 text-sm text-gray-700">
-            Disponible
+            Disponible (Visible en Menu)
           </label>
         </div>
         <div className="space-x-2">
@@ -2125,7 +1948,7 @@ export default MenuForm;
 /* Fin src\components\menu\MenuForm.tsx */
 
 /* Inicio src\components\menu\MenuItem.tsx */
-/* src\components\menu\MenuItem.tsx */
+/* Inicio src\components\menu\MenuItem.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../context/AppContext";
 
@@ -2136,6 +1959,20 @@ interface MenuItemProps {
 }
 
 const MenuItem: React.FC<MenuItemProps> = ({ item, onEdit, onDelete }) => {
+  // Función para determinar el color del badge según el estado de disponibilidad
+  const getStatusBadgeClass = () => {
+    switch (item.availabilityStatus) {
+      case "noDisponibleMomento":
+        return "bg-yellow-500 text-yellow-900"; // Amarillo para "No disponible por el momento"
+      case "noDisponibleLargoPlazo":
+        return "bg-red-500 text-red-900"; // Rojo para "No disponible a largo plazo"
+      default:
+        return "bg-green-500 text-green-900"; // Verde para "Disponible"
+    }
+  };
+
+  const statusBadgeClass = `inline-block ${getStatusBadgeClass()} rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2`;
+
   return (
     <div className="max-w-sm rounded overflow-hidden shadow-lg">
       {" "}
@@ -2145,7 +1982,16 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onEdit, onDelete }) => {
       <div className="px-6 py-4">
         {" "}
         {/* Contenido principal card */}
-        <div className="font-bold text-xl mb-2">{item.name}</div>{" "}
+        <div className="font-bold text-xl mb-2 flex justify-between items-center">
+          {item.name}
+          <span className={statusBadgeClass}>
+            {item.availabilityStatus === "disponible"
+              ? "Disponible"
+              : item.availabilityStatus === "noDisponibleMomento"
+              ? "No Disponible Ahora"
+              : "No Disponible"}
+          </span>
+        </div>{" "}
         {/* Nombre del item */}
         <p className="text-gray-700 text-base">{item.description}</p>{" "}
         {/* Descripción */}
@@ -2189,7 +2035,6 @@ export default MenuItem;
 /* Fin src\components\menu\MenuItem.tsx */
 
 /* Inicio src\components\menu\MenuList.tsx */
-/* src\components\menu\MenuList.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../context/AppContext";
 import MenuItemComponent from "./MenuItem";
@@ -2202,19 +2047,27 @@ interface MenuListProps {
 
 const MenuList: React.FC<MenuListProps> = ({ menu, onEdit, onDelete }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"> {/* Grid responsive para la lista */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {" "}
+      {/* Grid responsive para la lista */}
       {menu.map((item) => (
-        <MenuItemComponent key={item.id} item={item} onEdit={onEdit} onDelete={onDelete} />
+        <MenuItemComponent
+          key={item.id}
+          item={item}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       ))}
     </div>
   );
 };
 
 export default MenuList;
+
 /* Fin src\components\menu\MenuList.tsx */
 
 /* Inicio src\components\menu\MenuModal.tsx */
-/* src\components\menu\MenuModal.tsx */
+
 import React from "react";
 import { MenuItem } from "../../context/AppContext";
 import MenuFormComponent from "./MenuForm";
@@ -2282,6 +2135,508 @@ const MenuModal: React.FC<MenuModalProps> = ({
 export default MenuModal;
 
 /* Fin src\components\menu\MenuModal.tsx */
+
+/* Inicio src\components\menu\partials\OrderReview.tsx */
+/* src\components\menu\partials\OrderReview.tsx */
+import React from "react";
+import { MenuItem as MenuItemType } from "../../../context/AppContext";
+import PedidoForm from "../../forms/PedidoForm";
+
+interface OrderReviewProps {
+  people: {
+    id: string;
+    name: string;
+    items: { id: string; quantity: number }[];
+  }[];
+  sharedOrderItems: { itemId: string; quantity: number; personIds: string[] }[];
+  menu: MenuItemType[];
+  onClosePedidoForm: () => void;
+  calculateSharedSubtotal: () => number;
+  calculateSubtotal: (
+    personItems: { id: string; quantity: number }[]
+  ) => number;
+}
+
+const OrderReview: React.FC<OrderReviewProps> = ({
+  people,
+  sharedOrderItems,
+  menu,
+  onClosePedidoForm,
+  calculateSharedSubtotal,
+  calculateSubtotal,
+}) => {
+  return (
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-md animate-fade-in">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center text-indigo-700">
+        ¡Revisa tu Pedido Grupal! 🧐
+      </h2>
+      {sharedOrderItems.length > 0 && (
+        <div className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-50">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3 text-indigo-600">
+            Pedido Compartido 🤝
+          </h3>
+          <ul>
+            {sharedOrderItems.map((sharedItem) => {
+              const menuItem = menu.find((m) => m.id === sharedItem.itemId);
+              return menuItem ? (
+                <li
+                  key={sharedItem.itemId}
+                  className="py-1 flex justify-between"
+                >
+                  <span className="flex-1">
+                    {menuItem.name} x {sharedItem.quantity}
+                  </span>
+                  <span className="w-12 text-right">
+                    ${(menuItem.price * sharedItem.quantity).toFixed(2)}
+                  </span>
+                </li>
+              ) : null;
+            })}
+          </ul>
+          <div className="font-semibold text-right">
+            Subtotal:{" "}
+            <span className="text-indigo-700">
+              ${calculateSharedSubtotal().toFixed(2)}
+            </span>
+          </div>
+        </div>
+      )}
+      {people.map((person) => (
+        <div
+          key={person.id}
+          className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-50"
+        >
+          <h3 className="text-lg font-semibold text-gray-900 mb-3 text-indigo-600">
+            {person.name}
+          </h3>
+          <ul>
+            {person.items.map((it) => {
+              const menuItem = menu.find((m) => m.id === it.id);
+              return menuItem ? (
+                <li key={it.id} className="py-1 flex justify-between">
+                  <span className="flex-1">
+                    {menuItem.name} x {it.quantity}
+                  </span>
+                  <span className="w-12 text-right">
+                    ${(menuItem.price * it.quantity).toFixed(2)}
+                  </span>
+                </li>
+              ) : null;
+            })}
+          </ul>
+          <div className="font-semibold text-right">
+            Subtotal:{" "}
+            <span className="text-indigo-700">
+              ${calculateSubtotal(person.items).toFixed(2)}
+            </span>
+          </div>
+        </div>
+      ))}
+      <PedidoForm
+        onClose={onClosePedidoForm}
+        people={people}
+        sharedOrderItems={sharedOrderItems}
+      />
+    </div>
+  );
+};
+
+export default OrderReview;
+
+/* Fin src\components\menu\partials\OrderReview.tsx */
+
+/* Inicio src\components\menu\partials\PeopleSelection.tsx */
+/* src\components\menu\partials\PeopleSelection.tsx */
+import React from 'react';
+
+interface PeopleSelectionProps {
+  numPeople: number;
+  people: { id: string; name: string }[];
+  onNumPeopleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onPersonNameChange: (index: number, name: string) => void;
+  onStartOrder: () => void;
+}
+
+const PeopleSelection: React.FC<PeopleSelectionProps> = ({
+  numPeople,
+  people,
+  onNumPeopleChange,
+  onPersonNameChange,
+  onStartOrder,
+}) => {
+  return (
+    <div className="mb-8 text-center">
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">
+        ¿Cuántos son hoy?
+      </h2>
+      <div className="flex flex-col items-center space-y-4">
+        <div className="flex items-center space-x-4">
+          <label
+            htmlFor="numPeople"
+            className="block text-gray-700 text-sm font-bold"
+          >
+            Somos:
+          </label>
+          <input
+            type="number"
+            id="numPeople"
+            value={numPeople}
+            onChange={onNumPeopleChange}
+            min="1"
+            className="shadow appearance-none border rounded w-20 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-center"
+          />
+          <span className="text-gray-700 text-sm font-bold">Personas</span>
+        </div>
+        {Array.from({ length: numPeople }).map((_, index) => (
+          <input
+            key={index}
+            type="text"
+            placeholder={`Nombre Persona ${index + 1}`}
+            className="shadow appearance-none border rounded w-full max-w-sm py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            value={people[index]?.name || ""}
+            onChange={(e) => onPersonNameChange(index, e.target.value)}
+          />
+        ))}
+      </div>
+
+      <button
+        className="mt-6 bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl focus:outline-none focus:shadow-outline transition-colors duration-300"
+        onClick={onStartOrder}
+      >
+        ¡A Pedir! 🚀
+      </button>
+    </div>
+  );
+};
+
+export default PeopleSelection;
+/* Fin src\components\menu\partials\PeopleSelection.tsx */
+
+/* Inicio src\components\menu\partials\PersonOrder.tsx */
+/* src\components\menu\partials\PersonOrder.tsx */
+import React from "react";
+import { MenuItem as MenuItemType } from "../../../context/AppContext";
+
+interface PersonOrderProps {
+  person: {
+    id: string;
+    name: string;
+    items: { id: string; quantity: number }[];
+  };
+  index: number;
+  menuCategories: { [category: string]: MenuItemType[] };
+  menu: MenuItemType[];
+  onAddItemToPerson: (personId: string, item: MenuItemType) => void;
+  onPersonOrderItemQuantityChange: (
+    personId: string,
+    itemId: string,
+    quantity: number
+  ) => void;
+  onRemoveItemFromPerson: (personId: string, itemId: string) => void;
+  calculateSubtotal: (
+    personItems: { id: string; quantity: number }[]
+  ) => number;
+  personOrderSummaryRef: React.RefObject<HTMLDivElement>;
+  activeTab: string;
+}
+
+const PersonOrder: React.FC<PersonOrderProps> = ({
+  person,
+  index,
+  menuCategories,
+  menu,
+  onAddItemToPerson,
+  onPersonOrderItemQuantityChange,
+  onRemoveItemFromPerson,
+  calculateSubtotal,
+  personOrderSummaryRef,
+}) => {
+  return (
+    <div key={person.id} className="mb-8" ref={personOrderSummaryRef}>
+      <div className="sticky top-16 bg-white p-4 shadow-md z-20 rounded-md transition-transform duration-200 ease-out transform translate-y-0 hover:translate-y-[-2px] ring-2 ring-indigo-500 ring-opacity-50 hover:ring-opacity-100">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">
+          Pedido de {person.name || `Persona ${index + 1}`} 😋
+        </h2>
+        <ul className="mb-4">
+          {person.items.map((it) => {
+            const menuItem = menu.find((m) => m.id === it.id);
+            return menuItem ? (
+              <li
+                key={it.id}
+                className="flex justify-between items-center py-2 border-b border-gray-200"
+              >
+                <span className="flex-1 min-w-0">{menuItem.name}</span>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() =>
+                      onPersonOrderItemQuantityChange(
+                        person.id,
+                        it.id,
+                        it.quantity - 1
+                      )
+                    }
+                    className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                  >
+                    -
+                  </button>
+                  <span className="w-6 text-center">{it.quantity}</span>
+                  <button
+                    onClick={() =>
+                      onPersonOrderItemQuantityChange(
+                        person.id,
+                        it.id,
+                        it.quantity + 1
+                      )
+                    }
+                    className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                  >
+                    +
+                  </button>
+                  <button
+                    onClick={() => onRemoveItemFromPerson(person.id, it.id)}
+                    className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.5"
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M14.74 9l-.346 9m-.478 0l-.345-9m7.021-2.01C18.692 6.905 17.127 5.536 15.313 5.536H8.687C6.873 5.536 5.308 6.905 5.308 8.72v.81c0 1.18.914 2.12 2.094 2.201l1.652.072m7.324 0l1.652-.072a2.094 2.094 0 002.094-2.201v-.81c0-1.814-1.365-3.183-3.187-3.183zm-2.961 8.903L15.7 11.855m-2.606 5.15l-2.796-5.15m5.136 0l-2.794 5.15z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <span className="w-12 text-right">
+                  ${(menuItem.price * it.quantity).toFixed(2)}
+                </span>
+              </li>
+            ) : null;
+          })}
+          {person.items.length > 0 && (
+            <li className="font-semibold text-right mt-2">
+              Subtotal:{" "}
+              <span className="text-indigo-700">
+                ${calculateSubtotal(person.items).toFixed(2)}
+              </span>
+            </li>
+          )}
+        </ul>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Object.entries(menuCategories).map(([categoryName, items]) => (
+          <div
+            key={categoryName}
+            className="transition-all duration-300 transform hover:scale-105"
+          >
+            <h3 className="font-bold text-lg text-gray-900 mb-2 text-indigo-500">
+              {categoryName}
+            </h3>
+            <div className="flex flex-col space-y-2">
+              {items.map((item) => (
+                <button
+                  key={item.id}
+                  disabled={item.availabilityStatus !== "disponible"}
+                  className={`bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-left transition-colors duration-300 ${
+                    item.availabilityStatus !== "disponible"
+                      ? "opacity-50 cursor-not-allowed line-through pointer-events-none"
+                      : ""
+                  }`}
+                  onClick={
+                    item.availabilityStatus === "disponible"
+                      ? () => onAddItemToPerson(person.id, item)
+                      : undefined
+                  }
+                >
+                  {item.name} - ${item.price}
+                  {item.availabilityStatus === "noDisponibleMomento" && (
+                    <span className="ml-2 text-yellow-500 font-normal italic">
+                      (No disponible ahora)
+                    </span>
+                  )}
+                  {item.availabilityStatus === "noDisponibleLargoPlazo" && (
+                    <span className="ml-2 text-red-500 font-normal italic">
+                      (Ya no disponible)
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default PersonOrder;
+
+/* Fin src\components\menu\partials\PersonOrder.tsx */
+
+/* Inicio src\components\menu\partials\SharedOrder.tsx */
+/* src\components\menu\partials\SharedOrder.tsx */
+import React from "react";
+import { MenuItem as MenuItemType } from "../../../context/AppContext";
+
+interface SharedOrderProps {
+  menuCategories: { [category: string]: MenuItemType[] };
+  sharedOrderItems: { itemId: string; quantity: number; personIds: string[] }[];
+  onAddToSharedOrder: (item: MenuItemType) => void;
+  onSharedOrderItemQuantityChange: (itemId: string, quantity: number) => void;
+  onRemoveSharedOrderItem: (itemId: string) => void;
+  calculateSharedSubtotal: () => number;
+  sharedOrderSummaryRef: React.RefObject<HTMLDivElement>;
+  activeTab: string;
+  menu: MenuItemType[];
+}
+
+const SharedOrder: React.FC<SharedOrderProps> = ({
+  menuCategories,
+  sharedOrderItems,
+  onAddToSharedOrder,
+  onSharedOrderItemQuantityChange,
+  onRemoveSharedOrderItem,
+  calculateSharedSubtotal,
+  sharedOrderSummaryRef,
+
+  menu,
+}) => {
+  return (
+    <div className="mb-8">
+      <div
+        className="sticky top-16 bg-white p-4 shadow-md z-20 rounded-md transition-transform duration-200 ease-out transform translate-y-0 hover:translate-y-[-2px] ring-2 ring-indigo-500 ring-opacity-50 hover:ring-opacity-100"
+        ref={sharedOrderSummaryRef}
+      >
+        <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+          Pedido para Compartir 🤝
+        </h2>
+        <ul className="mb-4">
+          {sharedOrderItems.map((sharedItem) => {
+            const menuItem = menu.find((m) => m.id === sharedItem.itemId);
+            return menuItem ? (
+              <li
+                key={sharedItem.itemId}
+                className="flex justify-between items-center py-2 border-b border-gray-200"
+              >
+                <span className="flex-1 min-w-0">{menuItem.name}</span>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() =>
+                      onSharedOrderItemQuantityChange(
+                        sharedItem.itemId,
+                        sharedItem.quantity - 1
+                      )
+                    }
+                    className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                  >
+                    -
+                  </button>
+                  <span className="w-6 text-center">{sharedItem.quantity}</span>
+                  <button
+                    onClick={() =>
+                      onSharedOrderItemQuantityChange(
+                        sharedItem.itemId,
+                        sharedItem.quantity + 1
+                      )
+                    }
+                    className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                  >
+                    +
+                  </button>
+                  <button
+                    onClick={() => onRemoveSharedOrderItem(sharedItem.itemId)}
+                    className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="1.5"
+                      stroke="currentColor"
+                      className="w-5 h-5"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M14.74 9l-.346 9m-.478 0l-.345-9m7.021-2.01C18.692 6.905 17.127 5.536 15.313 5.536H8.687C6.873 5.536 5.308 6.905 5.308 8.72v.81c0 1.18.914 2.12 2.094 2.201l1.652.072m7.324 0l1.652-.072a2.094 2.094 0 002.094-2.201v-.81c0-1.814-1.365-3.183-3.187-3.183zm-2.961 8.903L15.7 11.855m-2.606 5.15l-2.796-5.15m5.136 0l-2.794 5.15z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+                <span className="w-12 text-right">
+                  ${(menuItem.price * sharedItem.quantity).toFixed(2)}
+                </span>
+              </li>
+            ) : null;
+          })}
+          {sharedOrderItems.length > 0 && (
+            <li className="font-semibold text-right mt-2">
+              Subtotal:{" "}
+              <span className="text-indigo-700">
+                ${calculateSharedSubtotal().toFixed(2)}
+              </span>
+            </li>
+          )}
+        </ul>
+      </div>
+      <p className="text-gray-600 mb-4 text-center mt-4">
+        ¿Algo más para compartir? ¡Elige del menú!
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+        {Object.entries(menuCategories).map(([categoryName, items]) => (
+          <div
+            key={categoryName}
+            className="transition-all duration-300 transform hover:scale-105"
+          >
+            <h3 className="font-bold text-lg text-gray-900 mb-2 text-indigo-500">
+              {categoryName}
+            </h3>
+            <div className="flex flex-col space-y-2">
+              {items.map((item) => (
+                <button
+                  key={item.id}
+                  disabled={item.availabilityStatus !== "disponible"}
+                  className={`bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-left transition-colors duration-300 ${
+                    item.availabilityStatus !== "disponible"
+                      ? "opacity-50 cursor-not-allowed line-through pointer-events-none"
+                      : ""
+                  }`}
+                  onClick={
+                    item.availabilityStatus === "disponible"
+                      ? () => onAddToSharedOrder(item)
+                      : undefined
+                  }
+                >
+                  {item.name} - ${item.price}
+                  {item.availabilityStatus === "noDisponibleMomento" && (
+                    <span className="ml-2 text-yellow-500 font-normal italic">
+                      (No disponible ahora)
+                    </span>
+                  )}
+                  {item.availabilityStatus === "noDisponibleLargoPlazo" && (
+                    <span className="ml-2 text-red-500 font-normal italic">
+                      (Ya no disponible)
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default SharedOrder;
+
+/* Fin src\components\menu\partials\SharedOrder.tsx */
 
 /* Inicio src\components\menu\PersonMenuModal.tsx */
 // src/components/forms/PedidoForm.tsx
@@ -3214,6 +3569,26 @@ const Button: React.FC<ButtonProps> = ({
 export default Button;
 /* Fin src\components\ui\Button.tsx */
 
+/* Inicio src\components\ui\Container.tsx */
+// src/components/ui/Container.tsx
+import React, { ReactNode } from 'react';
+
+interface ContainerProps {
+  children: ReactNode;
+  className?: string; // Para clases adicionales de Tailwind si las necesitas
+}
+
+const Container: React.FC<ContainerProps> = ({ children, className }) => {
+  return (
+    <div className={`container mx-auto px-4 ${className || ''}`}> {/* Clases container, margen horizontal automático y padding x por defecto, y clases adicionales */}
+      {children}
+    </div>
+  );
+};
+
+export default Container;
+/* Fin src\components\ui\Container.tsx */
+
 /* Inicio src\components\ui\ErrorBoundry.tsx */
 // src/components/ui/ErrorBoundry.tsx
 import { Alert } from "@mui/material";
@@ -3368,14 +3743,10 @@ export default TextField;
 /* Fin src\components\ui\TextField.tsx */
 
 /* Inicio src\context\AppContext.tsx */
+/* Inicio src\context\AppContext.tsx */
 import { CircularProgress } from "@mui/material";
 import { collection, onSnapshot } from "firebase/firestore";
-import React, {
-  createContext,
-  ReactNode,
-  useEffect,
-  useState,
-} from "react";
+import React, { createContext, ReactNode, useEffect, useState } from "react";
 import ErrorBoundary from "../components/ui/ErrorBoundry";
 import { COLLECTIONS } from "../utils/constants";
 import { db } from "../utils/firebase";
@@ -3389,6 +3760,10 @@ export interface MenuItem {
   available: boolean;
   recommendation: string;
   observations: string;
+  availabilityStatus:
+    | "disponible"
+    | "noDisponibleMomento"
+    | "noDisponibleLargoPlazo"; // Estado de disponibilidad del menú: "disponible", "noDisponibleMomento", "noDisponibleLargoPlazo"
 }
 
 export interface AppContextProps {
@@ -3433,6 +3808,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   );
 };
 
+/* Fin src\context\AppContext.tsx */
 /* Fin src\context\AppContext.tsx */
 
 /* Inicio src\context\AuthContext.tsx */
@@ -3642,6 +4018,7 @@ createRoot(document.getElementById('root')!).render(
 /* Fin src\main.tsx */
 
 /* Inicio src\pages\Dashboard.tsx */
+/* src/pages/Dashboard.tsx */
 /* src/pages/Dashboard.tsx */
 import {
   BarElement,
@@ -4286,17 +4663,17 @@ const Dashboard: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {taskCompletionData.map((taskData) => (
-                  <tr key={taskData.taskName}>
+                {tasks.map((task) => (
+                  <tr key={task.taskId}>
                     <td className="border border-gray-200 px-4 py-2">
-                      {taskData.taskName}
+                      {task.taskName}
                     </td>
-                    {taskData.completionStatus.map((status, index) => (
+                    {last7DaysFormatted.map((date, index) => (
                       <td
-                        key={`${taskData.taskName}-${last7DaysFormatted[index]}`}
+                        key={`${task.taskId}-${date}`}
                         className="border border-gray-200 px-4 py-2 text-center"
                       >
-                        {status}
+                        {task.dailyCompletions[date] ? "✅" : "❌"}
                       </td>
                     ))}
                   </tr>
@@ -4313,22 +4690,20 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-
 /* Fin src\pages\Dashboard.tsx */
 
 /* Inicio src\pages\GestionMenu.tsx */
-import { Alert, Button, Container, Snackbar } from "@mui/material";
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  updateDoc,
-} from "firebase/firestore";
+/* Inicio src\pages\GestionMenu.tsx */
+/* Inicio src\pages\GestionMenu.tsx */
+import { Alert, Snackbar } from "@mui/material";
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 import React, { useState } from "react";
 import MenuList from "../components/menu/MenuList";
 import MenuModal from "../components/menu/MenuModal";
+import Button from "../components/ui/Button"; // Importa el Button de Tailwind
+import Container from "../components/ui/Container"; // Importa Container de Tailwind si lo creaste, sino usa un div normal
 import { MenuItem } from "../context/AppContext";
+import { useAuth } from "../hooks/useAuth"; // Importa useAuth
 import { useMenu } from "../hooks/useMenu";
 import { COLLECTIONS } from "../utils/constants";
 import { db } from "../utils/firebase";
@@ -4342,6 +4717,8 @@ const GestionMenu: React.FC = () => {
     message: string;
     severity: "success" | "error";
   }>({ open: false, message: "", severity: "success" });
+  const { userRole } = useAuth(); // Obtiene el rol del usuario
+  const [loadingSampleData, setLoadingSampleData] = useState(false); // Estado de carga para el botón de datos de ejemplo
 
   if (loading) {
     return <div>Cargando...</div>;
@@ -4363,20 +4740,28 @@ const GestionMenu: React.FC = () => {
   };
 
   const handleDelete = async (item: MenuItem) => {
-    if (!window.confirm(`¿Estás seguro de eliminar el item "${item.name}"?`))
+    if (
+      !window.confirm(
+        `¿Estás seguro de marcar como no disponible a largo plazo el item "${item.name}"?`
+      )
+    )
       return;
     try {
-      await deleteDoc(doc(db, COLLECTIONS.MENU, item.id));
+      // Al "eliminar" un item, se actualiza su estado a "noDisponibleLargoPlazo" y available a false
+      await updateDoc(doc(db, COLLECTIONS.MENU, item.id), {
+        availabilityStatus: "noDisponibleLargoPlazo", // Se marca como no disponible a largo plazo
+        available: false, // Se marca como no disponible para que no aparezca en el menu para clientes
+      });
       setSnackbar({
         open: true,
-        message: "Item eliminado exitosamente.",
+        message: "Item marcado como no disponible a largo plazo.",
         severity: "success",
       });
     } catch (error) {
       console.error(error);
       setSnackbar({
         open: true,
-        message: "Error al eliminar el item.",
+        message: "Error al actualizar el item.",
         severity: "error",
       });
     }
@@ -4414,16 +4799,177 @@ const GestionMenu: React.FC = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  // Función para agregar datos de ejemplo
+  const handleAddSampleData = async () => {
+    setLoadingSampleData(true);
+    setSnackbar({
+      open: true,
+      message: "Agregando datos de ejemplo...",
+      severity: "success",
+    });
+    try {
+      const sampleMenuItems = generateSampleMenuItems();
+      const menuCollectionRef = collection(db, COLLECTIONS.MENU);
+      for (const item of sampleMenuItems) {
+        await addDoc(menuCollectionRef, item);
+      }
+      setSnackbar({
+        open: true,
+        message: "Datos de ejemplo agregados exitosamente!",
+        severity: "success",
+      });
+    } catch (error) {
+      console.error("Error al agregar datos de ejemplo:", error);
+      setSnackbar({
+        open: true,
+        message: "Error al agregar datos de ejemplo.",
+        severity: "error",
+      });
+    } finally {
+      setLoadingSampleData(false);
+    }
+  };
+
+  const generateSampleMenuItems = () => {
+    return [
+      {
+        name: "Hamburguesa Clásica",
+        description: "Carne de res, queso cheddar, lechuga, tomate y cebolla.",
+        price: 8.99,
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Hamburguesas",
+        observations: "Se puede pedir sin cebolla.",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Pizza Margarita",
+        description: "Salsa de tomate, mozzarella fresca y albahaca.",
+        price: 12.5,
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Pizzas",
+        observations: "Opción vegana disponible con queso de almendras.",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Ensalada César",
+        description: "Lechuga romana, crutones, parmesano y aderezo César.",
+        price: 6.75,
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Ensaladas",
+        observations: "Se puede añadir pollo a la parrilla.",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Pasta Carbonara",
+        description:
+          "Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.",
+        price: 10.2,
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Pastas",
+        observations: "Sin gluten disponible con pasta de arroz.",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Tacos al Pastor",
+        description: "Carne de cerdo adobada, piña, cebolla y cilantro.",
+        price: 9.5,
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Tacos",
+        observations: "Picante medio.",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Sushi Variado (12 piezas)",
+        description: "Selección de nigiris y makis variados.",
+        price: 15.99,
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Sushi",
+        observations: "Incluye salsa de soya, wasabi y jengibre.",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Pollo Frito",
+        description: "Crujientes piezas de pollo frito, receta secreta.",
+        price: 7.8,
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Pollos",
+        observations: "Opción extra crujiente disponible.",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Sopa de Tomate",
+        description: "Sopa cremosa de tomate, hecha en casa.",
+        price: 5.5,
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Sopas",
+        observations: "Servida con pan tostado.",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Brownie con Helado",
+        description: "Brownie de chocolate caliente con helado de vainilla.",
+        price: 6.25,
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Postres",
+        observations: "Se puede pedir sin nueces.",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Jugo de Naranja Natural",
+        description: "Jugo de naranja recién exprimido.",
+        price: 3.5,
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Bebidas",
+        observations: "Sin azúcar añadida.",
+        availabilityStatus: "disponible",
+      },
+    ];
+  };
+
   return (
-    <Container sx={{ marginY: 3 }}>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleOpenModal}
-        sx={{ mb: 2 }}
-      >
-        Agregar Item
-      </Button>
+    <Container className="my-3">
+      <div className="flex justify-between items-center mb-4">
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleOpenModal}
+          className=""
+        >
+          Agregar Item
+        </Button>
+        {/* Botón "Agregar datos de ejemplo" condicional */}
+        {(userRole === "admin" || userRole === "encargado") && (
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleAddSampleData}
+            disabled={loadingSampleData}
+          >
+            {loadingSampleData ? "Cargando Menú..." : "Cargar Menú Ejemplo"}
+          </Button>
+        )}
+      </div>
+
       <MenuList menu={menu} onEdit={handleEdit} onDelete={handleDelete} />
       <MenuModal
         open={openModal}
@@ -4449,6 +4995,9 @@ const GestionMenu: React.FC = () => {
 };
 
 export default GestionMenu;
+
+/* Fin src\pages\GestionMenu.tsx */
+/* Fin src\pages\GestionMenu.tsx */
 
 /* Fin src\pages\GestionMenu.tsx */
 
@@ -4597,6 +5146,7 @@ export default Login;
 /* Fin src\pages\Login.tsx */
 
 /* Inicio src\pages\MenuPage.tsx */
+/* Inicio src\pages\MenuPage.tsx */
 /* src/pages/MenuPage.tsx */
 import { addDoc, collection } from "firebase/firestore";
 import React, { useState } from "react";
@@ -4707,15 +5257,17 @@ const MenuPage: React.FC = () => {
         available: true,
         recommendation: "Ideal con papas fritas.",
         observations: "Se puede pedir sin cebolla.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Pizza Margarita",
         description: "Salsa de tomate, mozzarella fresca y albahaca.",
-        price: 12.50,
+        price: 12.5,
         imageUrl: "https://ejemplo.com/pizza.jpg",
         available: true,
         recommendation: "Perfecta para compartir.",
         observations: "Opción vegana disponible con queso de almendras.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Ensalada César",
@@ -4725,24 +5277,28 @@ const MenuPage: React.FC = () => {
         available: true,
         recommendation: "Ligera y refrescante.",
         observations: "Se puede añadir pollo a la parrilla.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Pasta Carbonara",
-        description: "Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.",
-        price: 10.20,
+        description:
+          "Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.",
+        price: 10.2,
         imageUrl: "https://ejemplo.com/pasta_carbonara.jpg",
         available: true,
         recommendation: "Un clásico italiano.",
         observations: "Sin gluten disponible con pasta de arroz.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Tacos al Pastor",
         description: "Carne de cerdo adobada, piña, cebolla y cilantro.",
-        price: 9.50,
+        price: 9.5,
         imageUrl: "https://ejemplo.com/tacos_pastor.jpg",
         available: true,
         recommendation: "Sabor auténtico mexicano.",
         observations: "Picante medio.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Sushi Variado (12 piezas)",
@@ -4752,24 +5308,27 @@ const MenuPage: React.FC = () => {
         available: true,
         recommendation: "Para amantes del sushi.",
         observations: "Incluye salsa de soya, wasabi y jengibre.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Pollo Frito",
         description: "Crujientes piezas de pollo frito, receta secreta.",
-        price: 7.80,
+        price: 7.8,
         imageUrl: "https://ejemplo.com/pollo_frito.jpg",
         available: true,
         recommendation: "Ideal para niños y adultos.",
         observations: "Opción extra crujiente disponible.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Sopa de Tomate",
         description: "Sopa cremosa de tomate, hecha en casa.",
-        price: 5.50,
+        price: 5.5,
         imageUrl: "https://ejemplo.com/sopa_tomate.jpg",
         available: true,
         recommendation: "Caliente y reconfortante.",
         observations: "Servida con pan tostado.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Brownie con Helado",
@@ -4779,19 +5338,20 @@ const MenuPage: React.FC = () => {
         available: true,
         recommendation: "Postre perfecto.",
         observations: "Se puede pedir sin nueces.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Jugo de Naranja Natural",
         description: "Jugo de naranja recién exprimido.",
-        price: 3.50,
+        price: 3.5,
         imageUrl: "https://ejemplo.com/jugo_naranja.jpg",
         available: true,
         recommendation: "Bebida refrescante.",
         observations: "Sin azúcar añadida.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
     ];
   };
-
 
   const handleAddSampleData = async () => {
     setLoadingAddSampleData(true);
@@ -4812,9 +5372,17 @@ const MenuPage: React.FC = () => {
     }
   };
 
-
   return (
     <div className="container mx-auto my-8 p-4 md:p-8">
+                <button
+              onClick={handleAddSampleData}
+              disabled={loadingAddSampleData}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
+            >
+              {loadingAddSampleData
+                ? "Agregando..."
+                : "Agregar Datos de Ejemplo al Menú"}
+            </button>
       {/* Container principal con Tailwind */}
       <h1 className="text-3xl font-bold text-gray-900 mb-4">Menú</h1>
       {/* Título principal */}
@@ -4865,15 +5433,20 @@ const MenuPage: React.FC = () => {
         </div>
       ) : (
         <>
-          <div className="mb-4"> {/* Contenedor para el botón "Agregar Datos de Ejemplo" */}
+          <div className="mb-4">
+            {" "}
+            {/* Contenedor para el botón "Agregar Datos de Ejemplo" */}
             <button
               onClick={handleAddSampleData}
               disabled={loadingAddSampleData}
               className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
             >
-              {loadingAddSampleData ? "Agregando..." : "Agregar Datos de Ejemplo al Menú"}
+              {loadingAddSampleData
+                ? "Agregando..."
+                : "Agregar Datos de Ejemplo al Menú"}
             </button>
-            {message && <p className="mt-2 text-sm text-gray-700">{message}</p>} {/* Mensaje de feedback */}
+            {message && <p className="mt-2 text-sm text-gray-700">{message}</p>}{" "}
+            {/* Mensaje de feedback */}
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {/* Grid para personas y menú */}
@@ -4956,11 +5529,13 @@ const MenuPage: React.FC = () => {
           <PedidoForm onClose={handleClosePedidoModal} people={people} />
         </>
       )}
+      
     </div>
   );
 };
 
 export default MenuPage;
+
 /* Fin src\pages\MenuPage.tsx */
 
 /* Inicio src\pages\PedidosPage.tsx */
@@ -5515,6 +6090,7 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
       },
     })
+    
   ],
 })
 /* Fin vite.config.ts */

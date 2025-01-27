@@ -1,4 +1,4 @@
-/* src\components\menu\MenuModal.tsx */
+
 import React from "react";
 import { MenuItem } from "../../context/AppContext";
 import MenuFormComponent from "./MenuForm";

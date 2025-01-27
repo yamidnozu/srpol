@@ -1,11 +1,10 @@
-/* src\components\menu\MenuForm.tsx */
 import React, { useState } from "react";
-import { MenuItem } from "../../context/AppContext";
+import { MenuItem as MenuItemType } from "../../context/AppContext";
 import { useMenu } from "../../hooks/useMenu";
 
 interface MenuFormProps {
-  initialValues?: Partial<MenuItem>;
-  onSubmit: (values: Partial<MenuItem>) => void;
+  initialValues?: Partial<MenuItemType>;
+  onSubmit: (values: Partial<MenuItemType>) => void;
   onClose: () => void; // Add onClose prop
 }
 
@@ -30,6 +29,10 @@ const MenuForm: React.FC<MenuFormProps> = ({
   const [available, setAvailable] = useState(
     initialValues?.available !== undefined ? initialValues.available : true
   );
+  // Nueva estado para el estado de disponibilidad
+  const [availabilityStatus, setAvailabilityStatus] = useState<
+    "disponible" | "noDisponibleMomento" | "noDisponibleLargoPlazo"
+  >(initialValues?.availabilityStatus || "disponible");
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -41,6 +44,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
       available,
       recommendation,
       observations,
+      availabilityStatus, // Incluir el nuevo estado en los valores enviados
     });
     onClose(); // Close modal on submit
   };
@@ -149,6 +153,34 @@ const MenuForm: React.FC<MenuFormProps> = ({
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           />
         </div>
+        {/* Nuevo campo para el estado de disponibilidad */}
+        <div>
+          <label
+            htmlFor="availabilityStatus"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Estado de Disponibilidad
+          </label>
+          <select
+            id="availabilityStatus"
+            value={availabilityStatus}
+            onChange={(e) =>
+              setAvailabilityStatus(
+                e.target.value as
+                  | "disponible"
+                  | "noDisponibleMomento"
+                  | "noDisponibleLargoPlazo"
+              )
+            }
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          >
+            <option value="disponible">Disponible</option>
+            <option value="noDisponibleMomento">
+              No disponible en el momento
+            </option>
+            <option value="noDisponibleLargoPlazo">Ya no disponible</option>
+          </select>
+        </div>
       </div>
       <div className="flex items-center justify-between mt-4">
         {" "}
@@ -162,7 +194,7 @@ const MenuForm: React.FC<MenuFormProps> = ({
             onChange={(e) => setAvailable(e.target.checked)}
           />
           <label htmlFor="available" className="ml-2 text-sm text-gray-700">
-            Disponible
+            Disponible (Visible en Menu)
           </label>
         </div>
         <div className="space-x-2">

@@ -1,3 +1,5 @@
+// src/components/pedidos/PedidoForm.tsx
+/* Directorio: src\components\forms\PedidoForm.tsx */
 // src/components/forms/PedidoForm.tsx
 import { Timestamp, addDoc, collection } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
@@ -13,9 +15,18 @@ interface PedidoFormProps {
     name: string;
     items: { id: string; quantity: number }[];
   }[];
+  sharedOrderItems?: {
+    itemId: string;
+    quantity: number;
+    personIds: string[];
+  }[];
 }
 
-const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
+const PedidoForm: React.FC<PedidoFormProps> = ({
+  onClose,
+  people,
+  sharedOrderItems,
+}) => {
   const { menu } = useMenu();
   const { user, addPoints } = useAuth();
 
@@ -31,34 +42,48 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
   const [paymentMethod, setPaymentMethod] = useState("contraentrega");
 
   useEffect(() => {
-    /* ... useEffect hook same ... */
     if (people) {
       setPeopleOrder(
         people.map((person) => ({ id: person.id, name: person.name }))
       );
-      const newItems = people.flatMap((person) =>
+      // Flatten person items and assign person name
+      const personItems = people.flatMap((person) =>
         person.items.map((item) => ({
           id: item.id,
           quantity: item.quantity,
           assignedTo: person.name,
         }))
       );
-      setItems(newItems);
+      setItems(personItems);
     }
   }, [people]);
+
+  useEffect(() => {
+    if (sharedOrderItems) {
+      // Flatten shared items and assign 'Compartido' as assignedTo
+      const sharedItemsForDisplay = sharedOrderItems.flatMap((sharedItem) =>
+        Array(sharedItem.quantity)
+          .fill(null)
+          .map(() => ({
+            id: sharedItem.itemId,
+            quantity: 1,
+            assignedTo: "Compartido",
+          }))
+      );
+      setItems((prevItems) => [...prevItems, ...sharedItemsForDisplay]);
+    }
+  }, [sharedOrderItems]);
 
   // Simulación de sedes disponibles (puedes obtenerlas de Firestore)
   const sedesDisponibles = ["Sede Norte", "Sede Sur", "Sede Centro"];
 
   useEffect(() => {
-    /* ... useEffect hook same ... */
     if (sedesDisponibles.length === 1) {
       setSede(sedesDisponibles[0]);
     }
   }, [sedesDisponibles]);
 
   const calculateTotal = () => {
-    /* ... calculateTotal function same ... */
     let total = 0;
     items.forEach((item) => {
       const menuItem = menu.find((m) => m.id === item.id);
@@ -70,7 +95,6 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
-    /* ... handleSubmit function same ... */
     event.preventDefault();
     if (!user) return;
 
@@ -93,6 +117,13 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
         paymentMethod: paymentMethod,
         orderDate: Timestamp.now(),
         orderId: orderId,
+        sharedItems: sharedOrderItems
+          ? sharedOrderItems.map((si) => ({
+              itemId: si.itemId,
+              quantity: si.quantity, // Quantity here represents how many of shared items are in total
+              personIds: si.personIds,
+            }))
+          : [],
       };
 
       await addDoc(collection(db, "pedidos"), orderData);
@@ -103,8 +134,6 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
   };
 
   const handlePaymentSuccess = async () => {
-    /* ... handlePaymentSuccess function same ... */
-    // Sumar puntos al usuario
     await addPoints();
     alert("Pedido realizado con éxito y puntos sumados.");
     onClose();
@@ -112,27 +141,20 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {" "}
-      {/* Reemplaza form and add vertical spacing */}
-      <h2 className="text-xl font-bold text-gray-900">Realizar Pedido</h2>{" "}
-      {/* Reemplaza Typography h5 */}
-      {/* Seleccionar Sede */}
+      <h2 className="text-xl font-bold text-gray-900">Realizar Pedido</h2>
       <div>
-        {" "}
-        {/* Reemplaza FormControl */}
         <label
           htmlFor="sede"
           className="block text-sm font-medium text-gray-700"
         >
           Sede
-        </label>{" "}
-        {/* Reemplaza InputLabel */}
+        </label>
         <select
           id="sede"
           value={sede}
           onChange={(e) => setSede(e.target.value)}
           required
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza Select
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         >
           {sedesDisponibles.map((sedeItem) => (
             <option key={sedeItem} value={sedeItem}>
@@ -141,17 +163,13 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
           ))}
         </select>
       </div>
-      {/* Costo de Envío */}
       <div>
-        {" "}
-        {/* Reemplaza FormControl */}
         <label
           htmlFor="deliveryFee"
           className="block text-sm font-medium text-gray-700"
         >
           Costo de Envío
-        </label>{" "}
-        {/* Reemplaza InputLabel */}
+        </label>
         <input
           type="number"
           id="deliveryFee"
@@ -159,67 +177,50 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
           onChange={(e) => setDeliveryFee(parseFloat(e.target.value))}
           required
           min="0"
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza TextField
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         />
       </div>
-      {/* Domicilio Incluido */}
       <div className="flex items-start">
-        {" "}
-        {/* Reemplaza FormControlLabel with div flex */}
         <div className="flex items-center h-5">
-          {" "}
-          {/* Container for checkbox */}
           <input
             id="deliveryIncluded"
             name="deliveryIncluded"
             type="checkbox"
             checked={deliveryIncluded}
             onChange={(e) => setDeliveryIncluded(e.target.checked)}
-            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded" // Reemplaza Checkbox
+            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
           />
         </div>
         <div className="ml-2 text-sm">
-          {" "}
-          {/* Container for label text */}
           <label
             htmlFor="deliveryIncluded"
             className="font-medium text-gray-700"
           >
-            {" "}
-            {/* Reemplaza FormControlLabel label */}
             ¿El domicilio está incluido?
           </label>
         </div>
       </div>
-      {/* Método de Pago */}
       <div>
-        {" "}
-        {/* Reemplaza FormControl */}
         <label
           htmlFor="paymentMethod"
           className="block text-sm font-medium text-gray-700"
         >
           Método de Pago
-        </label>{" "}
-        {/* Reemplaza InputLabel */}
+        </label>
         <select
           id="paymentMethod"
           value={paymentMethod}
           onChange={(e) => setPaymentMethod(e.target.value)}
           required
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" // Reemplaza Select
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         >
-          <option value="contraentrega">Contraentrega</option>{" "}
-          {/* Reemplaza MenuItem with option */}
-          {/* Puedes añadir otros métodos de pago si lo deseas */}
+          <option value="contraentrega">Contraentrega</option>
         </select>
       </div>
       <div>
-        {" "}
-        {/* Reemplaza container for Button */}
         <button
           type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" // Reemplaza Button
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200" // Added transition
         >
           Realizar Pedido
         </button>

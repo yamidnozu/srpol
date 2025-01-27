@@ -1,3 +1,4 @@
+/* Inicio src\pages\MenuPage.tsx */
 /* src/pages/MenuPage.tsx */
 import { addDoc, collection } from "firebase/firestore";
 import React, { useState } from "react";
@@ -108,15 +109,17 @@ const MenuPage: React.FC = () => {
         available: true,
         recommendation: "Ideal con papas fritas.",
         observations: "Se puede pedir sin cebolla.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Pizza Margarita",
         description: "Salsa de tomate, mozzarella fresca y albahaca.",
-        price: 12.50,
+        price: 12.5,
         imageUrl: "https://ejemplo.com/pizza.jpg",
         available: true,
         recommendation: "Perfecta para compartir.",
         observations: "Opción vegana disponible con queso de almendras.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Ensalada César",
@@ -126,24 +129,28 @@ const MenuPage: React.FC = () => {
         available: true,
         recommendation: "Ligera y refrescante.",
         observations: "Se puede añadir pollo a la parrilla.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Pasta Carbonara",
-        description: "Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.",
-        price: 10.20,
+        description:
+          "Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.",
+        price: 10.2,
         imageUrl: "https://ejemplo.com/pasta_carbonara.jpg",
         available: true,
         recommendation: "Un clásico italiano.",
         observations: "Sin gluten disponible con pasta de arroz.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Tacos al Pastor",
         description: "Carne de cerdo adobada, piña, cebolla y cilantro.",
-        price: 9.50,
+        price: 9.5,
         imageUrl: "https://ejemplo.com/tacos_pastor.jpg",
         available: true,
         recommendation: "Sabor auténtico mexicano.",
         observations: "Picante medio.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Sushi Variado (12 piezas)",
@@ -153,24 +160,27 @@ const MenuPage: React.FC = () => {
         available: true,
         recommendation: "Para amantes del sushi.",
         observations: "Incluye salsa de soya, wasabi y jengibre.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Pollo Frito",
         description: "Crujientes piezas de pollo frito, receta secreta.",
-        price: 7.80,
+        price: 7.8,
         imageUrl: "https://ejemplo.com/pollo_frito.jpg",
         available: true,
         recommendation: "Ideal para niños y adultos.",
         observations: "Opción extra crujiente disponible.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Sopa de Tomate",
         description: "Sopa cremosa de tomate, hecha en casa.",
-        price: 5.50,
+        price: 5.5,
         imageUrl: "https://ejemplo.com/sopa_tomate.jpg",
         available: true,
         recommendation: "Caliente y reconfortante.",
         observations: "Servida con pan tostado.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Brownie con Helado",
@@ -180,19 +190,20 @@ const MenuPage: React.FC = () => {
         available: true,
         recommendation: "Postre perfecto.",
         observations: "Se puede pedir sin nueces.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
       {
         name: "Jugo de Naranja Natural",
         description: "Jugo de naranja recién exprimido.",
-        price: 3.50,
+        price: 3.5,
         imageUrl: "https://ejemplo.com/jugo_naranja.jpg",
         available: true,
         recommendation: "Bebida refrescante.",
         observations: "Sin azúcar añadida.",
+        availabilityStatus: "disponible", // Por defecto disponible
       },
     ];
   };
-
 
   const handleAddSampleData = async () => {
     setLoadingAddSampleData(true);
@@ -213,9 +224,17 @@ const MenuPage: React.FC = () => {
     }
   };
 
-
   return (
     <div className="container mx-auto my-8 p-4 md:p-8">
+                <button
+              onClick={handleAddSampleData}
+              disabled={loadingAddSampleData}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
+            >
+              {loadingAddSampleData
+                ? "Agregando..."
+                : "Agregar Datos de Ejemplo al Menú"}
+            </button>
       {/* Container principal con Tailwind */}
       <h1 className="text-3xl font-bold text-gray-900 mb-4">Menú</h1>
       {/* Título principal */}
@@ -266,15 +285,20 @@ const MenuPage: React.FC = () => {
         </div>
       ) : (
         <>
-          <div className="mb-4"> {/* Contenedor para el botón "Agregar Datos de Ejemplo" */}
+          <div className="mb-4">
+            {" "}
+            {/* Contenedor para el botón "Agregar Datos de Ejemplo" */}
             <button
               onClick={handleAddSampleData}
               disabled={loadingAddSampleData}
               className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
             >
-              {loadingAddSampleData ? "Agregando..." : "Agregar Datos de Ejemplo al Menú"}
+              {loadingAddSampleData
+                ? "Agregando..."
+                : "Agregar Datos de Ejemplo al Menú"}
             </button>
-            {message && <p className="mt-2 text-sm text-gray-700">{message}</p>} {/* Mensaje de feedback */}
+            {message && <p className="mt-2 text-sm text-gray-700">{message}</p>}{" "}
+            {/* Mensaje de feedback */}
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {/* Grid para personas y menú */}
@@ -357,6 +381,7 @@ const MenuPage: React.FC = () => {
           <PedidoForm onClose={handleClosePedidoModal} people={people} />
         </>
       )}
+      
     </div>
   );
 };

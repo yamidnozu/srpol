@@ -1,4 +1,4 @@
-/* src\components\menu\MenuItem.tsx */
+/* Inicio src\components\menu\MenuItem.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../context/AppContext";
 
@@ -9,6 +9,20 @@ interface MenuItemProps {
 }
 
 const MenuItem: React.FC<MenuItemProps> = ({ item, onEdit, onDelete }) => {
+  // Función para determinar el color del badge según el estado de disponibilidad
+  const getStatusBadgeClass = () => {
+    switch (item.availabilityStatus) {
+      case "noDisponibleMomento":
+        return "bg-yellow-500 text-yellow-900"; // Amarillo para "No disponible por el momento"
+      case "noDisponibleLargoPlazo":
+        return "bg-red-500 text-red-900"; // Rojo para "No disponible a largo plazo"
+      default:
+        return "bg-green-500 text-green-900"; // Verde para "Disponible"
+    }
+  };
+
+  const statusBadgeClass = `inline-block ${getStatusBadgeClass()} rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2`;
+
   return (
     <div className="max-w-sm rounded overflow-hidden shadow-lg">
       {" "}
@@ -18,7 +32,16 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onEdit, onDelete }) => {
       <div className="px-6 py-4">
         {" "}
         {/* Contenido principal card */}
-        <div className="font-bold text-xl mb-2">{item.name}</div>{" "}
+        <div className="font-bold text-xl mb-2 flex justify-between items-center">
+          {item.name}
+          <span className={statusBadgeClass}>
+            {item.availabilityStatus === "disponible"
+              ? "Disponible"
+              : item.availabilityStatus === "noDisponibleMomento"
+              ? "No Disponible Ahora"
+              : "No Disponible"}
+          </span>
+        </div>{" "}
         {/* Nombre del item */}
         <p className="text-gray-700 text-base">{item.description}</p>{" "}
         {/* Descripción */}

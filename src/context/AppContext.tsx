@@ -1,11 +1,7 @@
+/* Inicio src\context\AppContext.tsx */
 import { CircularProgress } from "@mui/material";
 import { collection, onSnapshot } from "firebase/firestore";
-import React, {
-  createContext,
-  ReactNode,
-  useEffect,
-  useState,
-} from "react";
+import React, { createContext, ReactNode, useEffect, useState } from "react";
 import ErrorBoundary from "../components/ui/ErrorBoundry";
 import { COLLECTIONS } from "../utils/constants";
 import { db } from "../utils/firebase";
@@ -19,6 +15,10 @@ export interface MenuItem {
   available: boolean;
   recommendation: string;
   observations: string;
+  availabilityStatus:
+    | "disponible"
+    | "noDisponibleMomento"
+    | "noDisponibleLargoPlazo"; // Estado de disponibilidad del menú: "disponible", "noDisponibleMomento", "noDisponibleLargoPlazo"
 }
 
 export interface AppContextProps {
@@ -62,3 +62,5 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     </AppContext.Provider>
   );
 };
+
+/* Fin src\context\AppContext.tsx */
