@@ -1,5 +1,3 @@
-/* Inicio src\pages\MenuPage.tsx */
-/* src/pages/MenuPage.tsx */
 import { addDoc, collection } from "firebase/firestore";
 import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
@@ -104,7 +102,7 @@ const MenuPage: React.FC = () => {
       {
         name: "Hamburguesa Clásica",
         description: "Carne de res, queso cheddar, lechuga, tomate y cebolla.",
-        price: 8.99,
+        price: 28000,
         imageUrl: "https://ejemplo.com/hamburguesa.jpg",
         available: true,
         recommendation: "Ideal con papas fritas.",
@@ -114,7 +112,7 @@ const MenuPage: React.FC = () => {
       {
         name: "Pizza Margarita",
         description: "Salsa de tomate, mozzarella fresca y albahaca.",
-        price: 12.5,
+        price: 35000,
         imageUrl: "https://ejemplo.com/pizza.jpg",
         available: true,
         recommendation: "Perfecta para compartir.",
@@ -124,7 +122,7 @@ const MenuPage: React.FC = () => {
       {
         name: "Ensalada César",
         description: "Lechuga romana, crutones, parmesano y aderezo César.",
-        price: 6.75,
+        price: 22000,
         imageUrl: "https://ejemplo.com/ensalada.jpg",
         available: true,
         recommendation: "Ligera y refrescante.",
@@ -135,7 +133,7 @@ const MenuPage: React.FC = () => {
         name: "Pasta Carbonara",
         description:
           "Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.",
-        price: 10.2,
+        price: 32000,
         imageUrl: "https://ejemplo.com/pasta_carbonara.jpg",
         available: true,
         recommendation: "Un clásico italiano.",
@@ -145,7 +143,7 @@ const MenuPage: React.FC = () => {
       {
         name: "Tacos al Pastor",
         description: "Carne de cerdo adobada, piña, cebolla y cilantro.",
-        price: 9.5,
+        price: 30000,
         imageUrl: "https://ejemplo.com/tacos_pastor.jpg",
         available: true,
         recommendation: "Sabor auténtico mexicano.",
@@ -155,7 +153,7 @@ const MenuPage: React.FC = () => {
       {
         name: "Sushi Variado (12 piezas)",
         description: "Selección de nigiris y makis variados.",
-        price: 15.99,
+        price: 50000,
         imageUrl: "https://ejemplo.com/sushi.jpg",
         available: true,
         recommendation: "Para amantes del sushi.",
@@ -165,7 +163,7 @@ const MenuPage: React.FC = () => {
       {
         name: "Pollo Frito",
         description: "Crujientes piezas de pollo frito, receta secreta.",
-        price: 7.8,
+        price: 15000,
         imageUrl: "https://ejemplo.com/pollo_frito.jpg",
         available: true,
         recommendation: "Ideal para niños y adultos.",
@@ -175,7 +173,7 @@ const MenuPage: React.FC = () => {
       {
         name: "Sopa de Tomate",
         description: "Sopa cremosa de tomate, hecha en casa.",
-        price: 5.5,
+        price: 18000,
         imageUrl: "https://ejemplo.com/sopa_tomate.jpg",
         available: true,
         recommendation: "Caliente y reconfortante.",
@@ -185,7 +183,7 @@ const MenuPage: React.FC = () => {
       {
         name: "Brownie con Helado",
         description: "Brownie de chocolate caliente con helado de vainilla.",
-        price: 6.25,
+        price: 20000,
         imageUrl: "https://ejemplo.com/brownie_helado.jpg",
         available: true,
         recommendation: "Postre perfecto.",
@@ -195,7 +193,7 @@ const MenuPage: React.FC = () => {
       {
         name: "Jugo de Naranja Natural",
         description: "Jugo de naranja recién exprimido.",
-        price: 3.5,
+        price: 8000,
         imageUrl: "https://ejemplo.com/jugo_naranja.jpg",
         available: true,
         recommendation: "Bebida refrescante.",
@@ -224,17 +222,27 @@ const MenuPage: React.FC = () => {
     }
   };
 
+  // Function to format price to Colombian Pesos
+  const formatPriceCOP = (price: number) => {
+    return price.toLocaleString("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0, // Remove cents if whole number
+      maximumFractionDigits: 0,
+    });
+  };
+
   return (
     <div className="container mx-auto my-8 p-4 md:p-8">
-                <button
-              onClick={handleAddSampleData}
-              disabled={loadingAddSampleData}
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
-            >
-              {loadingAddSampleData
-                ? "Agregando..."
-                : "Agregar Datos de Ejemplo al Menú"}
-            </button>
+      <button
+        onClick={handleAddSampleData}
+        disabled={loadingAddSampleData}
+        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
+      >
+        {loadingAddSampleData
+          ? "Agregando..."
+          : "Agregar Datos de Ejemplo al Menú"}
+      </button>
       {/* Container principal con Tailwind */}
       <h1 className="text-3xl font-bold text-gray-900 mb-4">Menú</h1>
       {/* Título principal */}
@@ -363,7 +371,7 @@ const MenuPage: React.FC = () => {
                       className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                       onClick={() => handleAddItemToPerson(person.id, item)}
                     >
-                      {item.name}
+                      {item.name} - {formatPriceCOP(item.price)}
                     </button>
                   ))}
                 </div>
@@ -381,7 +389,6 @@ const MenuPage: React.FC = () => {
           <PedidoForm onClose={handleClosePedidoModal} people={people} />
         </>
       )}
-      
     </div>
   );
 };

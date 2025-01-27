@@ -1,4 +1,3 @@
-/* src\components\menu\partials\SharedOrder.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
 
@@ -25,6 +24,16 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
 
   menu,
 }) => {
+  // Function to format price to Colombian Pesos
+  const formatPriceCOP = (price: number) => {
+    return price.toLocaleString("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0, // Remove cents if whole number
+      maximumFractionDigits: 0,
+    });
+  };
+
   return (
     <div className="mb-8">
       <div
@@ -88,7 +97,7 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
                   </button>
                 </div>
                 <span className="w-12 text-right">
-                  ${(menuItem.price * sharedItem.quantity).toFixed(2)}
+                  {formatPriceCOP(menuItem.price * sharedItem.quantity)}
                 </span>
               </li>
             ) : null;
@@ -97,7 +106,7 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
             <li className="font-semibold text-right mt-2">
               Subtotal:{" "}
               <span className="text-indigo-700">
-                ${calculateSharedSubtotal().toFixed(2)}
+                {formatPriceCOP(calculateSharedSubtotal())}
               </span>
             </li>
           )}
@@ -131,7 +140,7 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
                       : undefined
                   }
                 >
-                  {item.name} - ${item.price}
+                  {item.name} - {formatPriceCOP(item.price)}
                   {item.availabilityStatus === "noDisponibleMomento" && (
                     <span className="ml-2 text-yellow-500 font-normal italic">
                       (No disponible ahora)

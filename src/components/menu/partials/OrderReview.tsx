@@ -1,9 +1,7 @@
-/* Inicio src\components\menu\partials\OrderReview.tsx */
-/* src\components\menu\partials\OrderReview.tsx */
+import { Typography } from "@mui/material";
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
 import PedidoForm from "../../forms/PedidoForm";
-import { Typography } from "@mui/material";
 
 interface OrderReviewProps {
   people: {
@@ -186,5 +184,3 @@ const OrderReview: React.FC<OrderReviewProps> = ({
 };
 
 export default OrderReview;
-
-/* Fin src\components\menu\partials\OrderReview.tsx */

@@ -1,5 +1,3 @@
-/* src/pages/Dashboard.tsx */
-/* src/pages/Dashboard.tsx */
 import {
   BarElement,
   CategoryScale,
@@ -379,6 +377,23 @@ const Dashboard: React.FC = () => {
         backgroundColor: "#1e293b", // gris oscuro
         titleColor: "#fff",
         bodyColor: "#fff",
+        callbacks: {
+          label: function (context) {
+            let label = context.dataset.label || "";
+            if (label) {
+              label += ": ";
+            }
+            if (context.parsed.y !== null) {
+              label += new Intl.NumberFormat("es-CO", {
+                style: "currency",
+                currency: "COP",
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              }).format(context.parsed.y);
+            }
+            return label;
+          },
+        },
       },
     },
   };
@@ -464,6 +479,16 @@ const Dashboard: React.FC = () => {
     };
   });
 
+  // Function to format price to Colombian Pesos
+  const formatPriceCOP = (price: number) => {
+    return price.toLocaleString("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0, // Remove cents if whole number
+      maximumFractionDigits: 0,
+    });
+  };
+
   if (loading || loadingTasks) {
     return (
       <div className="pt-20 p-4 text-center">
@@ -535,13 +560,13 @@ const Dashboard: React.FC = () => {
           <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
             <p className="text-gray-600">Ventas Hoy</p>
             <p className="text-2xl font-bold text-indigo-600">
-              ${todaySales.toFixed(2)}
+              {formatPriceCOP(todaySales)}
             </p>
           </div>
           <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
             <p className="text-gray-600">Ventas del Mes</p>
             <p className="text-2xl font-bold text-indigo-600">
-              ${monthSales.toFixed(2)}
+              {formatPriceCOP(monthSales)}
             </p>
           </div>
           <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">

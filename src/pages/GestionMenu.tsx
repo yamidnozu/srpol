@@ -1,5 +1,3 @@
-/* Inicio src\pages\GestionMenu.tsx */
-/* Inicio src\pages\GestionMenu.tsx */
 import { Alert, Snackbar } from "@mui/material";
 import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 import React, { useState } from "react";
@@ -195,7 +193,8 @@ const GestionMenu: React.FC = () => {
       },
       {
         name: "Tacos al Pastor (3 unidades)",
-        description: "Carne de cerdo adobada, piña, cebolla y cilantro, en tortilla de maíz. Orden de 3 tacos.",
+        description:
+          "Carne de cerdo adobada, piña, cebolla y cilantro, en tortilla de maíz. Orden de 3 tacos.",
         price: 30000, // COP Approx. $9.5 USD (for 3 tacos)
         imageUrl:
           "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
@@ -228,7 +227,8 @@ const GestionMenu: React.FC = () => {
       },
       {
         name: "Combo Pollo Frito Personal",
-        description: "2 presas de pollo frito, papas fritas pequeñas y gaseosa personal.",
+        description:
+          "2 presas de pollo frito, papas fritas pequeñas y gaseosa personal.",
         price: 30000, // COP - Personal combo
         imageUrl:
           "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
@@ -239,7 +239,8 @@ const GestionMenu: React.FC = () => {
       },
       {
         name: "Combo Pollo Frito Familiar",
-        description: "6 presas de pollo frito, papas fritas familiares, ensalada coleslaw familiar y gaseosa 1.5L.",
+        description:
+          "6 presas de pollo frito, papas fritas familiares, ensalada coleslaw familiar y gaseosa 1.5L.",
         price: 85000, // COP - Family combo
         imageUrl:
           "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
@@ -248,7 +249,7 @@ const GestionMenu: React.FC = () => {
         observations: "Ideal para compartir en familia.",
         availabilityStatus: "disponible",
       },
-       {
+      {
         name: "Pollo Asado Entero",
         description: "Pollo entero asado al carbón, jugoso y lleno de sabor.",
         price: 55000, // COP - Whole roasted chicken
@@ -325,7 +326,7 @@ const GestionMenu: React.FC = () => {
         observations: "",
         availabilityStatus: "disponible",
       },
-       {
+      {
         name: "Agua con gas Personal",
         description: "Agua con gas en presentación personal.",
         price: 4000, // COP
@@ -388,6 +389,3 @@ const GestionMenu: React.FC = () => {
 };
 
 export default GestionMenu;
-
-/* Fin src\pages\GestionMenu.tsx */
-/* Fin src\pages\GestionMenu.tsx */

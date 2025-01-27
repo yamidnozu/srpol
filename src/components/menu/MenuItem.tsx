@@ -1,4 +1,3 @@
-/* Inicio src\components\menu\MenuItem.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../context/AppContext";
 
@@ -23,6 +22,16 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onEdit, onDelete }) => {
 
   const statusBadgeClass = `inline-block ${getStatusBadgeClass()} rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2`;
 
+  // Function to format price to Colombian Pesos
+  const formatPriceCOP = (price: number) => {
+    return price.toLocaleString("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0, // Remove cents if whole number
+      maximumFractionDigits: 0,
+    });
+  };
+
   return (
     <div className="max-w-sm rounded overflow-hidden shadow-lg">
       {" "}
@@ -45,7 +54,9 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onEdit, onDelete }) => {
         {/* Nombre del item */}
         <p className="text-gray-700 text-base">{item.description}</p>{" "}
         {/* Descripción */}
-        <p className="text-gray-700 text-lg mt-2">Precio: ${item.price}</p>{" "}
+        <p className="text-gray-700 text-lg mt-2">
+          Precio: {formatPriceCOP(item.price)}
+        </p>{" "}
         {/* Precio */}
         <div>
           {item.recommendation && (

@@ -1,4 +1,3 @@
-/* src\components\menu\partials\PersonOrder.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
 
@@ -36,6 +35,16 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
   calculateSubtotal,
   personOrderSummaryRef,
 }) => {
+  // Function to format price to Colombian Pesos
+  const formatPriceCOP = (price: number) => {
+    return price.toLocaleString("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0, // Remove cents if whole number
+      maximumFractionDigits: 0,
+    });
+  };
+
   return (
     <div key={person.id} className="mb-8" ref={personOrderSummaryRef}>
       <div className="sticky top-16 bg-white p-4 shadow-md z-20 rounded-md transition-transform duration-200 ease-out transform translate-y-0 hover:translate-y-[-2px] ring-2 ring-indigo-500 ring-opacity-50 hover:ring-opacity-100">
@@ -98,7 +107,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
                   </button>
                 </div>
                 <span className="w-12 text-right">
-                  ${(menuItem.price * it.quantity).toFixed(2)}
+                  {formatPriceCOP(menuItem.price * it.quantity)}
                 </span>
               </li>
             ) : null;
@@ -107,7 +116,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
             <li className="font-semibold text-right mt-2">
               Subtotal:{" "}
               <span className="text-indigo-700">
-                ${calculateSubtotal(person.items).toFixed(2)}
+                {formatPriceCOP(calculateSubtotal(person.items))}
               </span>
             </li>
           )}
@@ -139,7 +148,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
                       : undefined
                   }
                 >
-                  {item.name} - ${item.price}
+                  {item.name} - {formatPriceCOP(item.price)}
                   {item.availabilityStatus === "noDisponibleMomento" && (
                     <span className="ml-2 text-yellow-500 font-normal italic">
                       (No disponible ahora)
