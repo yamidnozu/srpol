@@ -17,23 +17,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const handleDrawerClose = () => {
     setDrawerOpen(false);
   };
+
   return (
     <div className="flex h-screen bg-gray-100">
-      {" "}
-      {/* Reemplaza Box con div y clases Tailwind para layout flex y altura de pantalla */}
       <Navbar toggleDrawer={handleDrawerToggle} />
       <Sidebar drawerOpen={drawerOpen} handleDrawerClose={handleDrawerClose} />
-      <main className="flex-1 overflow-x-hidden overflow-y-auto p-4">
+      <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:pl-64">
         {" "}
-        {/* Reemplaza Box main con main y clases flex-grow y padding */}
+        {/* Ajuste de padding lateral en desktop para el sidebar fijo */}
         <div className="container mx-auto">
-          {" "}
-          {/* Reemplaza Grid container con div container para centrar contenido */}
-          <div className="w-full">
-            {" "}
-            {/* Reemplaza Grid item con div full width */}
-            {children}
-          </div>
+          <div className="w-full">{children}</div>
         </div>
       </main>
     </div>

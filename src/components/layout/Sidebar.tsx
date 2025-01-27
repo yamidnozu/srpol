@@ -6,15 +6,10 @@ import {
   RestaurantMenu as RestaurantMenuIcon,
   Settings as SettingsIcon,
   ShoppingCart as ShoppingCartIcon,
-} from "@mui/icons-material"; // Mantendremos iconos de MUI por ahora
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'; // Icono de MUI, puedes reemplazarlo
-import {
-  Divider,
-  IconButton,
-} from "@mui/material"; // Mantenemos Divider e IconButton de MUI para facilitar la migración o puedes buscar alternativas Tailwind
+} from "@mui/icons-material";
 import React from "react";
+import { NavLink, useLocation } from "react-router-dom"; // Importa NavLink y useLocation
 import { useAuth } from "../../hooks/useAuth";
-import ListItem from "../ui/ListItem";
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -23,7 +18,9 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ drawerOpen, handleDrawerClose }) => {
   const { userRole } = useAuth();
-  const menuItems = [ /* ... menuItems igual ... */
+  const location = useLocation(); // Hook para obtener la ruta actual
+
+  const menuItems = [
     {
       text: "Dashboard",
       icon: <DashboardIcon />,
@@ -64,31 +61,57 @@ const Sidebar: React.FC<SidebarProps> = ({ drawerOpen, handleDrawerClose }) => {
 
   return (
     <aside
-      className={`bg-gray-50 w-60 flex-shrink-0 overflow-y-auto fixed top-16 md:top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out md:translate-x-0 ${drawerOpen ? 'translate-x-0' : '-translate-x-full'}`} // Reemplaza Drawer con aside y clases Tailwind, lógica para drawerOpen
+      className={`bg-gray-50 w-64 flex-shrink-0 overflow-y-auto fixed top-16 md:top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out md:translate-x-0 ${
+        drawerOpen ? "translate-x-0" : "-translate-x-full"
+      } md:shadow-md`} // Shadow en desktop
     >
-      <div className="py-4 px-3 flex justify-between items-center"> {/* Reemplaza Toolbar */}
-        <span className="text-lg font-semibold text-gray-900">Navegación</span> {/* Reemplaza Typography */}
-        <IconButton onClick={handleDrawerClose} className="md:hidden"> {/* IconButton para cerrar en mobile, oculto en md y superior */}
-          <ChevronLeftIcon /> {/* Icono de MUI */}
-        </IconButton>
+      <div className="py-6 px-4 md:px-6">
+        {" "}
+        {/* Más padding en desktop */}
+        <span className="text-xl font-semibold text-gray-900 block mb-2 md:hidden text-center">
+          Navegación
+        </span>{" "}
+        {/* Título en mobile */}
+        <nav className="space-y-2">
+          {menuItems
+            .filter(
+              (item) =>
+                item.roles.includes(userRole || "public") ||
+                item.roles.includes("public")
+            )
+            .map((item) => {
+              const isActive = location.pathname === item.path; // Verifica si la ruta coincide
+              return (
+                <NavLink
+                  key={item.text}
+                  to={item.path}
+                  className={({
+                    isActive,
+                  }) => `group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200
+                                      ${
+                                        isActive
+                                          ? "bg-indigo-100 text-indigo-700"
+                                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                      }`}
+                  onClick={handleDrawerClose} // Cierra el drawer en mobile al hacer clic
+                >
+                  <span
+                    className={`mr-3 h-6 w-6 flex items-center justify-center ${
+                      isActive
+                        ? "text-indigo-500"
+                        : "text-gray-500 group-hover:text-gray-600"
+                    }`}
+                  >
+                    {" "}
+                    {/* Icon color changes on hover and active */}
+                    {item.icon}
+                  </span>
+                  {item.text}
+                </NavLink>
+              );
+            })}
+        </nav>
       </div>
-      <Divider /> {/* Mantenemos Divider de MUI o puedes usar una hr con estilos Tailwind */}
-      <ul className="pt-4"> {/* Reemplaza List con ul */}
-        {menuItems
-          .filter(
-            (item) =>
-              item.roles.includes(userRole || "public") ||
-              item.roles.includes("public")
-          )
-          .map((item) => (
-            <li key={item.text} className="mb-1"> {/* Reemplaza ListItem con li y margen bottom */}
-              <ListItem to={item.path} button onClick={handleDrawerClose}> {/* Mantenemos ListItem custom component */}
-                <span className="ml-3 mr-2">{item.icon}</span> {/* Reemplaza ListItemIcon con span para el icono */}
-                <span className="text-gray-700 hover:text-gray-900">{item.text}</span> {/* Reemplaza ListItemText con span para el texto */}
-              </ListItem>
-            </li>
-          ))}
-      </ul>
     </aside>
   );
 };

@@ -1,5 +1,5 @@
 // src/components/layout/Navbar.tsx
-import MenuIcon from "@mui/icons-material/Menu"; // Mantendremos el icono de MUI por ahora o puedes buscar uno de Tailwind o Heroicons
+import MenuIcon from "@mui/icons-material/Menu";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -18,28 +18,32 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDrawer }) => {
   };
 
   return (
-    <header className="bg-white shadow-md fixed w-full top-0 z-50"> {/* Reemplaza AppBar con header y clases Tailwind */}
-      <div className="container mx-auto px-4 sm:px-6 py-3 flex justify-between items-center"> {/* Reemplaza Toolbar y Box container */}
-        <div className="flex items-center"> {/* Reemplaza Box flex container */}
+    <header className="bg-white shadow-md fixed w-full top-0 z-50">
+      <div className="container mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+        <div className="flex items-center">
           <button
-            className="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700 md:hidden" // Clases para el IconButton, oculto en md y superior
+            className="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700 md:hidden transition-colors duration-200" // Transición en el icono
             aria-label="Abrir menú"
             onClick={toggleDrawer}
           >
-            <MenuIcon /> {/* Mantenemos MenuIcon de MUI o reemplaza con un SVG de Heroicons */}
+            <MenuIcon className="transition-transform duration-300 hover:scale-110" />{" "}
+            {/* Transición y escala en hover del icono */}
           </button>
           <img
             src="/public/SrPolForYouSinTitle.svg"
             alt="SrPol Logo"
-            className="h-10 mr-2" // Clases para la imagen
+            className="h-10 mr-2 transition-transform duration-300 hover:scale-105" // Transición en el logo
           />
-          <span className="text-xl font-semibold text-gray-900">SrPol</span> {/* Reemplaza Typography */}
+          <span className="text-xl font-semibold text-gray-900 transition-colors duration-200 hover:text-indigo-700">
+            SrPol
+          </span>{" "}
+          {/* Transición en el título */}
         </div>
         {user && (
-          <div className="hidden md:flex items-center"> {/* Reemplaza Box usuario, oculto en mobile */}
-            <span className="text-gray-700 mr-4">{user.email}</span> {/* Reemplaza Typography usuario */}
+          <div className="hidden md:flex items-center">
+            <span className="text-gray-700 mr-4">{user.email}</span>
             <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" // Reemplaza Button
+              className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200 hover:scale-105" // Transición en el botón
               onClick={handleLogout}
             >
               Cerrar Sesión

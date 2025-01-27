@@ -3,11 +3,11 @@
 ├── eslint.config.js [30]
 ├── firebase.json [1]
 ├── index.html [17]
-├── package.json [47]
+├── package.json [51]
 ├── postcss.config.js [9]
 ├── README.md [51]
 ├── 📂 src
-│   ├── App.tsx [146]
+│   ├── App.tsx [147]
 │   ├── 📂 components
 │   │   ├── 📂 auth
 │   │   │   ├── LoginForm.tsx [83]
@@ -16,24 +16,25 @@
 │   │   │   ├── MenuForm.tsx [203]
 │   │   │   └── PedidoForm.tsx [232]
 │   │   ├── 📂 layout
-│   │   │   ├── MainLayout.tsx [44]
-│   │   │   ├── Navbar.tsx [54]
+│   │   │   ├── MainLayout.tsx [37]
+│   │   │   ├── Navbar.tsx [59]
 │   │   │   ├── PublicLayout.tsx [19]
-│   │   │   └── Sidebar.tsx [96]
+│   │   │   └── Sidebar.tsx [120]
 │   │   ├── 📂 menu
+│   │   │   ├── GroupOrderPage.tsx [667]
 │   │   │   ├── MenuForm.tsx [189]
 │   │   │   ├── MenuItem.tsx [61]
 │   │   │   ├── MenuList.tsx [22]
 │   │   │   ├── MenuModal.tsx [67]
-│   │   │   └── PersonMenuModal.tsx [121]
+│   │   │   └── PersonMenuModal.tsx [223]
 │   │   ├── 📂 payment
 │   │   │   └── PaymentForm.tsx [80]
 │   │   ├── 📂 pedidos
-│   │   │   ├── PedidoForm.tsx [181]
+│   │   │   ├── PedidoForm.tsx [232]
 │   │   │   ├── PedidoItem.tsx [9]
 │   │   │   └── PedidoList.tsx [290]
 │   │   └── 📂 ui
-│   │       ├── Button.tsx [80]
+│   │       ├── Button.tsx [79]
 │   │       ├── ErrorBoundry.tsx [46]
 │   │       ├── ListItem.tsx [64]
 │   │       └── TextField.tsx [34]
@@ -45,7 +46,7 @@
 │   │   └── useMenu.ts [10]
 │   ├── main.tsx [10]
 │   ├── 📂 pages
-│   │   ├── Dashboard.tsx [19]
+│   │   ├── Dashboard.tsx [672]
 │   │   ├── GestionMenu.tsx [133]
 │   │   ├── GestionUsuarios.tsx [82]
 │   │   ├── Login.tsx [56]
@@ -56,7 +57,7 @@
 │   ├── 📂 payment
 │   │   └── payment.ts [87]
 │   ├── 📂 styles
-│   │   └── global.css [17]
+│   │   └── global.css [66]
 │   ├── 📂 types
 │   │   ├── css.d.ts [1]
 │   │   └── global.d.ts [14]
@@ -68,10 +69,10 @@
 ├── tsconfig.app.json [31]
 ├── tsconfig.json [20]
 ├── tsconfig.node.json [25]
-└── vite.config.ts [34]
+└── vite.config.ts [37]
 
 
-Total de líneas resumidas: 3731
+Total de líneas resumidas: 5282
 
 
 /* Inicio eslint.config.js */
@@ -152,11 +153,14 @@ export default tseslint.config(
     "@mui/x-data-grid": "^7.24.1",
     "@stripe/stripe-js": "^5.5.0",
     "axios": "^1.7.9",
+    "chart.js": "^4.4.7",
     "firebase": "^11.2.0",
     "firebase-admin": "^13.0.2",
     "firebase-functions": "^6.3.0",
     "react": "^18.3.1",
+    "react-chartjs-2": "^5.3.0",
     "react-dom": "^18.3.1",
+    "react-icons": "^5.4.0",
     "react-router-dom": "^7.1.3",
     "stripe": "^17.5.0",
     "uuid": "^11.0.5"
@@ -166,19 +170,20 @@ export default tseslint.config(
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.17",
     "eslint": "^9.17.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.18.2",
     "vite": "^6.0.5",
-    "vite-plugin-pwa": "^0.21.1",
-    "tailwindcss": "^3.4.1",
-    "postcss": "^8.4.35",
-    "autoprefixer": "^10.4.17"
+    "vite-plugin-pwa": "^0.21.1"
   }
 }
+
 /* Fin package.json */
 
 /* Inicio postcss.config.js */
@@ -265,7 +270,8 @@ import Dashboard from "./pages/Dashboard";
 import GestionMenu from "./pages/GestionMenu";
 import GestionUsuarios from "./pages/GestionUsuarios";
 import Login from "./pages/Login";
-import MenuPage from "./pages/MenuPage";
+
+import GroupOrderPage from "./components/menu/GroupOrderPage";
 import PedidosPage from "./pages/PedidosPage";
 import Perfil from "./pages/Perfil";
 import Success from "./pages/Success";
@@ -337,7 +343,7 @@ const App: React.FC = () => {
                 path="/menu"
                 element={
                   <PrivateRoute>
-                    <MenuPage />
+                    <GroupOrderPage />
                   </PrivateRoute>
                 }
               />
@@ -1029,23 +1035,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const handleDrawerClose = () => {
     setDrawerOpen(false);
   };
+
   return (
     <div className="flex h-screen bg-gray-100">
-      {" "}
-      {/* Reemplaza Box con div y clases Tailwind para layout flex y altura de pantalla */}
       <Navbar toggleDrawer={handleDrawerToggle} />
       <Sidebar drawerOpen={drawerOpen} handleDrawerClose={handleDrawerClose} />
-      <main className="flex-1 overflow-x-hidden overflow-y-auto p-4">
+      <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:pl-64">
         {" "}
-        {/* Reemplaza Box main con main y clases flex-grow y padding */}
+        {/* Ajuste de padding lateral en desktop para el sidebar fijo */}
         <div className="container mx-auto">
-          {" "}
-          {/* Reemplaza Grid container con div container para centrar contenido */}
-          <div className="w-full">
-            {" "}
-            {/* Reemplaza Grid item con div full width */}
-            {children}
-          </div>
+          <div className="w-full">{children}</div>
         </div>
       </main>
     </div>
@@ -1058,7 +1057,7 @@ export default MainLayout;
 
 /* Inicio src\components\layout\Navbar.tsx */
 // src/components/layout/Navbar.tsx
-import MenuIcon from "@mui/icons-material/Menu"; // Mantendremos el icono de MUI por ahora o puedes buscar uno de Tailwind o Heroicons
+import MenuIcon from "@mui/icons-material/Menu";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
@@ -1077,28 +1076,32 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDrawer }) => {
   };
 
   return (
-    <header className="bg-white shadow-md fixed w-full top-0 z-50"> {/* Reemplaza AppBar con header y clases Tailwind */}
-      <div className="container mx-auto px-4 sm:px-6 py-3 flex justify-between items-center"> {/* Reemplaza Toolbar y Box container */}
-        <div className="flex items-center"> {/* Reemplaza Box flex container */}
+    <header className="bg-white shadow-md fixed w-full top-0 z-50">
+      <div className="container mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+        <div className="flex items-center">
           <button
-            className="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700 md:hidden" // Clases para el IconButton, oculto en md y superior
+            className="text-gray-500 hover:text-gray-700 focus:outline-none focus:text-gray-700 md:hidden transition-colors duration-200" // Transición en el icono
             aria-label="Abrir menú"
             onClick={toggleDrawer}
           >
-            <MenuIcon /> {/* Mantenemos MenuIcon de MUI o reemplaza con un SVG de Heroicons */}
+            <MenuIcon className="transition-transform duration-300 hover:scale-110" />{" "}
+            {/* Transición y escala en hover del icono */}
           </button>
           <img
             src="/public/SrPolForYouSinTitle.svg"
             alt="SrPol Logo"
-            className="h-10 mr-2" // Clases para la imagen
+            className="h-10 mr-2 transition-transform duration-300 hover:scale-105" // Transición en el logo
           />
-          <span className="text-xl font-semibold text-gray-900">SrPol</span> {/* Reemplaza Typography */}
+          <span className="text-xl font-semibold text-gray-900 transition-colors duration-200 hover:text-indigo-700">
+            SrPol
+          </span>{" "}
+          {/* Transición en el título */}
         </div>
         {user && (
-          <div className="hidden md:flex items-center"> {/* Reemplaza Box usuario, oculto en mobile */}
-            <span className="text-gray-700 mr-4">{user.email}</span> {/* Reemplaza Typography usuario */}
+          <div className="hidden md:flex items-center">
+            <span className="text-gray-700 mr-4">{user.email}</span>
             <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" // Reemplaza Button
+              className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200 hover:scale-105" // Transición en el botón
               onClick={handleLogout}
             >
               Cerrar Sesión
@@ -1111,6 +1114,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDrawer }) => {
 };
 
 export default Navbar;
+
 /* Fin src\components\layout\Navbar.tsx */
 
 /* Inicio src\components\layout\PublicLayout.tsx */
@@ -1144,15 +1148,10 @@ import {
   RestaurantMenu as RestaurantMenuIcon,
   Settings as SettingsIcon,
   ShoppingCart as ShoppingCartIcon,
-} from "@mui/icons-material"; // Mantendremos iconos de MUI por ahora
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'; // Icono de MUI, puedes reemplazarlo
-import {
-  Divider,
-  IconButton,
-} from "@mui/material"; // Mantenemos Divider e IconButton de MUI para facilitar la migración o puedes buscar alternativas Tailwind
+} from "@mui/icons-material";
 import React from "react";
+import { NavLink, useLocation } from "react-router-dom"; // Importa NavLink y useLocation
 import { useAuth } from "../../hooks/useAuth";
-import ListItem from "../ui/ListItem";
 
 interface SidebarProps {
   drawerOpen: boolean;
@@ -1161,7 +1160,9 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ drawerOpen, handleDrawerClose }) => {
   const { userRole } = useAuth();
-  const menuItems = [ /* ... menuItems igual ... */
+  const location = useLocation(); // Hook para obtener la ruta actual
+
+  const menuItems = [
     {
       text: "Dashboard",
       icon: <DashboardIcon />,
@@ -1202,37 +1203,734 @@ const Sidebar: React.FC<SidebarProps> = ({ drawerOpen, handleDrawerClose }) => {
 
   return (
     <aside
-      className={`bg-gray-50 w-60 flex-shrink-0 overflow-y-auto fixed top-16 md:top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out md:translate-x-0 ${drawerOpen ? 'translate-x-0' : '-translate-x-full'}`} // Reemplaza Drawer con aside y clases Tailwind, lógica para drawerOpen
+      className={`bg-gray-50 w-64 flex-shrink-0 overflow-y-auto fixed top-16 md:top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out md:translate-x-0 ${
+        drawerOpen ? "translate-x-0" : "-translate-x-full"
+      } md:shadow-md`} // Shadow en desktop
     >
-      <div className="py-4 px-3 flex justify-between items-center"> {/* Reemplaza Toolbar */}
-        <span className="text-lg font-semibold text-gray-900">Navegación</span> {/* Reemplaza Typography */}
-        <IconButton onClick={handleDrawerClose} className="md:hidden"> {/* IconButton para cerrar en mobile, oculto en md y superior */}
-          <ChevronLeftIcon /> {/* Icono de MUI */}
-        </IconButton>
+      <div className="py-6 px-4 md:px-6">
+        {" "}
+        {/* Más padding en desktop */}
+        <span className="text-xl font-semibold text-gray-900 block mb-2 md:hidden text-center">
+          Navegación
+        </span>{" "}
+        {/* Título en mobile */}
+        <nav className="space-y-2">
+          {menuItems
+            .filter(
+              (item) =>
+                item.roles.includes(userRole || "public") ||
+                item.roles.includes("public")
+            )
+            .map((item) => {
+              const isActive = location.pathname === item.path; // Verifica si la ruta coincide
+              return (
+                <NavLink
+                  key={item.text}
+                  to={item.path}
+                  className={({
+                    isActive,
+                  }) => `group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200
+                                      ${
+                                        isActive
+                                          ? "bg-indigo-100 text-indigo-700"
+                                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                      }`}
+                  onClick={handleDrawerClose} // Cierra el drawer en mobile al hacer clic
+                >
+                  <span
+                    className={`mr-3 h-6 w-6 flex items-center justify-center ${
+                      isActive
+                        ? "text-indigo-500"
+                        : "text-gray-500 group-hover:text-gray-600"
+                    }`}
+                  >
+                    {" "}
+                    {/* Icon color changes on hover and active */}
+                    {item.icon}
+                  </span>
+                  {item.text}
+                </NavLink>
+              );
+            })}
+        </nav>
       </div>
-      <Divider /> {/* Mantenemos Divider de MUI o puedes usar una hr con estilos Tailwind */}
-      <ul className="pt-4"> {/* Reemplaza List con ul */}
-        {menuItems
-          .filter(
-            (item) =>
-              item.roles.includes(userRole || "public") ||
-              item.roles.includes("public")
-          )
-          .map((item) => (
-            <li key={item.text} className="mb-1"> {/* Reemplaza ListItem con li y margen bottom */}
-              <ListItem to={item.path} button onClick={handleDrawerClose}> {/* Mantenemos ListItem custom component */}
-                <span className="ml-3 mr-2">{item.icon}</span> {/* Reemplaza ListItemIcon con span para el icono */}
-                <span className="text-gray-700 hover:text-gray-900">{item.text}</span> {/* Reemplaza ListItemText con span para el texto */}
-              </ListItem>
-            </li>
-          ))}
-      </ul>
     </aside>
   );
 };
 
 export default Sidebar;
+
 /* Fin src\components\layout\Sidebar.tsx */
+
+/* Inicio src\components\menu\GroupOrderPage.tsx */
+/* Directorio: src\components\menu\GroupOrderPage.tsx */
+/* Directorio: src\components\menu\GroupOrderPage.tsx */
+import React, { useEffect, useRef, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { MenuItem } from "../../context/AppContext";
+import { useMenu } from "../../hooks/useMenu";
+import PedidoForm from "../forms/PedidoForm"; // Correct import path
+
+interface Person {
+    id: string;
+    name: string;
+    items: { id: string; quantity: number }[];
+}
+
+const GroupOrderPage: React.FC = () => {
+    const { menu } = useMenu();
+    const [numPeople, setNumPeople] = useState<number>(1);
+    const [people, setPeople] = useState<Person[]>([]);
+    const [showPeopleNames, setShowPeopleNames] = useState(false);
+    const [showPedidoForm, setShowPedidoForm] = useState(false);
+    const [sharedOrderItems, setSharedOrderItems] = useState<
+        { itemId: string; quantity: number; personIds: string[] }[]
+    >([]);
+    const [activeTab, setActiveTab] = useState<string>("shared");
+
+    const sharedOrderSummaryRef = useRef<HTMLDivElement>(null);
+    const personOrderSummaryRef = useRef<HTMLDivElement>(null);
+    const [, setIsMobile] = useState(false);
+    const [, setIsSummaryVisible] = useState(true);
+
+    // Nuevos estados añadidos
+    const [activeItemId, setActiveItemId] = useState<string | null>(null);
+    const [selectedPeople, setSelectedPeople] = useState<string[]>([]);
+    const [feedbackMessage, setFeedbackMessage] = useState<string>("");
+
+    useEffect(() => {
+        const checkMobile = () => window.innerWidth < 768;
+        setIsMobile(checkMobile());
+        const handleResize = () => setIsMobile(checkMobile());
+        window.addEventListener("resize", handleResize);
+        setIsSummaryVisible(!checkMobile());
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+
+    const handleNumPeopleChange = (
+        event: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const num = Number(event.target.value);
+        setNumPeople(num);
+
+        setPeople((prevPeople) => {
+            const currentPeopleCount = prevPeople.length;
+            if (num > currentPeopleCount) {
+                const newPeople = Array.from({ length: num - currentPeopleCount }, (_, index) => ({
+                    id: uuidv4(),
+                    name: `Persona ${currentPeopleCount + index + 1}`,
+                    items: [],
+                }));
+                return [...prevPeople, ...newPeople];
+            } else if (num < currentPeopleCount) {
+                return prevPeople.slice(0, num);
+            } else {
+                return prevPeople;
+            }
+        });
+    };
+
+    const handlePersonNameChange = (index: number, name: string) => {
+        const updatedPeople = [...people];
+        updatedPeople[index].name = name;
+        setPeople(updatedPeople);
+    };
+
+
+    const handleStartOrder = () => {
+        if (people.every(person => person.name.trim() !== "")) {
+            setShowPeopleNames(true);
+            setActiveTab("shared");
+        } else {
+            alert("Por favor, ingresa el nombre de cada persona.");
+        }
+
+    };
+
+
+    const handleReviewOrder = () => {
+        distributeSharedOrderItems();
+        setShowPedidoForm(true);
+    };
+
+    const calculateSubtotal = (
+        personItems: { id: string; quantity: number }[]
+    ) => {
+        let total = 0;
+        personItems.forEach((item) => {
+            const menuItem = menu.find((m) => m.id === item.id);
+            if (menuItem) {
+                total += menuItem.price * item.quantity;
+            }
+        });
+        return total;
+    };
+
+    const calculateSharedSubtotal = () => {
+        let total = 0;
+        sharedOrderItems.forEach((sharedItem) => {
+            const menuItem = menu.find((m) => m.id === sharedItem.itemId);
+            if (menuItem) {
+                total += menuItem.price * sharedItem.quantity;
+            }
+        });
+        return total;
+    };
+
+    const handleAddToSharedOrder = (item: MenuItem) => {
+        const existingItemIndex = sharedOrderItems.findIndex(
+            (sharedItem) => sharedItem.itemId === item.id
+        );
+        if (existingItemIndex > -1) {
+            const updatedSharedOrderItems = [...sharedOrderItems];
+            updatedSharedOrderItems[existingItemIndex].quantity += 1;
+            setSharedOrderItems(updatedSharedOrderItems);
+        } else {
+            setSharedOrderItems([
+                ...sharedOrderItems,
+                { itemId: item.id, quantity: 1, personIds: [] },
+            ]);
+        }
+    };
+
+    const handleSharedOrderItemQuantityChange = (
+        itemId: string,
+        quantity: number
+    ) => {
+        if (quantity < 0) return;
+        const updatedSharedOrderItems = sharedOrderItems.map((sharedItem) =>
+            sharedItem.itemId === itemId ? { ...sharedItem, quantity } : sharedItem
+        );
+        setSharedOrderItems(updatedSharedOrderItems);
+    };
+
+    const handleRemoveSharedOrderItem = (itemId: string) => {
+        const updatedSharedOrderItems = sharedOrderItems.filter(
+            (item) => item.itemId !== itemId
+        );
+        setSharedOrderItems(updatedSharedOrderItems);
+    };
+
+    const distributeSharedOrderItems = () => {
+        const itemsToDistribute = [...sharedOrderItems];
+        const updatedPeople = people.map((person) => ({
+            ...person,
+            items: [...person.items],
+        }));
+
+        itemsToDistribute.forEach((sharedItem) => {
+            const menuItem = menu.find((m) => m.id === sharedItem.itemId);
+            if (menuItem) {
+                for (let i = 0; i < sharedItem.quantity; i++) {
+                    const personToAssign = updatedPeople.reduce(
+                        (bestPerson, currentPerson) => {
+                            const bestPersonItemsCount = bestPerson.items.reduce(
+                                (sum, item) => sum + item.quantity,
+                                0
+                            );
+                            const currentPersonItemsCount = currentPerson.items.reduce(
+                                (sum, item) => sum + item.quantity,
+                                0
+                            );
+                            return currentPersonItemsCount < bestPersonItemsCount
+                                ? currentPerson
+                                : bestPerson;
+                        },
+                        updatedPeople[0]
+                    );
+
+                    personToAssign.items.push({ id: sharedItem.itemId, quantity: 1 });
+                }
+            }
+        });
+        setPeople(updatedPeople);
+        setSharedOrderItems([]);
+    };
+
+    const handleAddItemToPerson = (personId: string, item: MenuItem) => {
+        setPeople((prevPeople) => {
+            return prevPeople.map((person) => {
+                if (person.id === personId) {
+                    const itemExists = person.items.some(
+                        (orderItem) => orderItem.id === item.id
+                    );
+                    if (itemExists) {
+                        return {
+                            ...person,
+                            items: person.items.map((orderItem) =>
+                                orderItem.id === item.id
+                                    ? { ...orderItem, quantity: orderItem.quantity + 1 }
+                                    : orderItem
+                            ),
+                        };
+                    } else {
+                        return {
+                            ...person,
+                            items: [...person.items, { id: item.id, quantity: 1 }],
+                        };
+                    }
+                }
+                return person;
+            });
+        });
+    };
+
+    const handlePersonOrderItemQuantityChange = (personId: string, itemId: string, quantity: number) => {
+        if (quantity < 0) return;
+        setPeople(prevPeople =>
+            prevPeople.map(person => {
+                if (person.id === personId) {
+                    return {
+                        ...person,
+                        items: person.items.map(item =>
+                            item.id === itemId ? { ...item, quantity } : item
+                        )
+                    };
+                }
+                return person;
+            })
+        );
+    };
+
+
+    const handleRemoveItemFromPerson = (personId: string, itemId: string) => {
+        setPeople((prevPeople) =>
+            prevPeople.map((person) =>
+                person.id === personId
+                    ? {
+                        ...person,
+                        items: person.items.filter((item) => item.id !== itemId),
+                    }
+                    : person
+            )
+        );
+    };
+
+
+    const handleToggleSelectPerson = (personId: string) => {
+        setSelectedPeople((prev) =>
+            prev.includes(personId)
+                ? prev.filter((id) => id !== personId)
+                : [...prev, personId]
+        );
+    };
+
+    const handleAddToSelected = (item: MenuItem) => {
+        const targetPeople = people.filter((person) =>
+            selectedPeople.includes(person.id)
+        );
+
+        setPeople((prevPeople) =>
+            prevPeople.map((person) => {
+                if (selectedPeople.includes(person.id)) {
+                    const itemExists = person.items.some(
+                        (orderItem) => orderItem.id === item.id
+                    );
+                    if (itemExists) {
+                        return {
+                            ...person,
+                            items: person.items.map((orderItem) =>
+                                orderItem.id === item.id
+                                    ? { ...orderItem, quantity: orderItem.quantity + 1 }
+                                    : orderItem
+                            ),
+                        };
+                    } else {
+                        return {
+                            ...person,
+                            items: [...person.items, { id: item.id, quantity: 1 }],
+                        };
+                    }
+                }
+                return person;
+            })
+        );
+
+        setSharedOrderItems(prevSharedOrderItems =>
+            prevSharedOrderItems.map(sharedItem => {
+                if (sharedItem.itemId === item.id) {
+                    return {
+                        ...sharedItem,
+                        personIds: [...sharedItem.personIds, ...selectedPeople]
+                    };
+                }
+                return sharedItem;
+            })
+        );
+
+        setSelectedPeople([]);
+        setActiveItemId(null);
+
+        const names = targetPeople.map((p) => p.name).join(", ");
+        setFeedbackMessage(`Añadido a las órdenes de: ${names}`);
+
+        setTimeout(() => {
+            setFeedbackMessage("");
+        }, 3000);
+    };
+
+
+    const menuCategories = menu.reduce((categories, item) => {
+        const category = item.recommendation || "General";
+        if (!categories[category]) {
+            categories[category] = [];
+        }
+        categories[category].push(item);
+        return categories;
+    }, {});
+
+    return (
+        <div className="container mx-auto my-8 p-6 bg-white rounded-xl shadow-md relative">
+            <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center text-indigo-700">
+                ¡Pedido Grupal Fácil y Divertido! 🎉
+            </h1>
+
+            {!showPeopleNames ? (
+                <div className="mb-8 text-center">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                        ¿Cuántos son hoy?
+                    </h2>
+                    <div className="flex flex-col items-center space-y-4">
+                        <div className="flex items-center space-x-4">
+                            <label
+                                htmlFor="numPeople"
+                                className="block text-gray-700 text-sm font-bold"
+                            >
+                                Somos:
+                            </label>
+                            <input
+                                type="number"
+                                id="numPeople"
+                                value={numPeople}
+                                onChange={handleNumPeopleChange}
+                                min="1"
+                                className="shadow appearance-none border rounded w-20 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-center"
+                            />
+                            <span className="text-gray-700 text-sm font-bold">
+                                Personas
+                            </span>
+                        </div>
+                        {Array.from({ length: numPeople }).map((_, index) => (
+                            <input
+                                key={index}
+                                type="text"
+                                placeholder={`Nombre Persona ${index + 1}`}
+                                className="shadow appearance-none border rounded w-full max-w-sm py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                value={people[index]?.name || ""}
+                                onChange={(e) => handlePersonNameChange(index, e.target.value)}
+                            />
+                        ))}
+                    </div>
+
+                    <button
+                        className="mt-6 bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-xl focus:outline-none focus:shadow-outline transition-colors duration-300"
+                        onClick={handleStartOrder}
+                    >
+                        ¡A Pedir! 🚀
+                    </button>
+                </div>
+            ) : !showPedidoForm ? (
+                <>
+                    <div className="border-b border-gray-200 mb-4">
+                        <nav
+                            className="-mb-px flex space-x-8 overflow-x-auto md:overflow-x-hidden"
+                            aria-label="Tabs"
+                        >
+                            <button
+                                onClick={() => setActiveTab("shared")}
+                                className={`${
+                                    activeTab === "shared"
+                                        ? "border-indigo-500 text-indigo-600"
+                                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300`}
+                            >
+                                🍕 Para Compartir
+                            </button>
+                            {people.map((person, index) => (
+                                <button
+                                    key={person.id}
+                                    onClick={() => setActiveTab(person.id)}
+                                    className={`${
+                                        activeTab === person.id
+                                            ? "border-indigo-500 text-indigo-600"
+                                            : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300`}
+                                >
+                                    {person.name || `Persona ${index + 1}`}
+                                </button>
+                            ))}
+                        </nav>
+                    </div>
+
+                    {activeTab === "shared" && (
+                        <div className="mb-8">
+                            <div className="sticky top-16 bg-white p-4 shadow-md z-20 rounded-md transition-transform duration-200 ease-out transform translate-y-0 hover:translate-y-[-2px] ring-2 ring-indigo-500 ring-opacity-50 hover:ring-opacity-100" ref={sharedOrderSummaryRef}>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-4 text-center">
+                                    Pedido para Compartir 🤝
+                                </h2>
+                                <ul className="mb-4">
+                                    {sharedOrderItems.map((sharedItem) => {
+                                        const menuItem = menu.find(
+                                            (m) => m.id === sharedItem.itemId
+                                        );
+                                        return menuItem ? (
+                                            <li
+                                                key={sharedItem.itemId}
+                                                className="flex justify-between items-center py-2 border-b border-gray-200"
+                                            >
+                                                <span className="flex-1 min-w-0"> {/* Item name takes available space */}
+                                                    {menuItem.name}
+                                                </span>
+                                                <div className="flex items-center space-x-2">
+                                                    <button
+                                                        onClick={() => handleSharedOrderItemQuantityChange(sharedItem.itemId, sharedItem.quantity - 1)}
+                                                        className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <span className="w-6 text-center">{sharedItem.quantity}</span>
+                                                    <button
+                                                        onClick={() => handleSharedOrderItemQuantityChange(sharedItem.itemId, sharedItem.quantity + 1)}
+                                                        className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                                                    >
+                                                        +
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleRemoveSharedOrderItem(sharedItem.itemId)}
+                                                        className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-.478 0l-.345-9m7.021-2.01C18.692 6.905 17.127 5.536 15.313 5.536H8.687C6.873 5.536 5.308 6.905 5.308 8.72v.81c0 1.18.914 2.12 2.094 2.201l1.652.072m7.324 0l1.652-.072a2.094 2.094 0 002.094-2.201v-.81c0-1.814-1.365-3.183-3.187-3.183zm-2.961 8.903L15.7 11.855m-2.606 5.15l-2.796-5.15m5.136 0l-2.794 5.15z" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                                <span className="w-12 text-right"> {/* Price with fixed width and right alignment */}
+                                                    ${(menuItem.price * sharedItem.quantity).toFixed(2)}
+                                                </span>
+                                            </li>
+                                        ) : null;
+                                    })}
+                                    {sharedOrderItems.length > 0 && (
+                                        <li className="font-semibold text-right mt-2">
+                                            Subtotal: <span className="text-indigo-700">${calculateSharedSubtotal().toFixed(2)}</span>
+                                        </li>
+                                    )}
+                                </ul>
+                            </div>
+                            <p className="text-gray-600 mb-4 text-center mt-4">
+                                ¿Algo más para compartir? ¡Elige del menú!
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                                {Object.entries(menuCategories).map(
+                                    ([categoryName, items]) => (
+                                        <div key={categoryName} className="transition-all duration-300 transform hover:scale-105"> {/* Card animation */}
+                                            <h3 className="font-bold text-lg text-gray-900 mb-2 text-indigo-500">
+                                                {categoryName}
+                                            </h3>
+                                            <div className="flex flex-col space-y-2">
+                                                {(items as MenuItem[]).map(
+                                                    (item) => (
+                                                        <button
+                                                            key={item.id}
+                                                            className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-left transition-colors duration-300"
+                                                            onClick={() =>
+                                                                handleAddToSharedOrder(
+                                                                    item
+                                                                )
+                                                            }
+                                                        >
+                                                            {item.name} - ${item.price}
+                                                        </button>
+                                                    )
+                                                )}
+                                            </div>
+                                        </div>
+                                    )
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {people.map(
+                        (person, index) =>
+                            activeTab === person.id && (
+                                <div
+                                    key={person.id}
+                                    className="mb-8"
+                                    ref={personOrderSummaryRef}
+                                >
+                                    <div className="sticky top-16 bg-white p-4 shadow-md z-20 rounded-md transition-transform duration-200 ease-out transform translate-y-0 hover:translate-y-[-2px] ring-2 ring-indigo-500 ring-opacity-50 hover:ring-opacity-100">
+                                        <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">
+                                            Pedido de {person.name || `Persona ${index + 1}`} 😋
+                                        </h2>
+                                        <ul className="mb-4">
+                                            {person.items.map((item) => {
+                                                const menuItem = menu.find((m) => m.id === item.id);
+                                                return menuItem ? (
+                                                    <li
+                                                        key={item.id}
+                                                        className="flex justify-between items-center py-2 border-b border-gray-200"
+                                                    >
+                                                        <span className="flex-1 min-w-0">
+                                                            {menuItem.name}
+                                                        </span>
+                                                        <div className="flex items-center space-x-2">
+                                                            <button
+                                                                onClick={() => handlePersonOrderItemQuantityChange(person.id, item.id, item.quantity - 1)}
+                                                                className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                                                            >
+                                                                -
+                                                            </button>
+                                                            <span className="w-6 text-center">{item.quantity}</span>
+                                                            <button
+                                                                onClick={() => handlePersonOrderItemQuantityChange(person.id, item.id, item.quantity + 1)}
+                                                                className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                                                            >
+                                                                +
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleRemoveItemFromPerson(person.id, item.id)}
+                                                                className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                                                            >
+                                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-.478 0l-.345-9m7.021-2.01C18.692 6.905 17.127 5.536 15.313 5.536H8.687C6.873 5.536 5.308 6.905 5.308 8.72v.81c0 1.18.914 2.12 2.094 2.201l1.652.072m7.324 0l1.652-.072a2.094 2.094 0 002.094-2.201v-.81c0-1.814-1.365-3.183-3.187-3.183zm-2.961 8.903L15.7 11.855m-2.606 5.15l-2.796-5.15m5.136 0l-2.794 5.15z" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                        <span className="w-12 text-right">
+                                                            ${(menuItem.price * item.quantity).toFixed(2)}
+                                                        </span>
+                                                    </li>
+                                                ) : null;
+                                            })}
+                                            {person.items.length > 0 && (
+                                                <li className="font-semibold text-right mt-2">
+                                                    Subtotal: <span className="text-indigo-700">${calculateSubtotal(person.items).toFixed(2)}</span>
+                                                </li>
+                                            )}
+                                        </ul>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {Object.entries(menuCategories).map(
+                                            ([categoryName, items]) => (
+                                                <div key={categoryName} className="transition-all duration-300 transform hover:scale-105"> {/* Card animation */}
+                                                    <h3 className="font-bold text-lg text-gray-900 mb-2 text-indigo-500">
+                                                        {categoryName}
+                                                    </h3>
+                                                    <div className="flex flex-col space-y-2">
+                                                        {(items as MenuItem[]).map(
+                                                            (item) => (
+                                                                <button
+                                                                    key={item.id}
+                                                                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-left transition-colors duration-300"
+                                                                    onClick={() =>
+                                                                        handleAddItemToPerson(
+                                                                            person.id,
+                                                                            item
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    {item.name} - ${item.price}
+                                                                </button>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
+                                </div>
+                            )
+                    )}
+
+                    <div className="flex justify-center mt-8">
+                        <button
+                            className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl focus:outline-none focus:shadow-outline disabled:opacity-50 transition-colors duration-300 animate-pulse hover:animate-none"  // Button pulse animation
+                            onClick={handleReviewOrder}
+                            disabled={
+                                people.some((person) => person.items.length === 0) &&
+                                sharedOrderItems.length === 0
+                            }
+                        >
+                            ¡Revisar Pedido Grupal! ✅
+                        </button>
+                    </div>
+                </>
+            ) : (
+                <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-md animate-fade-in"> {/* Fade in animation for review */}
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center text-indigo-700">
+                        ¡Revisa tu Pedido Grupal! 🧐
+                    </h2>
+                    {sharedOrderItems.length > 0 && (
+                        <div className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-50">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-3 text-indigo-600">
+                                Pedido Compartido 🤝
+                            </h3>
+                            <ul>
+                                {sharedOrderItems.map((sharedItem) => {
+                                    const menuItem = menu.find(
+                                        (m) => m.id === sharedItem.itemId
+                                    );
+                                    return menuItem ? (
+                                        <li key={sharedItem.itemId} className="py-1 flex justify-between"> {/* Flex for alignment */}
+                                            <span className="flex-1">{menuItem.name} x {sharedItem.quantity}</span> {/* Item name takes space */}
+                                            <span className="w-12 text-right">${(menuItem.price * sharedItem.quantity).toFixed(2)}</span> {/* Price right aligned */}
+                                        </li>
+                                    ) : null;
+                                })}
+                            </ul>
+                            <div className="font-semibold text-right">
+                                Subtotal: <span className="text-indigo-700">${calculateSharedSubtotal().toFixed(2)}</span>
+                            </div>
+                        </div>
+                    )}
+                    {people.map((person) => (
+                        <div
+                            key={person.id}
+                            className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-50"
+                        >
+                            <h3 className="text-lg font-semibold text-gray-900 mb-3 text-indigo-600">
+                                {person.name || "Persona"}
+                            </h3>
+                            <ul>
+                                {person.items.map((item) => {
+                                    const menuItem = menu.find(
+                                        (m) => m.id === item.id
+                                    );
+                                    return menuItem ? (
+                                        <li key={item.id} className="py-1 flex justify-between"> {/* Flex for alignment */}
+                                            <span className="flex-1">{menuItem.name} x {item.quantity}</span> {/* Item name takes space */}
+                                            <span className="w-12 text-right">${(menuItem.price * item.quantity).toFixed(2)}</span> {/* Price right aligned */}
+                                        </li>
+                                    ) : null;
+                                })}
+                            </ul>
+                            <div className="font-semibold text-right">
+                                Subtotal: <span className="text-indigo-700">${calculateSubtotal(person.items).toFixed(2)}</span>
+                            </div>
+                        </div>
+                    ))}
+                    <PedidoForm
+                        onClose={() => setShowPedidoForm(false)}
+                        people={people}
+                        sharedOrderItems={sharedOrderItems}
+                    />
+                </div>
+            )}
+
+            {feedbackMessage && (
+                <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg animate-fade-in">
+                    {feedbackMessage}
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default GroupOrderPage;
+/* Fin src\components\menu\GroupOrderPage.tsx */
 
 /* Inicio src\components\menu\MenuForm.tsx */
 /* src\components\menu\MenuForm.tsx */
@@ -1586,127 +2284,229 @@ export default MenuModal;
 /* Fin src\components\menu\MenuModal.tsx */
 
 /* Inicio src\components\menu\PersonMenuModal.tsx */
-import React from 'react';
-import { MenuItem as MenuItemType } from '../../context/AppContext'; // Ajusta la ruta según tus types
-import MenuItemComponent from './MenuItem'; // Asegúrate de que la ruta a MenuItemComponent sea correcta
+// src/components/forms/PedidoForm.tsx
+import { Timestamp, addDoc, collection } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { useAuth } from "../../hooks/useAuth";
+import { useMenu } from "../../hooks/useMenu";
+import { db } from "../../utils/firebase";
 
-interface PersonMenuModalProps {
-    personId: string;
-    menu: MenuItemType[];
-    people: { id: string; name: string; items: { id: string; quantity: number }[] }[]; // Tipo para people
-    setPeople: React.Dispatch<React.SetStateAction<{ id: string; name: string; items: { id: string; quantity: number }[] }[]>>; // Tipo para setPeople
-    onClose: () => void;
-    isOpen: boolean;
+interface PedidoFormProps {
+  onClose: () => void;
+  people?: {
+    id: string;
+    name: string;
+    items: { id: string; quantity: number }[];
+  }[];
+  sharedOrderItems?: {
+    itemId: string;
+    quantity: number;
+    personIds: string[];
+  }[]; // Prop para items compartidos
 }
 
-const PersonMenuModal: React.FC<PersonMenuModalProps> = ({ personId, menu, people, setPeople, onClose, isOpen }) => {
-    if (!isOpen) return null;
+const PedidoForm: React.FC<PedidoFormProps> = ({
+  onClose,
+  people,
+  sharedOrderItems,
+}) => {
+  const { menu } = useMenu();
+  const { user, addPoints } = useAuth();
 
-    const currentPerson = people.find(p => p.id === personId);
-    if (!currentPerson) return null; // Handle error case
+  const [items, setItems] = useState<
+    { id: string; quantity: number; assignedTo: string }[]
+  >([]);
+  const [peopleOrder, setPeopleOrder] = useState<
+    { id: string; name: string }[]
+  >([]);
+  const [sede, setSede] = useState("");
+  const [deliveryFee, setDeliveryFee] = useState(0);
+  const [deliveryIncluded, setDeliveryIncluded] = useState(true);
+  const [paymentMethod, setPaymentMethod] = useState("contraentrega");
 
-    const handleAddItemToPerson = (item: MenuItemType) => {
-        setPeople(prevPeople =>
-            prevPeople.map(person =>
-                person.id === personId
-                    ? {
-                        ...person,
-                        items: [...person.items, { id: item.id, quantity: 1 }],
-                    }
-                    : person
-            )
-        );
-    };
+  useEffect(() => {
+    if (people) {
+      setPeopleOrder(
+        people.map((person) => ({ id: person.id, name: person.name }))
+      );
+      const newItems = people.flatMap((person) =>
+        person.items.map((item) => ({
+          id: item.id,
+          quantity: item.quantity,
+          assignedTo: person.name,
+        }))
+      );
+      setItems(newItems);
+    }
+  }, [people]);
 
-    const handleQuantityChange = (itemId: string, quantity: number) => {
-        if (quantity < 1) return; // Prevent negative or zero quantities
-        setPeople(prevPeople =>
-            prevPeople.map(person =>
-                person.id === personId
-                    ? {
-                        ...person,
-                        items: person.items.map(item =>
-                            item.id === itemId ? { ...item, quantity: quantity } : item
-                        ),
-                    }
-                    : person
-            )
-        );
-    };
+  // Simulación de sedes disponibles (puedes obtenerlas de Firestore)
+  const sedesDisponibles = ["Sede Norte", "Sede Sur", "Sede Centro"];
 
-    const handleRemoveItemFromPerson = (itemId: string) => {
-        setPeople(prevPeople =>
-            prevPeople.map(person =>
-                person.id === personId
-                    ? {
-                        ...person,
-                        items: person.items.filter(item => item.id !== itemId),
-                    }
-                    : person
-            )
-        );
-    };
+  useEffect(() => {
+    if (sedesDisponibles.length === 1) {
+      setSede(sedesDisponibles[0]);
+    }
+  }, [sedesDisponibles]);
 
+  const calculateTotal = () => {
+    let total = 0;
+    items.forEach((item) => {
+      const menuItem = menu.find((m) => m.id === item.id);
+      if (menuItem) {
+        total += menuItem.price * item.quantity;
+      }
+    });
+    if (sharedOrderItems) {
+      // Sumar el costo de items compartidos
+      sharedOrderItems.forEach((sharedItem) => {
+        const menuItem = menu.find((m) => m.id === sharedItem.itemId);
+        if (menuItem) {
+          total += menuItem.price * sharedItem.personIds.length; // Precio por cada persona que lo pide
+        }
+      });
+    }
+    return total + deliveryFee;
+  };
 
-    return (
-        <div className="fixed z-50 inset-0 overflow-y-auto"> {/* Modal overlay y container */}
-            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onClick={onClose}></div>
-            <div className="flex items-center justify-center min-h-screen px-4 py-8"> {/* Modal panel container */}
-                <div className="bg-white w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden transform transition-all sm:w-full sm:mx-auto"> {/* Modal panel */}
-                    <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900">Menú y Orden de {currentPerson.name || 'Persona'}</h3>
-                    </div>
-                    <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6"> {/* Grid layout for menu and order */}
-                        <div> {/* Menu Section */}
-                            <h4 className="text-md font-semibold text-gray-900 mb-2">Menú</h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {menu.map(item => (
-                                    <div key={item.id}>
-                                        {/* MenuItem component (mejorado) */}
-                                        <MenuItemComponent item={item} onEdit={() => {}} onDelete={() => {}} /> {/* Omitiendo onEdit y onDelete aquí, si no son necesarias en el modal */}
-                                        <button onClick={() => handleAddItemToPerson(item)} className="mt-2 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Añadir a la Orden</button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div> {/* Current Order Section */}
-                            <h4 className="text-md font-semibold text-gray-900 mb-2">Su Orden Actual</h4>
-                            {currentPerson.items.length > 0 ? (
-                                <ul className="space-y-2">
-                                    {currentPerson.items.map(item => {
-                                        const menuItem = menu.find(m => m.id === item.id);
-                                        return menuItem ? (
-                                            <li key={item.id} className="flex items-center justify-between">
-                                                <span className="text-gray-700">{menuItem.name}</span>
-                                                <div className="flex items-center space-x-2">
-                                                    <input
-                                                        type="number"
-                                                        value={item.quantity}
-                                                        onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value))}
-                                                        min="1"
-                                                        className="w-16 px-2 py-1 border rounded text-center"
-                                                    />
-                                                    <button onClick={() => handleRemoveItemFromPerson(item.id)} className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-sm">Eliminar</button>
-                                                </div>
-                                            </li>
-                                        ) : null;
-                                    })}
-                                </ul>
-                            ) : (
-                                <p className="text-gray-500">No hay items en su orden aún.</p>
-                            )}
-                        </div>
-                    </div>
-                    <div className="px-6 py-4 flex justify-end">
-                        <button onClick={onClose} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Volver</button>
-                    </div>
-                </div>
-            </div>
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!user) return;
+
+    try {
+      const total = calculateTotal();
+      const orderId = uuidv4();
+      const orderData = {
+        userId: user.uid,
+        items: items.map((item) => ({
+          id: item.id,
+          quantity: item.quantity,
+          assignedTo: item.assignedTo,
+        })),
+        people: peopleOrder,
+        sede: sede,
+        status: "pendiente",
+        total: total,
+        deliveryFee: deliveryFee,
+        deliveryIncluded: deliveryIncluded,
+        paymentMethod: paymentMethod,
+        orderDate: Timestamp.now(),
+        orderId: orderId,
+        sharedItems: sharedOrderItems
+          ? sharedOrderItems.map((si) => ({
+              // Incluir sharedOrderItems en los datos del pedido
+              itemId: si.itemId,
+              personIds: si.personIds,
+            }))
+          : [],
+      };
+
+      await addDoc(collection(db, "pedidos"), orderData);
+      handlePaymentSuccess();
+    } catch (error) {
+      console.error("Error al agregar el pedido:", error);
+    }
+  };
+
+  const handlePaymentSuccess = async () => {
+    await addPoints();
+    alert("Pedido realizado con éxito y puntos sumados.");
+    onClose();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <h2 className="text-xl font-bold text-gray-900">Realizar Pedido</h2>
+      <div>
+        <label
+          htmlFor="sede"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Sede
+        </label>
+        <select
+          id="sede"
+          value={sede}
+          onChange={(e) => setSede(e.target.value)}
+          required
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        >
+          {sedesDisponibles.map((sedeItem) => (
+            <option key={sedeItem} value={sedeItem}>
+              {sedeItem}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label
+          htmlFor="deliveryFee"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Costo de Envío
+        </label>
+        <input
+          type="number"
+          id="deliveryFee"
+          value={deliveryFee}
+          onChange={(e) => setDeliveryFee(parseFloat(e.target.value))}
+          required
+          min="0"
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        />
+      </div>
+      <div className="flex items-start">
+        <div className="flex items-center h-5">
+          <input
+            id="deliveryIncluded"
+            name="deliveryIncluded"
+            type="checkbox"
+            checked={deliveryIncluded}
+            onChange={(e) => setDeliveryIncluded(e.target.checked)}
+            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+          />
         </div>
-    );
+        <div className="ml-2 text-sm">
+          <label
+            htmlFor="deliveryIncluded"
+            className="font-medium text-gray-700"
+          >
+            ¿El domicilio está incluido?
+          </label>
+        </div>
+      </div>
+      <div>
+        <label
+          htmlFor="paymentMethod"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Método de Pago
+        </label>
+        <select
+          id="paymentMethod"
+          value={paymentMethod}
+          onChange={(e) => setPaymentMethod(e.target.value)}
+          required
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        >
+          <option value="contraentrega">Contraentrega</option>
+        </select>
+      </div>
+      <div>
+        <button
+          type="submit"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Realizar Pedido
+        </button>
+      </div>
+    </form>
+  );
 };
 
-export default PersonMenuModal;
+export default PedidoForm;
+
 /* Fin src\components\menu\PersonMenuModal.tsx */
 
 /* Inicio src\components\payment\PaymentForm.tsx */
@@ -1793,20 +2593,9 @@ export default PaymentForm;
 /* Fin src\components\payment\PaymentForm.tsx */
 
 /* Inicio src\components\pedidos\PedidoForm.tsx */
+/* Directorio: src\components\forms\PedidoForm.tsx */
 // src/components/forms/PedidoForm.tsx
-
-import {
-  Button,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { addDoc, collection, Timestamp } from "firebase/firestore";
+import { Timestamp, addDoc, collection } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useAuth } from "../../hooks/useAuth";
@@ -1815,36 +2604,69 @@ import { db } from "../../utils/firebase";
 
 interface PedidoFormProps {
   onClose: () => void;
-  people?: { id: string; name: string; items: { id: string; quantity: number }[] }[];
+  people?: {
+    id: string;
+    name: string;
+    items: { id: string; quantity: number }[];
+  }[];
+  sharedOrderItems?: {
+    itemId: string;
+    quantity: number;
+    personIds: string[];
+  }[];
 }
 
-const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
+const PedidoForm: React.FC<PedidoFormProps> = ({
+  onClose,
+  people,
+  sharedOrderItems,
+}) => {
   const { menu } = useMenu();
   const { user, addPoints } = useAuth();
 
   const [items, setItems] = useState<
     { id: string; quantity: number; assignedTo: string }[]
   >([]);
-  const [peopleOrder, setPeopleOrder] = useState<{ id: string; name: string }[]>([]);
+  const [peopleOrder, setPeopleOrder] = useState<
+    { id: string; name: string }[]
+  >([]);
   const [sede, setSede] = useState("");
   const [deliveryFee, setDeliveryFee] = useState(0);
   const [deliveryIncluded, setDeliveryIncluded] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState("contraentrega");
 
-
   useEffect(() => {
     if (people) {
-        setPeopleOrder(people.map(person => ({ id: person.id, name: person.name })))
-      const newItems = people.flatMap(person =>
-          person.items.map(item => ({
-            id: item.id,
-            quantity: item.quantity,
-              assignedTo: person.name,
-          }))
+      setPeopleOrder(
+        people.map((person) => ({ id: person.id, name: person.name }))
       );
-      setItems(newItems);
+      // Flatten person items and assign person name
+      const personItems = people.flatMap(person =>
+        person.items.map(item => ({
+          id: item.id,
+          quantity: item.quantity,
+          assignedTo: person.name,
+        }))
+      );
+      setItems(personItems);
     }
   }, [people]);
+
+
+  useEffect(() => {
+    if (sharedOrderItems) {
+      // Flatten shared items and assign 'Compartido' as assignedTo
+      const sharedItemsForDisplay = sharedOrderItems.flatMap(sharedItem =>
+        Array(sharedItem.quantity).fill(null).map(() => ({
+          id: sharedItem.itemId,
+          quantity: 1,
+          assignedTo: 'Compartido'
+        }))
+      );
+      setItems(prevItems => [...prevItems, ...sharedItemsForDisplay]);
+    }
+  }, [sharedOrderItems]);
+
 
   // Simulación de sedes disponibles (puedes obtenerlas de Firestore)
   const sedesDisponibles = ["Sede Norte", "Sede Sur", "Sede Centro"];
@@ -1854,7 +2676,6 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
       setSede(sedesDisponibles[0]);
     }
   }, [sedesDisponibles]);
-
 
   const calculateTotal = () => {
     let total = 0;
@@ -1866,6 +2687,7 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
     });
     return total + deliveryFee;
   };
+
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -1879,7 +2701,7 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
         items: items.map((item) => ({
           id: item.id,
           quantity: item.quantity,
-            assignedTo: item.assignedTo,
+          assignedTo: item.assignedTo,
         })),
         people: peopleOrder,
         sede: sede,
@@ -1890,85 +2712,114 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people }) => {
         paymentMethod: paymentMethod,
         orderDate: Timestamp.now(),
         orderId: orderId,
+        sharedItems: sharedOrderItems
+          ? sharedOrderItems.map((si) => ({
+              itemId: si.itemId,
+              quantity: si.quantity, // Quantity here represents how many of shared items are in total
+              personIds: si.personIds,
+            }))
+          : [],
       };
 
       await addDoc(collection(db, "pedidos"), orderData);
-        handlePaymentSuccess()
-
+      handlePaymentSuccess();
     } catch (error) {
       console.error("Error al agregar el pedido:", error);
     }
   };
 
   const handlePaymentSuccess = async () => {
-      // Sumar puntos al usuario
-      await addPoints();
-      alert("Pedido realizado con éxito y puntos sumados.");
-      onClose();
+    await addPoints();
+    alert("Pedido realizado con éxito y puntos sumados.");
+    onClose();
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Typography variant="h5" sx={{ marginBottom: 2 }}>
-        Realizar Pedido
-      </Typography>
-
-      {/* Seleccionar Sede */}
-      <FormControl fullWidth sx={{ marginBottom: 2 }}>
-        <InputLabel>Sede</InputLabel>
-        <Select
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <h2 className="text-xl font-bold text-gray-900">Realizar Pedido</h2>
+      <div>
+        <label
+          htmlFor="sede"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Sede
+        </label>
+        <select
+          id="sede"
           value={sede}
-          label="Sede"
           onChange={(e) => setSede(e.target.value)}
           required
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
         >
           {sedesDisponibles.map((sedeItem) => (
-            <MenuItem value={sedeItem} key={sedeItem}>
+            <option key={sedeItem} value={sedeItem}>
               {sedeItem}
-            </MenuItem>
+            </option>
           ))}
-        </Select>
-      </FormControl>
-
-      {/* Costo de Envío */}
-      <TextField
-        label="Costo de Envío"
-        type="number"
-        value={deliveryFee}
-        onChange={(e) => setDeliveryFee(parseFloat(e.target.value))}
-        fullWidth
-        sx={{ marginBottom: 2 }}
-        required
-        inputProps={{ min: 0 }}
-      />
-
-      {/* Domicilio Incluido */}
-      <FormControlLabel
-        control={
-          <Checkbox
+        </select>
+      </div>
+      <div>
+        <label
+          htmlFor="deliveryFee"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Costo de Envío
+        </label>
+        <input
+          type="number"
+          id="deliveryFee"
+          value={deliveryFee}
+          onChange={(e) => setDeliveryFee(parseFloat(e.target.value))}
+          required
+          min="0"
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        />
+      </div>
+      <div className="flex items-start">
+        <div className="flex items-center h-5">
+          <input
+            id="deliveryIncluded"
+            name="deliveryIncluded"
+            type="checkbox"
             checked={deliveryIncluded}
             onChange={(e) => setDeliveryIncluded(e.target.checked)}
+            className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
           />
-        }
-        label="¿El domicilio está incluido?"
-        sx={{ marginBottom: 2 }}
-      />
-      {/* Método de Pago */}
-        <FormControl fullWidth sx={{ marginBottom: 2 }}>
-            <InputLabel>Método de Pago</InputLabel>
-            <Select
-              value={paymentMethod}
-              label="Método de Pago"
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              required
-            >
-              <MenuItem value="contraentrega">Contraentrega</MenuItem>
-            </Select>
-          </FormControl>
-
-      <Button type="submit" variant="contained" color="primary" fullWidth>
-        Realizar Pedido
-      </Button>
+        </div>
+        <div className="ml-2 text-sm">
+          <label
+            htmlFor="deliveryIncluded"
+            className="font-medium text-gray-700"
+          >
+            ¿El domicilio está incluido?
+          </label>
+        </div>
+      </div>
+      <div>
+        <label
+          htmlFor="paymentMethod"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Método de Pago
+        </label>
+        <select
+          id="paymentMethod"
+          value={paymentMethod}
+          onChange={(e) => setPaymentMethod(e.target.value)}
+          required
+          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+        >
+          <option value="contraentrega">Contraentrega</option>
+        </select>
+      </div>
+      <div>
+        <button
+          type="submit"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200" // Added transition
+        >
+          Realizar Pedido
+        </button>
+      </div>
     </form>
   );
 };
@@ -2282,7 +3133,7 @@ export default PedidoList;
 /* Fin src\components\pedidos\PedidoList.tsx */
 
 /* Inicio src\components\ui\Button.tsx */
-// src/components/ui/Button.tsx
+/* src\components\ui\Button.tsx */
 import React, { ButtonHTMLAttributes, ReactNode } from "react";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -2361,7 +3212,6 @@ const Button: React.FC<ButtonProps> = ({
 };
 
 export default Button;
-
 /* Fin src\components\ui\Button.tsx */
 
 /* Inicio src\components\ui\ErrorBoundry.tsx */
@@ -2792,20 +3642,673 @@ createRoot(document.getElementById('root')!).render(
 /* Fin src\main.tsx */
 
 /* Inicio src\pages\Dashboard.tsx */
-import { Container, Typography } from "@mui/material";
-import React from "react";
+/* src/pages/Dashboard.tsx */
+import {
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Legend,
+  LinearScale,
+  Title,
+  Tooltip,
+} from "chart.js";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  setDoc,
+  updateDoc, // Import updateDoc here
+} from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { Bar } from "react-chartjs-2";
+import { v4 as uuidv4 } from "uuid"; // Import UUID
+import { useAuth } from "../hooks/useAuth";
+import { db } from "../utils/firebase";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+/** Interfaz para pedido */
+interface Pedido {
+  id: string;
+  status: string;
+  total: number;
+  orderDate: Date;
+}
+
+interface Task {
+  id: string;
+  taskId: string;
+  taskName: string;
+  taskType: "daily" | "periodic";
+  dueDate?: Date | null;
+  dailyCompletions: { [date: string]: boolean }; // Track completion per day
+  completionDate?: Date | null;
+  dayOfWeek?: number;
+  subtasks?: string[];
+}
+
+// Estados que manejaremos en la app
+const ALL_STATUSES = [
+  "pendiente",
+  "atendiendo",
+  "preparando",
+  "enviado",
+  "entregado",
+];
+
+const defaultDailyTasks = [
+  {
+    taskName: "Hacer el aseo del restaurante",
+    subtasks: [
+      "Barrer y trapear pisos",
+      "Limpiar mesas y sillas",
+      "Vaciar papeleras",
+      "Limpiar baños",
+    ],
+  },
+  { taskName: "Lavar la freidora", subtasks: [] },
+  {
+    taskName: "Revisar inventario y hacer pedidos si es necesario",
+    subtasks: [
+      "Verificar niveles de stock",
+      "Listar productos a pedir",
+      "Enviar pedido a proveedores",
+      "Recibir y organizar pedido",
+    ],
+  },
+];
+
+const periodicTasksConfig = [
+  { dayOfMonth: 25, taskName: "Pagar arriendo", taskType: "periodic" },
+  { dayOfMonth: 25, taskName: "Pagar factura de luz", taskType: "periodic" },
+  { dayOfMonth: 25, taskName: "Pagar factura de agua", taskType: "periodic" },
+  // Add more periodic tasks as needed
+];
 
 const Dashboard: React.FC = () => {
+  const { user, userRole } = useAuth();
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loadingTasks, setLoadingTasks] = useState<boolean>(true);
+
+  // Para filtrar por un estado específico o "todos"
+  const [selectedStatus, setSelectedStatus] = useState<string | "todos">(
+    "todos"
+  );
+
+  // Métricas generales
+  const [todaySales, setTodaySales] = useState<number>(0);
+  const [monthSales, setMonthSales] = useState<number>(0);
+  const [pendingOrdersCount, setPendingOrdersCount] = useState<number>(0);
+  const [totalOrders, setTotalOrders] = useState<number>(0);
+
+  // Gráficos (últimos 7 días + últimos 6 meses)
+  const [dailyLabels, setDailyLabels] = useState<string[]>([]);
+  const [dailyData, setDailyData] = useState<number[]>([]);
+  const [monthlyLabels, setMonthlyLabels] = useState<string[]>([]);
+  const [monthlyData, setMonthlyData] = useState<number[]>([]);
+
+  useEffect(() => {
+    // Escuchamos la colección 'pedidos'
+    const unsubscribe = onSnapshot(collection(db, "pedidos"), (snapshot) => {
+      const pedidosData: Pedido[] = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          status: data.status,
+          total: data.total,
+          orderDate: data.orderDate?.toDate
+            ? data.orderDate.toDate()
+            : new Date(), // fallback
+        } as Pedido;
+      });
+      setPedidos(pedidosData);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const today = new Date();
+    const todayDateString = today.toISOString().split("T")[0];
+
+    const tasksCollection = collection(db, "tasks");
+    const unsubscribeTasks = onSnapshot(tasksCollection, (snapshot) => {
+      let fetchedTasks: Task[] = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          taskId: data.taskId,
+          taskName: data.taskName,
+          taskType: data.taskType,
+          dueDate: data.dueDate ? data.dueDate.toDate() : null,
+          dailyCompletions: data.dailyCompletions || {}, // Initialize dailyCompletions
+          completionDate: data.completionDate
+            ? data.completionDate.toDate()
+            : null,
+          subtasks: data.subtasks || [],
+        } as Task;
+      });
+
+      // Filter for today's daily tasks and periodic tasks due today
+      fetchedTasks = fetchedTasks.filter((task) => {
+        if (task.taskType === "daily") {
+          return true; // Show all daily tasks
+        } else if (task.taskType === "periodic" && task.dueDate) {
+          const taskDueDate = task.dueDate;
+          return taskDueDate.toISOString().split("T")[0] === todayDateString;
+        }
+        return false;
+      });
+      setTasks(fetchedTasks);
+      setLoadingTasks(false);
+
+      if (fetchedTasks.length === 0) {
+        // Initialize daily tasks if none exist for today
+        defaultDailyTasks.forEach(async (defaultTask) => {
+          await addDefaultTask(
+            defaultTask.taskName,
+            "daily",
+            defaultTask.subtasks
+          );
+        });
+        // Initialize periodic tasks if today is the day for them and they don't exist
+        periodicTasksConfig.forEach(async (periodicTaskConfig) => {
+          if (today.getDate() === periodicTaskConfig.dayOfMonth) {
+            const taskExists = fetchedTasks.some(
+              (task) =>
+                task.taskType === "periodic" &&
+                task.taskName === periodicTaskConfig.taskName &&
+                task.dueDate &&
+                task.dueDate.getDate() === today.getDate() &&
+                task.dueDate.getMonth() === today.getMonth() &&
+                task.dueDate.getFullYear() === today.getFullYear()
+            );
+            if (!taskExists) {
+              const dueDate = new Date(
+                today.getFullYear(),
+                today.getMonth(),
+                periodicTaskConfig.dayOfMonth
+              );
+              await addDefaultTask(
+                periodicTaskConfig.taskName,
+                "periodic",
+                [],
+                dueDate
+              );
+            }
+          }
+        });
+      }
+    });
+    return () => unsubscribeTasks();
+  }, []);
+
+  const addDefaultTask = async (
+    taskName: string,
+    taskType: "daily" | "periodic",
+    subtasks: string[] = [],
+    dueDate: Date | null = null
+  ) => {
+    try {
+      await setDoc(doc(collection(db, "tasks"), uuidv4()), {
+        // use uuid as doc id
+        taskId: uuidv4(), // add taskId
+        taskName: taskName,
+        taskType: taskType,
+        completed: false,
+        dailyCompletions: {}, // Initialize dailyCompletions to empty object
+        subtasks: subtasks,
+        dueDate: dueDate || null,
+      });
+    } catch (error) {
+      console.error("Error adding default task:", error);
+    }
+  };
+
+  // Recalcula estadísticas cuando cambien los pedidos o el filtro de estado
+  useEffect(() => {
+    if (!pedidos.length) {
+      // Si no hay pedidos, limpiamos
+      setTodaySales(0);
+      setMonthSales(0);
+      setPendingOrdersCount(0);
+      setTotalOrders(0);
+      setDailyLabels([]);
+      setDailyData([]);
+      setMonthlyLabels([]);
+      setMonthlyData([]);
+      return;
+    }
+
+    const filtered =
+      selectedStatus === "todos"
+        ? pedidos
+        : pedidos.filter((p) => p.status === selectedStatus);
+
+    // ---------- Estadísticas simples ----------
+    const now = new Date();
+    const today = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    ).getTime();
+
+    let sumToday = 0;
+    let sumMonth = 0;
+    let pendingCount = 0;
+    const totalCount = filtered.length;
+
+    filtered.forEach((pedido) => {
+      // Fecha sin hora del pedido
+      const pedidoDate = new Date(
+        pedido.orderDate.getFullYear(),
+        pedido.orderDate.getMonth(),
+        pedido.orderDate.getDate()
+      ).getTime();
+
+      // Venta de hoy
+      if (pedidoDate === today) {
+        sumToday += pedido.total;
+      }
+
+      // Venta del mes actual
+      const isThisMonth =
+        pedido.orderDate.getMonth() === now.getMonth() &&
+        pedido.orderDate.getFullYear() === now.getFullYear();
+      if (isThisMonth) {
+        sumMonth += pedido.total;
+      }
+
+      // Pedidos pendientes
+      if (pedido.status === "pendiente") {
+        pendingCount++;
+      }
+    });
+
+    setTodaySales(sumToday);
+    setMonthSales(sumMonth);
+    setPendingOrdersCount(pendingCount);
+    setTotalOrders(totalCount);
+
+    // ---------- Gráfico: últimos 7 días ----------
+    const last7Dates = Array.from({ length: 7 }).map((_, i) => {
+      const d = new Date();
+      // "hace (6 - i) días" para que se armen en orden cronológico
+      d.setDate(d.getDate() - (6 - i));
+      return d;
+    });
+
+    const daysLabels: string[] = [];
+    const daysData: number[] = [];
+
+    last7Dates.forEach((date) => {
+      // Etiqueta: "dd/MM"
+      const dayKey = date.toLocaleDateString("es-ES", {
+        day: "2-digit",
+        month: "2-digit",
+      });
+      daysLabels.push(dayKey);
+
+      let dayTotal = 0;
+      filtered.forEach((pedido) => {
+        if (
+          pedido.orderDate.getDate() === date.getDate() &&
+          pedido.orderDate.getMonth() === date.getMonth() &&
+          pedido.orderDate.getFullYear() === date.getFullYear()
+        ) {
+          dayTotal += pedido.total;
+        }
+      });
+      daysData.push(dayTotal);
+    });
+
+    setDailyLabels(daysLabels);
+    setDailyData(daysData);
+
+    // ---------- Gráfico: últimos 6 meses ----------
+    const last6Months = Array.from({ length: 6 }).map((_, i) => {
+      const d = new Date();
+      // retrocedemos (5 - i) meses
+      d.setMonth(d.getMonth() - (5 - i));
+      d.setDate(1);
+      return d;
+    });
+
+    const monthLabels: string[] = [];
+    const monthTotals: number[] = [];
+
+    last6Months.forEach((date) => {
+      // Etiqueta "MM/YY"
+      const label = date.toLocaleDateString("es-ES", {
+        month: "2-digit",
+        year: "2-digit",
+      });
+      monthLabels.push(label);
+
+      let monthTotal = 0;
+      filtered.forEach((pedido) => {
+        if (
+          pedido.orderDate.getFullYear() === date.getFullYear() &&
+          pedido.orderDate.getMonth() === date.getMonth()
+        ) {
+          monthTotal += pedido.total;
+        }
+      });
+      monthTotals.push(monthTotal);
+    });
+
+    setMonthlyLabels(monthLabels);
+    setMonthlyData(monthTotals);
+  }, [pedidos, selectedStatus]);
+
+  // Opciones genéricas para los gráficos
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false as const,
+      },
+      tooltip: {
+        backgroundColor: "#1e293b", // gris oscuro
+        titleColor: "#fff",
+        bodyColor: "#fff",
+      },
+    },
+  };
+
+  // Dataset para gráfico diario
+  const dailyChartData = {
+    labels: dailyLabels,
+    datasets: [
+      {
+        label: "Ventas diarias",
+        data: dailyData,
+        backgroundColor: "#4F46E5", // Indigo-600
+        borderRadius: 4,
+      },
+    ],
+  };
+
+  // Dataset para gráfico mensual
+  const monthlyChartData = {
+    labels: monthlyLabels,
+    datasets: [
+      {
+        label: "Ventas mensuales",
+        data: monthlyData,
+        backgroundColor: "#22C55E", // Green-500
+        borderRadius: 4,
+      },
+    ],
+  };
+
+  // Para saber si debemos mostrar la parte de admin/encargado
+  const showAdminStats = userRole === "admin" || userRole === "encargado";
+  const showChecklist = userRole === "admin" || userRole === "encargado";
+
+  const handleTaskCompletionChange = async (
+    taskId: string,
+    completed: boolean
+  ) => {
+    const todayDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    try {
+      const taskDocRef = doc(db, "tasks", taskId);
+      await updateDoc(taskDocRef, {
+        [`dailyCompletions.${todayDate}`]: completed, // Update completion for today
+        completionDate: completed ? new Date() : null, // Optionally update completionDate
+      });
+
+      setTasks((currentTasks) =>
+        currentTasks.map((task) => {
+          if (task.id === taskId) {
+            return {
+              ...task,
+              dailyCompletions: {
+                ...task.dailyCompletions,
+                [todayDate]: completed,
+              },
+              completionDate: completed ? new Date() : null,
+            };
+          }
+          return task;
+        })
+      );
+    } catch (error) {
+      console.error("Error updating task completion:", error);
+    }
+  };
+
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const day = new Date();
+    day.setDate(day.getDate() - i);
+    return day;
+  }).reverse();
+
+  const last7DaysFormatted = last7Days.map(
+    (day) => day.toISOString().split("T")[0]
+  );
+
+  const taskCompletionData = tasks.map((task) => {
+    return {
+      taskName: task.taskName,
+      completionStatus: last7DaysFormatted.map((date) => {
+        return task.dailyCompletions[date] ? "✅" : "❌";
+      }),
+    };
+  });
+
+  if (loading || loadingTasks) {
+    return (
+      <div className="pt-20 p-4 text-center">
+        <p className="text-xl animate-pulse">Cargando Dashboard...</p>
+      </div>
+    );
+  }
+
+  if (!showAdminStats && !showChecklist) {
+    return (
+      <div className="pt-20 p-4 md:p-6 bg-gray-100 min-h-screen">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4 transition-all duration-300 hover:scale-105">
+          Dashboard <span className="text-sm ml-2">({user?.email})</span>
+        </h1>
+        <div className="mb-8">
+          <div className="bg-white rounded shadow p-4 text-center">
+            <p className="text-gray-600">Total de Pedidos</p>
+            <p className="text-2xl font-bold text-indigo-600">{totalOrders}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <Container sx={{ marginY: 3 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
+    <div className="pt-20 p-4 md:p-6 bg-gray-100 min-h-screen">
+      {/* Título */}
+      <h1 className="text-3xl font-bold text-gray-900 mb-4 transition-all duration-300 hover:scale-105">
         Dashboard
-      </Typography>
-      <Typography variant="body1">
-        Bienvenido al panel de control, aqui podras ver un resumen de la
-        aplicacion.
-      </Typography>
-    </Container>
+        {user?.email && <span className="text-sm ml-2">({user.email})</span>}
+      </h1>
+
+      {/* Filtro por estado */}
+      <div className="flex flex-wrap items-center mb-6 gap-2">
+        <button
+          onClick={() => setSelectedStatus("todos")}
+          className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm transition transform hover:scale-105
+            ${
+              selectedStatus === "todos"
+                ? "bg-indigo-600 text-white"
+                : "bg-white text-gray-800 hover:bg-gray-200"
+            }`}
+        >
+          Todos
+        </button>
+        {ALL_STATUSES.map((status) => (
+          <button
+            key={status}
+            onClick={() => setSelectedStatus(status)}
+            className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm transition transform hover:scale-105
+              ${
+                selectedStatus === status
+                  ? "bg-indigo-600 text-white"
+                  : "bg-white text-gray-800 hover:bg-gray-200"
+              }`}
+          >
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* Sección de Tarjetas de estadísticas */}
+      {showAdminStats && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
+            <p className="text-gray-600">Total de Pedidos</p>
+            <p className="text-2xl font-bold text-indigo-600">{totalOrders}</p>
+          </div>
+          <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
+            <p className="text-gray-600">Ventas Hoy</p>
+            <p className="text-2xl font-bold text-indigo-600">
+              ${todaySales.toFixed(2)}
+            </p>
+          </div>
+          <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
+            <p className="text-gray-600">Ventas del Mes</p>
+            <p className="text-2xl font-bold text-indigo-600">
+              ${monthSales.toFixed(2)}
+            </p>
+          </div>
+          <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
+            <p className="text-gray-600">Pedidos Pendientes</p>
+            <p className="text-2xl font-bold text-indigo-600">
+              {pendingOrdersCount}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Gráfico de Ventas Diarias (últimos 7 días) */}
+      <div className="bg-white rounded shadow p-4 mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">
+          Ventas diarias (últimos 7 días)
+        </h2>
+        <div className="h-64">
+          <Bar data={dailyChartData} options={chartOptions} />
+        </div>
+      </div>
+
+      {/* Gráfico de Ventas Mensuales (últimos 6 meses) */}
+      <div className="bg-white rounded shadow p-4 mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">
+          Ventas mensuales (últimos 6 meses)
+        </h2>
+        <div className="h-64">
+          <Bar data={monthlyChartData} options={chartOptions} />
+        </div>
+      </div>
+
+      {/* Daily Checklist Section */}
+      {showChecklist && (
+        <div className="bg-white rounded shadow p-4 mb-6">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">
+            Checklist Diario de Tareas (Hoy)
+          </h2>
+          <ul>
+            {tasks.map((task) => (
+              <li
+                key={task.id}
+                className="py-2 border-b border-gray-200 last:border-b-0"
+              >
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      className="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
+                      checked={
+                        task.dailyCompletions[
+                          new Date().toISOString().split("T")[0]
+                        ] === true
+                      } // Check against today's completion status
+                      onChange={(e) =>
+                        handleTaskCompletionChange(task.id, e.target.checked)
+                      }
+                    />
+                    <span className="ml-2 text-gray-700">{task.taskName}</span>
+                  </label>
+                </div>
+                {task.subtasks && task.subtasks.length > 0 && (
+                  <ul className="ml-6 mt-1">
+                    {task.subtasks.map((subtask, index) => (
+                      <li
+                        key={index}
+                        className="text-sm text-gray-500 list-disc ml-4"
+                      >
+                        {subtask}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {showChecklist && (
+        <div className="bg-white rounded shadow p-4 mb-6 overflow-x-auto">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">
+            Estado de Tareas Semanal
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full table-fixed border-collapse border border-gray-200">
+              <thead>
+                <tr>
+                  <th className="border border-gray-200 px-4 py-2 text-left">
+                    Tarea
+                  </th>
+                  {last7Days.map((day) => (
+                    <th
+                      key={day.toISOString().split("T")[0]}
+                      className="border border-gray-200 px-4 py-2 text-center"
+                    >
+                      {day.toLocaleDateString("es-ES", { weekday: "short" })}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {taskCompletionData.map((taskData) => (
+                  <tr key={taskData.taskName}>
+                    <td className="border border-gray-200 px-4 py-2">
+                      {taskData.taskName}
+                    </td>
+                    {taskData.completionStatus.map((status, index) => (
+                      <td
+                        key={`${taskData.taskName}-${last7DaysFormatted[index]}`}
+                        className="border border-gray-200 px-4 py-2 text-center"
+                      >
+                        {status}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Aquí podrías agregar más secciones o gráficos */}
+    </div>
   );
 };
 
@@ -3720,18 +5223,67 @@ export const processPayment = async (sessionId: string, publicKey: string) => {
 @tailwind components;
 @tailwind utilities;
 
+@keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+}
+
+@keyframes slide-in-bottom {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.animate-slide-in-bottom {
+    animation: slide-in-bottom 0.5s ease-out forwards;
+}
+
+@keyframes slide-down {
+  from {
+    max-height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    max-height: 1000px; /* Increased max-height to accommodate more name fields */
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.5s ease-out forwards;
+  overflow: hidden; /* Ensure content within animated area is clipped */
+}
+
+
+.transition-max-height {
+    transition: max-height 0.5s ease-in-out;
+    overflow: hidden; /* Clip content during transition */
+}
+
+
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+        "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+    font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+        monospace;
 }
 /* Fin src\styles\global.css */
 
@@ -3939,22 +5491,25 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'SrPol',
-        short_name: 'SrPol',
-        description: 'Aplicación para restaurantes',
-        theme_color: '#ffffff',
-        icons: [
+        "name": "SrPol",
+        "short_name": "SrPol",
+        "description": "Aplicación para restaurantes",
+        "theme_color": "#ffffff",
+        "icons": [
           {
-            src: '/logo192.png',
-            sizes: '192x192',
-            type: 'image/png',
+            "src": "/logo192.png",
+            "sizes": "192x192",
+            "type": "image/png"
           },
           {
-            src: '/logo512.png',
-            sizes: '512x512',
-            type: 'image/png',
-          },
+            "src": "/logo512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+          }
         ],
+        "start_url": ".",
+        "display": "standalone",
+        "background_color": "#ffffff"
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
