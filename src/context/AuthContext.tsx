@@ -1,3 +1,4 @@
+/* src\context\AuthContext.tsx */
 // src/context/AuthContext.tsx
 
 import {
@@ -45,27 +46,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
       if (currentUser) {
-        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-        if (userDoc.exists()) {
-          setUserRole(userDoc.data().role);
-          setPoints(userDoc.data().points || 0);
-        } else {
-          // Crear documento de usuario si no existe
-          await setDoc(doc(db, "users", currentUser.uid), {
-            role: "client",
-            points: 0,
-            email: currentUser.email,
-          });
-          setUserRole("client");
-          setPoints(0);
+        const userDocRef = doc(db, "users", currentUser.uid);
+        try {
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            setUserRole(userDoc.data().role);
+            setPoints(userDoc.data().points || 0);
+          } else {
+            // Crear documento de usuario si no existe
+            await setDoc(userDocRef, {
+              role: "client",
+              points: 0,
+              email: currentUser.email,
+            });
+            setUserRole("client");
+            setPoints(0);
+          }
+          setUser(currentUser);
+        } catch (error) {
+          console.error("Error fetching user document:", error);
+          setUser(currentUser); // Even with error, set user to prevent login loop
+        } finally {
+          setLoading(false);
         }
       } else {
+        setUser(null);
         setUserRole(null);
         setPoints(0);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -101,14 +111,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         password
       );
       const user = userCredential.user;
-      console.log("Usuario registrado:", user.uid);
 
       await setDoc(doc(db, "users", user.uid), {
         role: "client",
         points: 0,
         email: email,
       });
-      console.log("Documento de usuario creado en Firestore");
 
       setUserRole("client");
       setPoints(0);

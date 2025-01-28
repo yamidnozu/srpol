@@ -1,3 +1,4 @@
+/* src\pages\Dashboard.tsx */
 import {
   BarElement,
   CategoryScale,
@@ -10,9 +11,11 @@ import {
 import {
   collection,
   doc,
-  onSnapshot,
+  onSnapshot, // Import updateDoc here
+  query,
   setDoc,
-  updateDoc, // Import updateDoc here
+  updateDoc,
+  where,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
@@ -35,6 +38,7 @@ interface Pedido {
   status: string;
   total: number;
   orderDate: Date;
+  userId: string; // Asegúrate de que tu interfaz Pedido incluya userId
 }
 
 interface Task {
@@ -88,7 +92,7 @@ const periodicTasksConfig = [
 ];
 
 const Dashboard: React.FC = () => {
-  const { user, userRole } = useAuth();
+  const { user, userRole, points } = useAuth();
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -104,6 +108,7 @@ const Dashboard: React.FC = () => {
   const [monthSales, setMonthSales] = useState<number>(0);
   const [pendingOrdersCount, setPendingOrdersCount] = useState<number>(0);
   const [totalOrders, setTotalOrders] = useState<number>(0);
+  const [, setClientTotalOrders] = useState<number>(0); // Total pedidos del cliente
 
   // Gráficos (últimos 7 días + últimos 6 meses)
   const [dailyLabels, setDailyLabels] = useState<string[]>([]);
@@ -113,7 +118,12 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     // Escuchamos la colección 'pedidos'
-    const unsubscribe = onSnapshot(collection(db, "pedidos"), (snapshot) => {
+    let pedidosQuery = collection(db, "pedidos");
+    if (userRole === 'client' && user) {
+      pedidosQuery = query(pedidosQuery, where("userId", "==", user.uid)) as never;
+    }
+
+    const unsubscribe = onSnapshot(pedidosQuery, (snapshot) => {
       const pedidosData: Pedido[] = snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
@@ -123,89 +133,101 @@ const Dashboard: React.FC = () => {
           orderDate: data.orderDate?.toDate
             ? data.orderDate.toDate()
             : new Date(), // fallback
+          userId: data.userId, // Asegúrate de mapear userId
         } as Pedido;
       });
       setPedidos(pedidosData);
       setLoading(false);
+    }, (error) => {
+      console.error("Error en el listener de pedidos:", error);
+      setLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [user, userRole]);
 
   useEffect(() => {
-    const today = new Date();
-    const todayDateString = today.toISOString().split("T")[0];
+    // Conditionally subscribe to tasks only if user is admin or encargado
+    if (userRole === 'admin' || userRole === 'encargado') {
+      const today = new Date();
+      const todayDateString = today.toISOString().split("T")[0];
 
-    const tasksCollection = collection(db, "tasks");
-    const unsubscribeTasks = onSnapshot(tasksCollection, (snapshot) => {
-      let fetchedTasks: Task[] = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          taskId: data.taskId,
-          taskName: data.taskName,
-          taskType: data.taskType,
-          dueDate: data.dueDate ? data.dueDate.toDate() : null,
-          dailyCompletions: data.dailyCompletions || {}, // Initialize dailyCompletions
-          completionDate: data.completionDate
-            ? data.completionDate.toDate()
-            : null,
-          subtasks: data.subtasks || [],
-        } as Task;
-      });
-
-      // Filter for today's daily tasks and periodic tasks due today
-      fetchedTasks = fetchedTasks.filter((task) => {
-        if (task.taskType === "daily") {
-          return true; // Show all daily tasks
-        } else if (task.taskType === "periodic" && task.dueDate) {
-          const taskDueDate = task.dueDate;
-          return taskDueDate.toISOString().split("T")[0] === todayDateString;
-        }
-        return false;
-      });
-      setTasks(fetchedTasks);
-      setLoadingTasks(false);
-
-      if (fetchedTasks.length === 0) {
-        // Initialize daily tasks if none exist for today
-        defaultDailyTasks.forEach(async (defaultTask) => {
-          await addDefaultTask(
-            defaultTask.taskName,
-            "daily",
-            defaultTask.subtasks
-          );
+      const tasksCollection = collection(db, "tasks");
+      const unsubscribeTasks = onSnapshot(tasksCollection, (snapshot) => {
+        let fetchedTasks: Task[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            taskId: data.taskId,
+            taskName: data.taskName,
+            taskType: data.taskType,
+            dueDate: data.dueDate ? data.dueDate.toDate() : null,
+            dailyCompletions: data.dailyCompletions || {}, // Initialize dailyCompletions
+            completionDate: data.completionDate
+              ? data.completionDate.toDate()
+              : null,
+            subtasks: data.subtasks || [],
+          } as Task;
         });
-        // Initialize periodic tasks if today is the day for them and they don't exist
-        periodicTasksConfig.forEach(async (periodicTaskConfig) => {
-          if (today.getDate() === periodicTaskConfig.dayOfMonth) {
-            const taskExists = fetchedTasks.some(
-              (task) =>
-                task.taskType === "periodic" &&
-                task.taskName === periodicTaskConfig.taskName &&
-                task.dueDate &&
-                task.dueDate.getDate() === today.getDate() &&
-                task.dueDate.getMonth() === today.getMonth() &&
-                task.dueDate.getFullYear() === today.getFullYear()
-            );
-            if (!taskExists) {
-              const dueDate = new Date(
-                today.getFullYear(),
-                today.getMonth(),
-                periodicTaskConfig.dayOfMonth
-              );
-              await addDefaultTask(
-                periodicTaskConfig.taskName,
-                "periodic",
-                [],
-                dueDate
-              );
-            }
+
+        // Filter for today's daily tasks and periodic tasks due today
+        fetchedTasks = fetchedTasks.filter((task) => {
+          if (task.taskType === "daily") {
+            return true; // Show all daily tasks
+          } else if (task.taskType === "periodic" && task.dueDate) {
+            const taskDueDate = task.dueDate;
+            return taskDueDate.toISOString().split("T")[0] === todayDateString;
           }
+          return false;
         });
-      }
-    });
-    return () => unsubscribeTasks();
-  }, []);
+        setTasks(fetchedTasks);
+        setLoadingTasks(false);
+
+        if (fetchedTasks.length === 0) {
+          // Initialize daily tasks if none exist for today
+          defaultDailyTasks.forEach(async (defaultTask) => {
+            await addDefaultTask(
+              defaultTask.taskName,
+              "daily",
+              defaultTask.subtasks
+            );
+          });
+          // Initialize periodic tasks if today is the day for them and they don't exist
+          periodicTasksConfig.forEach(async (periodicTaskConfig) => {
+            if (today.getDate() === periodicTaskConfig.dayOfMonth) {
+              const taskExists = fetchedTasks.some(
+                (task) =>
+                  task.taskType === "periodic" &&
+                  task.taskName === periodicTaskConfig.taskName &&
+                  task.dueDate &&
+                  task.dueDate.getDate() === today.getDate() &&
+                  task.dueDate.getMonth() === today.getMonth() &&
+                  task.dueDate.getFullYear() === today.getFullYear()
+              );
+              if (!taskExists) {
+                const dueDate = new Date(
+                  today.getFullYear(),
+                  today.getMonth(),
+                  periodicTaskConfig.dayOfMonth
+                );
+                await addDefaultTask(
+                  periodicTaskConfig.taskName,
+                  "periodic",
+                  [],
+                  dueDate
+                );
+              }
+            }
+          });
+        }
+      }, (error) => {
+        console.error("Error en el listener de tareas:", error);
+        setLoadingTasks(false);
+      });
+      return () => unsubscribeTasks();
+    } else {
+      setLoadingTasks(false); // If not admin/encargado, we are not loading tasks
+    }
+  }, [userRole]);
 
   const addDefaultTask = async (
     taskName: string,
@@ -241,6 +263,7 @@ const Dashboard: React.FC = () => {
       setDailyData([]);
       setMonthlyLabels([]);
       setMonthlyData([]);
+      setClientTotalOrders(0); // Reset client total orders
       return;
     }
 
@@ -261,6 +284,7 @@ const Dashboard: React.FC = () => {
     let sumMonth = 0;
     let pendingCount = 0;
     const totalCount = filtered.length;
+    let clientOrderCount = 0; // Contador para pedidos del cliente
 
     filtered.forEach((pedido) => {
       // Fecha sin hora del pedido
@@ -287,12 +311,17 @@ const Dashboard: React.FC = () => {
       if (pedido.status === "pendiente") {
         pendingCount++;
       }
+
+      if (userRole === 'client' && user && pedido.userId === user.uid) {
+        clientOrderCount++; // Incrementa solo si es pedido del cliente
+      }
     });
 
     setTodaySales(sumToday);
     setMonthSales(sumMonth);
     setPendingOrdersCount(pendingCount);
     setTotalOrders(totalCount);
+    setClientTotalOrders(clientOrderCount); // Establece el total de pedidos del cliente
 
     // ---------- Gráfico: últimos 7 días ----------
     const last7Dates = Array.from({ length: 7 }).map((_, i) => {
@@ -363,7 +392,7 @@ const Dashboard: React.FC = () => {
 
     setMonthlyLabels(monthLabels);
     setMonthlyData(monthTotals);
-  }, [pedidos, selectedStatus]);
+  }, [pedidos, selectedStatus, userRole, user]);
 
   // Opciones genéricas para los gráficos
   const chartOptions = {
@@ -427,6 +456,7 @@ const Dashboard: React.FC = () => {
   // Para saber si debemos mostrar la parte de admin/encargado
   const showAdminStats = userRole === "admin" || userRole === "encargado";
   const showChecklist = userRole === "admin" || userRole === "encargado";
+  const showClientStats = userRole === 'client';
 
   const handleTaskCompletionChange = async (
     taskId: string,
@@ -470,14 +500,7 @@ const Dashboard: React.FC = () => {
     (day) => day.toISOString().split("T")[0]
   );
 
-  const taskCompletionData = tasks.map((task) => {
-    return {
-      taskName: task.taskName,
-      completionStatus: last7DaysFormatted.map((date) => {
-        return task.dailyCompletions[date] ? "✅" : "❌";
-      }),
-    };
-  });
+
 
   // Function to format price to Colombian Pesos
   const formatPriceCOP = (price: number) => {
@@ -497,18 +520,37 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  if (!showAdminStats && !showChecklist) {
+  if (showClientStats) {
     return (
       <div className="pt-20 p-4 md:p-6 bg-gray-100 min-h-screen">
         <h1 className="text-3xl font-bold text-gray-900 mb-4 transition-all duration-300 hover:scale-105">
-          Dashboard <span className="text-sm ml-2">({user?.email})</span>
+          Bienvenido a SrPol! <span className="text-sm ml-2">({user?.email})</span>
         </h1>
-        <div className="mb-8">
-          <div className="bg-white rounded shadow p-4 text-center">
-            <p className="text-gray-600">Total de Pedidos</p>
-            <p className="text-2xl font-bold text-indigo-600">{totalOrders}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
+            <p className="text-gray-700 font-semibold text-lg mb-2">Descubre nuestro Menú</p>
+            <p className="text-gray-600">Explora deliciosos platos y arma tu pedido.</p>
+             <p className="text-2xl font-bold text-indigo-600 mt-4">¡Haz tu pedido ahora!</p>
+          </div>
+          <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
+            <p className="text-gray-700 font-semibold text-lg mb-2">Acumula Puntos</p>
+            <p className="text-gray-600">Cada pedido te da puntos para descuentos.</p>
+            <p className="text-2xl font-bold text-green-600 mt-4">Tienes {points} puntos.</p>
           </div>
         </div>
+
+        <div className="bg-white rounded shadow p-4 mb-6 text-center">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">
+              ¿Listo para ordenar?
+            </h2>
+            <p className="text-gray-600 mb-4">
+                Navega por nuestro menú, personaliza tu pedido y disfruta de la mejor comida.
+            </p>
+            <p className="text-lg text-indigo-700 font-semibold">
+                ¡Empieza a explorar nuestro menú hoy mismo!
+            </p>
+          </div>
+
       </div>
     );
   }
@@ -522,37 +564,42 @@ const Dashboard: React.FC = () => {
       </h1>
 
       {/* Filtro por estado */}
-      <div className="flex flex-wrap items-center mb-6 gap-2">
-        <button
-          onClick={() => setSelectedStatus("todos")}
-          className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm transition transform hover:scale-105
-            ${
-              selectedStatus === "todos"
-                ? "bg-indigo-600 text-white"
-                : "bg-white text-gray-800 hover:bg-gray-200"
-            }`}
-        >
-          Todos
-        </button>
-        {ALL_STATUSES.map((status) => (
+      {showAdminStats && (
+        <div className="flex flex-wrap items-center mb-6 gap-2">
+          {/* ... filter buttons for admin/encargado ... */}
           <button
-            key={status}
-            onClick={() => setSelectedStatus(status)}
+            onClick={() => setSelectedStatus("todos")}
             className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm transition transform hover:scale-105
               ${
-                selectedStatus === status
+                selectedStatus === "todos"
                   ? "bg-indigo-600 text-white"
                   : "bg-white text-gray-800 hover:bg-gray-200"
               }`}
           >
-            {status.charAt(0).toUpperCase() + status.slice(1)}
+            Todos
           </button>
-        ))}
-      </div>
+          {ALL_STATUSES.map((status) => (
+            <button
+              key={status}
+              onClick={() => setSelectedStatus(status)}
+              className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm transition transform hover:scale-105
+                ${
+                  selectedStatus === status
+                    ? "bg-indigo-600 text-white"
+                    : "bg-white text-gray-800 hover:bg-gray-200"
+                }`}
+            >
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </button>
+          ))}
+        </div>
+      )}
+
 
       {/* Sección de Tarjetas de estadísticas */}
       {showAdminStats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          {/* ... statistic cards for admin/encargado ... */}
           <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
             <p className="text-gray-600">Total de Pedidos</p>
             <p className="text-2xl font-bold text-indigo-600">{totalOrders}</p>
@@ -579,28 +626,37 @@ const Dashboard: React.FC = () => {
       )}
 
       {/* Gráfico de Ventas Diarias (últimos 7 días) */}
-      <div className="bg-white rounded shadow p-4 mb-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">
-          Ventas diarias (últimos 7 días)
-        </h2>
-        <div className="h-64">
-          <Bar data={dailyChartData} options={chartOptions} />
+      {showAdminStats && (
+        <div className="bg-white rounded shadow p-4 mb-6">
+          {/* ... daily sales chart for admin/encargado ... */}
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">
+            Ventas diarias (últimos 7 días)
+          </h2>
+          <div className="h-64">
+            <Bar data={dailyChartData} options={chartOptions} />
+          </div>
         </div>
-      </div>
+      )}
+
 
       {/* Gráfico de Ventas Mensuales (últimos 6 meses) */}
-      <div className="bg-white rounded shadow p-4 mb-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">
-          Ventas mensuales (últimos 6 meses)
-        </h2>
-        <div className="h-64">
-          <Bar data={monthlyChartData} options={chartOptions} />
+      {showAdminStats && (
+        <div className="bg-white rounded shadow p-4 mb-6">
+          {/* ... monthly sales chart for admin/encargado ... */}
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">
+            Ventas mensuales (últimos 6 meses)
+          </h2>
+          <div className="h-64">
+            <Bar data={monthlyChartData} options={chartOptions} />
+          </div>
         </div>
-      </div>
+      )}
+
 
       {/* Daily Checklist Section */}
       {showChecklist && (
         <div className="bg-white rounded shadow p-4 mb-6">
+          {/* ... daily checklist for admin/encargado ... */}
           <h2 className="text-xl font-semibold mb-4 text-gray-800">
             Checklist Diario de Tareas (Hoy)
           </h2>
@@ -647,6 +703,7 @@ const Dashboard: React.FC = () => {
 
       {showChecklist && (
         <div className="bg-white rounded shadow p-4 mb-6 overflow-x-auto">
+          {/* ... weekly task status table for admin/encargado ... */}
           <h2 className="text-xl font-semibold mb-4 text-gray-800">
             Estado de Tareas Semanal
           </h2>
@@ -673,7 +730,7 @@ const Dashboard: React.FC = () => {
                     <td className="border border-gray-200 px-4 py-2">
                       {task.taskName}
                     </td>
-                    {last7DaysFormatted.map((date, index) => (
+                    {last7DaysFormatted.map((date) => (
                       <td
                         key={`${task.taskId}-${date}`}
                         className="border border-gray-200 px-4 py-2 text-center"
