@@ -1,10 +1,12 @@
+/* Inicio src\components\forms\MenuForm.tsx */
+/* src\components\forms\MenuForm.tsx */
 import React, { useState } from "react";
-import { MenuItem as MenuItemType } from "../../context/AppContext";
+import { MenuItem } from "../../context/AppContext";
 import { useMenu } from "../../hooks/useMenu";
 
 interface MenuFormProps {
-  initialValues?: Partial<MenuItemType>;
-  onSubmit: (values: Partial<MenuItemType>) => void;
+  initialValues?: Partial<MenuItem>;
+  onSubmit: (values: Partial<MenuItem>) => void;
   onClose: () => void; // Add onClose prop
 }
 

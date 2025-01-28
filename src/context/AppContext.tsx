@@ -1,4 +1,5 @@
-/* Inicio src\context\AppContext.tsx */
+/* src\context\AppContext.tsx */
+/* src\context\AppContext.tsx */
 import { CircularProgress } from "@mui/material";
 import { collection, onSnapshot } from "firebase/firestore";
 import React, { createContext, ReactNode, useEffect, useState } from "react";
@@ -7,6 +8,7 @@ import { COLLECTIONS } from "../utils/constants";
 import { db } from "../utils/firebase";
 
 export interface MenuItem {
+  // Exporta la interfaz MenuItem
   id: string;
   name: string;
   description: string;
@@ -18,11 +20,13 @@ export interface MenuItem {
   availabilityStatus:
     | "disponible"
     | "noDisponibleMomento"
-    | "noDisponibleLargoPlazo"; // Estado de disponibilidad del menú: "disponible", "noDisponibleMomento", "noDisponibleLargoPlazo"
+    | "noDisponibleLargoPlazo";
 }
 
+export type MenuItemType = MenuItem; // Define y exporta MenuItemType como alias de MenuItem
+
 export interface AppContextProps {
-  menu: MenuItem[];
+  menu: MenuItemType[]; // Usa MenuItemType aquí
   loading: boolean;
 }
 
@@ -36,7 +40,7 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [menu, setMenu] = useState<MenuItem[]>([]);
+  const [menu, setMenu] = useState<MenuItemType[]>([]); // Usa MenuItemType aquí
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     let unsubscribe: () => void;
@@ -44,7 +48,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       const menuCollection = collection(db, COLLECTIONS.MENU);
       unsubscribe = onSnapshot(menuCollection, (snapshot) => {
         const menuData = snapshot.docs.map(
-          (doc) => ({ id: doc.id, ...doc.data() } as MenuItem)
+          (doc) => ({ id: doc.id, ...doc.data() } as MenuItemType) // Cassting a MenuItemType
         );
         setMenu(menuData);
         setLoading(false);
@@ -62,5 +66,3 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     </AppContext.Provider>
   );
 };
-
-/* Fin src\context\AppContext.tsx */

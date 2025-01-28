@@ -7,37 +7,38 @@
 ├── postcss.config.js [9]
 ├── README.md [51]
 ├── 📂 src
-│   ├── App.tsx [147]
+│   ├── App.tsx [162]
 │   ├── 📂 components
 │   │   ├── 📂 auth
 │   │   │   ├── LoginForm.tsx [83]
 │   │   │   └── RegisterForm.tsx [83]
 │   │   ├── 📂 forms
 │   │   │   ├── MenuForm.tsx [222]
-│   │   │   └── PedidoForm.tsx [233]
+│   │   │   └── PedidoForm.tsx [229]
 │   │   ├── 📂 layout
 │   │   │   ├── MainLayout.tsx [37]
 │   │   │   ├── Navbar.tsx [59]
 │   │   │   ├── PublicLayout.tsx [19]
 │   │   │   └── Sidebar.tsx [120]
 │   │   ├── 📂 menu
-│   │   │   ├── GroupOrderPage.tsx [432]
-│   │   │   ├── MenuForm.tsx [221]
-│   │   │   ├── MenuItem.tsx [84]
+│   │   │   ├── GroupOrderPage.tsx [687]
+│   │   │   ├── JoinOrderModal.tsx [57]
+│   │   │   ├── MenuForm.tsx [223]
+│   │   │   ├── MenuItem.tsx [95]
 │   │   │   ├── MenuList.tsx [29]
 │   │   │   ├── MenuModal.tsx [67]
 │   │   │   ├── 📂 partials
-│   │   │   │   ├── OrderReview.tsx [106]
-│   │   │   │   ├── PeopleSelection.tsx [64]
-│   │   │   │   ├── PersonOrder.tsx [164]
-│   │   │   │   └── SharedOrder.tsx [156]
+│   │   │   │   ├── OrderReview.tsx [187]
+│   │   │   │   ├── PeopleSelection.tsx [63]
+│   │   │   │   ├── PersonOrder.tsx [202]
+│   │   │   │   └── SharedOrder.tsx [165]
 │   │   │   └── PersonMenuModal.tsx [223]
 │   │   ├── 📂 payment
 │   │   │   └── PaymentForm.tsx [80]
 │   │   ├── 📂 pedidos
 │   │   │   ├── PedidoForm.tsx [232]
 │   │   │   ├── PedidoItem.tsx [9]
-│   │   │   └── PedidoList.tsx [290]
+│   │   │   └── PedidoList.tsx [395]
 │   │   └── 📂 ui
 │   │       ├── Button.tsx [79]
 │   │       ├── Container.tsx [17]
@@ -45,18 +46,18 @@
 │   │       ├── ListItem.tsx [64]
 │   │       └── TextField.tsx [34]
 │   ├── 📂 context
-│   │   ├── AppContext.tsx [66]
-│   │   └── AuthContext.tsx [164]
+│   │   ├── AppContext.tsx [69]
+│   │   └── AuthContext.tsx [172]
 │   ├── 📂 hooks
 │   │   ├── useAuth.ts [10]
 │   │   └── useMenu.ts [10]
 │   ├── main.tsx [10]
 │   ├── 📂 pages
-│   │   ├── Dashboard.tsx [672]
-│   │   ├── GestionMenu.tsx [306]
+│   │   ├── Dashboard.tsx [754]
+│   │   ├── GestionMenu.tsx [392]
 │   │   ├── GestionUsuarios.tsx [82]
 │   │   ├── Login.tsx [56]
-│   │   ├── MenuPage.tsx [390]
+│   │   ├── MenuPage.tsx [507]
 │   │   ├── PedidosPage.tsx [18]
 │   │   ├── Perfil.tsx [97]
 │   │   └── Success.tsx [41]
@@ -66,9 +67,9 @@
 │   │   └── global.css [66]
 │   ├── 📂 types
 │   │   ├── css.d.ts [1]
-│   │   └── global.d.ts [14]
+│   │   └── global.d.ts [20]
 │   └── 📂 utils
-│       ├── constants.ts [4]
+│       ├── constants.ts [6]
 │       ├── firebase.ts [16]
 │       └── theme.ts [43]
 ├── tailwind.config.js [11]
@@ -78,7 +79,7 @@
 └── vite.config.ts [38]
 
 
-Total de líneas resumidas: 5837
+Total de líneas resumidas: 6709
 
 
 /* Inicio eslint.config.js */
@@ -259,6 +260,8 @@ export default tseslint.config({
 /* Fin README.md */
 
 /* Inicio src\App.tsx */
+/* src\App.tsx */
+/* Inicio src\App.tsx */
 import React from "react";
 import {
   Navigate,
@@ -278,6 +281,7 @@ import GestionUsuarios from "./pages/GestionUsuarios";
 import Login from "./pages/Login";
 
 import GroupOrderPage from "./components/menu/GroupOrderPage";
+import MenuPage from "./pages/MenuPage"; // Importa MenuPage
 import PedidosPage from "./pages/PedidosPage";
 import Perfil from "./pages/Perfil";
 import Success from "./pages/Success";
@@ -345,11 +349,21 @@ const App: React.FC = () => {
                   </PrivateRoute>
                 }
               />
+              {/* Ruta modificada para GroupOrderPage que recibe groupOrderId como parámetro */}
+              <Route
+                path="/menu/:groupOrderId"
+                element={
+                  <PrivateRoute>
+                    <GroupOrderPage name="" />
+                  </PrivateRoute>
+                }
+              />
+              {/* Nueva ruta para MenuPage (punto de entrada) */}
               <Route
                 path="/menu"
                 element={
                   <PrivateRoute>
-                    <GroupOrderPage />
+                    <MenuPage />
                   </PrivateRoute>
                 }
               />
@@ -405,6 +419,8 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+/* Fin src\App.tsx */
 
 /* Fin src\App.tsx */
 
@@ -806,6 +822,7 @@ export default MenuForm;
 /* Fin src\components\forms\MenuForm.tsx */
 
 /* Inicio src\components\forms\PedidoForm.tsx */
+/* src\components\forms\PedidoForm.tsx */
 // src/components/pedidos/PedidoForm.tsx
 /* Directorio: src\components\forms\PedidoForm.tsx */
 // src/components/forms/PedidoForm.tsx
@@ -815,14 +832,10 @@ import { v4 as uuidv4 } from "uuid";
 import { useAuth } from "../../hooks/useAuth";
 import { useMenu } from "../../hooks/useMenu";
 import { db } from "../../utils/firebase";
-
+import { Person } from "../menu/GroupOrderPage";
 interface PedidoFormProps {
   onClose: () => void;
-  people?: {
-    id: string;
-    name: string;
-    items: { id: string; quantity: number }[];
-  }[];
+  people?: Person[];
   sharedOrderItems?: {
     itemId: string;
     quantity: number;
@@ -852,7 +865,7 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
   useEffect(() => {
     if (people) {
       setPeopleOrder(
-        people.map((person) => ({ id: person.id, name: person.name }))
+        people.map((person) => ({ id: person.userId, name: person.name }))
       );
       // Flatten person items and assign person name
       const personItems = people.flatMap((person) =>
@@ -1038,7 +1051,6 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
 };
 
 export default PedidoForm;
-
 /* Fin src\components\forms\PedidoForm.tsx */
 
 /* Inicio src\components\layout\MainLayout.tsx */
@@ -1289,35 +1301,49 @@ export default Sidebar;
 /* Fin src\components\layout\Sidebar.tsx */
 
 /* Inicio src\components\menu\GroupOrderPage.tsx */
+/* Inicio src\components\menu\GroupOrderPage.tsx */
+/* src\components\menu\GroupOrderPage.tsx */
+/* src\components\menu\GroupOrderPage.tsx */
+/* src\components\menu\GroupOrderPage.tsx */
 /* src\components\menu\GroupOrderPage.tsx */
 import React, { useEffect, useRef, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 import { MenuItem as MenuItemType } from "../../context/AppContext";
 import { useMenu } from "../../hooks/useMenu";
 
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { useParams, useSearchParams } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import { COLLECTIONS } from "../../utils/constants";
+import { db } from "../../utils/firebase";
 import OrderReview from "./partials/OrderReview";
 import PeopleSelection from "./partials/PeopleSelection";
 import PersonOrder from "./partials/PersonOrder";
 import SharedOrder from "./partials/SharedOrder";
 
-interface Person {
-  id: string;
+// Export the Person interface
+export interface Person {
+  personIndex: number;
+  userId: string | null;
   name: string;
   items: { id: string; quantity: number }[];
+  locked?: boolean;
+  finished?: boolean;
 }
 
-interface SharedOrderItem {
+// Export the SharedOrderItem interface
+export interface SharedOrderItem {
   itemId: string;
   quantity: number;
   personIds: string[];
 }
 
 export interface GroupOrderPageProps {
-    name: string;
+  name: string;
 }
 
 const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const { menu } = useMenu();
+  const { user } = useAuth();
   const [numPeople, setNumPeople] = useState<number>(1);
   const [people, setPeople] = useState<Person[]>([]);
   const [showPeopleNames, setShowPeopleNames] = useState(false);
@@ -1327,18 +1353,23 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   );
   const [activeTab, setActiveTab] = useState<string>("shared");
   const [feedbackMessage] = useState<string>("");
+  const [groupOrderCode, setGroupOrderCode] = useState<string | null>(null);
+  const [groupOrderId, setGroupOrderId] = useState<string | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const [allFinished, setAllFinished] = useState(false);
 
   const sharedOrderSummaryRef = useRef<HTMLDivElement>(null);
   const personOrderSummaryRef = useRef<HTMLDivElement>(null);
   const [, setIsMobile] = useState(false);
   const [, setIsSummaryVisible] = useState(true);
+  const { groupOrderId: routeGroupId } = useParams();
+  const [searchParams] = useSearchParams();
+  const codeFromURL = searchParams.get("code");
 
-  // Filtra el menú para mostrar solo disponibles y no disponibles en el momento (excluye "Ya no disponible")
   const filteredMenu = menu.filter(
     (item) => item.availabilityStatus !== "noDisponibleLargoPlazo"
   );
 
-  // Agrupa el menú filtrado por categoría (usando recommendation como categoría)
   const menuCategories = filteredMenu.reduce((categories, item) => {
     const category = item.recommendation || "General";
     if (!categories[category]) {
@@ -1349,6 +1380,18 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   }, {} as { [category: string]: MenuItemType[] });
 
   useEffect(() => {
+    if (routeGroupId) {
+      setGroupOrderId(routeGroupId);
+      setGroupOrderCode(codeFromURL);
+      subscribeToGroupOrder(routeGroupId);
+    } else {
+      console.log(
+        "GroupOrderPage - No routeGroupId, not subscribing to group order."
+      );
+    }
+  }, [routeGroupId, codeFromURL]);
+
+  useEffect(() => {
     const checkMobile = () => window.innerWidth < 768;
     setIsMobile(checkMobile());
     const handleResize = () => setIsMobile(checkMobile());
@@ -1356,6 +1399,54 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     setIsSummaryVisible(!checkMobile());
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const subscribeToGroupOrder = (groupId: string) => {
+    if (!groupId) return; // Avoid subscribing with empty groupId
+    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupId);
+    console.log(
+      "GroupOrderPage - Subscribing to group order with ID:",
+      groupId
+    );
+
+    return onSnapshot(
+      groupOrderDocRef,
+      (docSnapshot) => {
+        if (docSnapshot.exists()) {
+          const groupOrderData = docSnapshot.data();
+          console.log("GroupOrderPage - Snapshot data:", groupOrderData);
+          if (groupOrderData) {
+            setGroupOrderCode(groupOrderData.code as string);
+            setPeople(groupOrderData.participants as Person[]);
+            setSharedOrderItems(
+              groupOrderData.sharedItems as SharedOrderItem[]
+            );
+            setIsOwner(user?.uid === groupOrderData.ownerId);
+            const finishedCheck = (
+              groupOrderData.participants as Person[]
+            )?.every((p) => p.finished);
+            setAllFinished(finishedCheck);
+
+            if (
+              groupOrderData.participants &&
+              groupOrderData.participants.length !== numPeople
+            ) {
+              setNumPeople(groupOrderData.participants.length);
+            }
+          }
+        } else {
+          console.log(
+            "GroupOrderPage - No existe el documento del pedido grupal!"
+          );
+        }
+      },
+      (error) => {
+        console.error(
+          "GroupOrderPage - Error al suscribirse al pedido grupal:",
+          error
+        );
+      }
+    );
+  };
 
   const handleNumPeopleChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -1369,9 +1460,12 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         const newPeople = Array.from(
           { length: num - currentPeopleCount },
           (_, index) => ({
-            id: uuidv4(),
+            personIndex: currentPeopleCount + index,
+            userId: null,
             name: `Persona ${currentPeopleCount + index + 1}`,
             items: [],
+            locked: false,
+            finished: false,
           })
         );
         return [...prevPeople, ...newPeople];
@@ -1381,22 +1475,16 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         return prevPeople;
       }
     });
-    // Asegurar que haya al menos una persona en el array people al cambiar numPeople
-    if (num >= 1 && people.length === 0) {
-      setPeople([
-        {
-          id: uuidv4(),
-          name: `Persona 1`,
-          items: [],
-        },
-      ]);
-    }
   };
 
   const handlePersonNameChange = (index: number, name: string) => {
     const updatedPeople = [...people];
-    updatedPeople[index].name = name;
-    setPeople(updatedPeople);
+    if (updatedPeople[index]) {
+      updatedPeople[index].name = name;
+      setPeople(updatedPeople);
+    } else {
+      console.error(`Index ${index} out of bounds for people array.`);
+    }
   };
 
   const handleStartOrder = () => {
@@ -1437,26 +1525,34 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     return total;
   };
 
-  const handleAddToSharedOrder = (item: MenuItemType) => {
+  const handleAddToSharedOrder = async (item: MenuItemType) => {
     if (item.availabilityStatus !== "disponible") {
       return;
     }
     const existingItemIndex = sharedOrderItems.findIndex(
       (sharedItem) => sharedItem.itemId === item.id
     );
+    let updatedSharedOrderItems;
     if (existingItemIndex > -1) {
-      const updatedSharedOrderItems = [...sharedOrderItems];
-      updatedSharedOrderItems[existingItemIndex].quantity += 1;
-      setSharedOrderItems(updatedSharedOrderItems);
+      updatedSharedOrderItems = sharedOrderItems.map((si, index) =>
+        index === existingItemIndex ? { ...si, quantity: si.quantity + 1 } : si
+      );
     } else {
-      setSharedOrderItems([
+      updatedSharedOrderItems = [
         ...sharedOrderItems,
         { itemId: item.id, quantity: 1, personIds: [] },
-      ]);
+      ];
+    }
+    setSharedOrderItems(updatedSharedOrderItems);
+    if (groupOrderId) {
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+      await updateDoc(groupOrderDocRef, {
+        sharedItems: updatedSharedOrderItems,
+      });
     }
   };
 
-  const handleSharedOrderItemQuantityChange = (
+  const handleSharedOrderItemQuantityChange = async (
     itemId: string,
     quantity: number
   ) => {
@@ -1465,13 +1561,25 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
       sharedItem.itemId === itemId ? { ...sharedItem, quantity } : sharedItem
     );
     setSharedOrderItems(updatedSharedOrderItems);
+    if (groupOrderId) {
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+      await updateDoc(groupOrderDocRef, {
+        sharedItems: updatedSharedOrderItems,
+      });
+    }
   };
 
-  const handleRemoveSharedOrderItem = (itemId: string) => {
+  const handleRemoveSharedOrderItem = async (itemId: string) => {
     const updatedSharedOrderItems = sharedOrderItems.filter(
       (item) => item.itemId !== itemId
     );
     setSharedOrderItems(updatedSharedOrderItems);
+    if (groupOrderId) {
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+      await updateDoc(groupOrderDocRef, {
+        sharedItems: updatedSharedOrderItems,
+      });
+    }
   };
 
   const distributeSharedOrderItems = () => {
@@ -1537,69 +1645,183 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     setSharedOrderItems([]);
   };
 
-  const handleAddItemToPerson = (personId: string, item: MenuItemType) => {
-    if (item.availabilityStatus !== "disponible") {
+  const handleAddItemToPerson = async (
+    personIndex: number,
+    menuItemToAdd: MenuItemType // More descriptive parameter name
+  ) => {
+    console.log(
+      "GroupOrderPage - handleAddItemToPerson CALLED",
+      personIndex,
+      menuItemToAdd
+    ); // Log: function call
+    console.log(
+      "GroupOrderPage - handleAddItemToPerson - Item:",
+      menuItemToAdd
+    ); // Log: item details
+    console.log(
+      "GroupOrderPage - handleAddItemToPerson - Typeof menuItemToAdd:",
+      typeof menuItemToAdd
+    ); // Log: type of menuItemToAdd
+
+    if (
+      !menuItemToAdd ||
+      typeof menuItemToAdd !== "object" ||
+      !menuItemToAdd.id
+    ) {
+      console.error(
+        "GroupOrderPage - handleAddItemToPerson - Invalid menuItemToAdd object received:",
+        menuItemToAdd
+      );
       return;
     }
-    setPeople((prevPeople) => {
-      return prevPeople.map((person) => {
-        if (person.id === personId) {
-          const itemExists = person.items.some(
-            (orderItem) => orderItem.id === item.id
-          );
-          if (itemExists) {
-            return {
-              ...person,
-              items: person.items.map((orderItem) =>
-                orderItem.id === item.id
-                  ? { ...orderItem, quantity: orderItem.quantity + 1 }
-                  : orderItem
-              ),
-            };
-          } else {
-            return {
-              ...person,
-              items: [...person.items, { id: item.id, quantity: 1 }],
-            };
-          }
+
+    if (menuItemToAdd.availabilityStatus !== "disponible") {
+      return;
+    }
+
+    const updatedParticipants = people.map((p, index) => {
+      if (index === personIndex) {
+        const itemExists = p.items.some(
+          (orderItem) => orderItem.id === menuItemToAdd.id
+        );
+        if (itemExists) {
+          console.log(
+            "GroupOrderPage - handleAddItemToPerson - Item exists, updating quantity"
+          ); // Log: item exists
+          return {
+            ...p,
+            items: p.items.map((orderItem) =>
+              orderItem.id === menuItemToAdd.id
+                ? { ...orderItem, quantity: orderItem.quantity + 1 }
+                : orderItem
+            ),
+          };
+        } else {
+          console.log(
+            "GroupOrderPage - handleAddItemToPerson - Item does not exist, adding new item"
+          ); // Log: new item
+          return {
+            ...p,
+            items: [...p.items, { id: menuItemToAdd.id, quantity: 1 }],
+          };
         }
-        return person;
-      });
+      }
+      return p;
     });
+    setPeople(updatedParticipants);
+    console.log(
+      "GroupOrderPage - handleAddItemToPerson - Updated Participants:",
+      updatedParticipants
+    ); // Log: updated state
+
+    if (groupOrderId) {
+      console.log(
+        "GroupOrderPage - handleAddItemToPerson - Updating Firestore..."
+      ); // Log: Firestore update start
+      try {
+        const groupOrderDocRef = doc(
+          db,
+          COLLECTIONS.GROUP_ORDERS,
+          groupOrderId
+        );
+        await updateDoc(groupOrderDocRef, {
+          participants: updatedParticipants,
+        });
+        console.log(
+          "GroupOrderPage - handleAddItemToPerson - Firestore update SUCCESS"
+        ); // Log: Firestore update success
+      } catch (error) {
+        console.error(
+          "GroupOrderPage - handleAddItemToPerson - Firestore update FAILED",
+          error
+        ); // Log: Firestore update fail
+      }
+    } else {
+      console.log(
+        "GroupOrderPage - handleAddItemToPerson - No groupOrderId, Firestore update skipped"
+      ); // Log: Firestore skip
+    }
   };
 
-  const handlePersonOrderItemQuantityChange = (
-    personId: string,
+  const handlePersonOrderItemQuantityChange = async (
+    personIndex: number,
     itemId: string,
     quantity: number
   ) => {
     if (quantity < 0) return;
-    setPeople((prevPeople) =>
-      prevPeople.map((person) => {
-        if (person.id === personId) {
-          return {
-            ...person,
-            items: person.items.map((it) =>
-              it.id === itemId ? { ...it, quantity } : it
-            ),
-          };
-        }
-        return person;
-      })
-    );
+    const updatedParticipants = people.map((person, index) => {
+      if (index === personIndex) {
+        return {
+          ...person,
+          items: person.items.map((it) =>
+            it.id === itemId ? { ...it, quantity } : it
+          ),
+        };
+      }
+      return person;
+    });
+    setPeople(updatedParticipants);
+
+    if (groupOrderId) {
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+      await updateDoc(groupOrderDocRef, { participants: updatedParticipants });
+    }
   };
 
-  const handleRemoveItemFromPerson = (personId: string, itemId: string) => {
-    setPeople((prevPeople) =>
-      prevPeople.map((person) =>
-        person.id === personId
-          ? {
-              ...person,
-              items: person.items.filter((item) => item.id !== itemId),
-            }
-          : person
-      )
-    );
+  const handleRemoveItemFromPerson = async (
+    personIndex: number,
+    itemId: string
+  ) => {
+    const updatedParticipants = people.map((person, index) => {
+      if (index === personIndex) {
+        return {
+          ...person,
+          items: person.items.filter((item) => item.id !== itemId),
+        };
+      }
+      return person;
+    });
+    setPeople(updatedParticipants);
+
+    if (groupOrderId) {
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+      await updateDoc(groupOrderDocRef, { participants: updatedParticipants });
+    }
+  };
+
+  const handleClaimPersonTab = async (personIndex: number) => {
+    if (!groupOrderId || !user) return;
+
+    const updatedParticipants = people.map((person, index) => {
+      if (index === personIndex && !person.locked) {
+        return { ...person, userId: user.uid, locked: true };
+      }
+      return person;
+    });
+    setPeople(updatedParticipants);
+
+    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+    await updateDoc(groupOrderDocRef, { participants: updatedParticipants });
+  };
+
+  const handlePersonFinishedOrder = async (personIndex: number) => {
+    if (!groupOrderId) return;
+
+    const updatedParticipants = people.map((person, index) => {
+      if (index === personIndex) {
+        return { ...person, finished: true };
+      }
+      return person;
+    });
+    setPeople(updatedParticipants);
+    const allAreFinished = updatedParticipants.every((p) => p.finished);
+    setAllFinished(allAreFinished);
+
+    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+    await updateDoc(groupOrderDocRef, {
+      participants: updatedParticipants,
+      allFinished: allFinished,
+    });
   };
 
   return (
@@ -1607,6 +1829,18 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
       <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center text-indigo-700">
         ¡Pedido Grupal Fácil y Divertido! 🎉
       </h1>
+
+      {groupOrderCode && (
+        <div className="text-center mb-4">
+          <h3 className="text-xl font-semibold text-gray-800">
+            Código de Pedido Compartido:{" "}
+            <span className="font-bold text-indigo-600">{groupOrderCode}</span>
+          </h3>
+          <p className="text-sm text-gray-500">
+            Comparte este código con tus amigos para que se unan al pedido.
+          </p>
+        </div>
+      )}
 
       {!showPeopleNames ? (
         <PeopleSelection
@@ -1633,18 +1867,35 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
               >
                 🍕 Para Compartir
               </button>
-              {people.map((person) => (
-                <button
-                  key={person.id}
-                  onClick={() => setActiveTab(person.id)}
+              {people.map((person, index) => (
+                <div
+                  key={person.personIndex}
                   className={`${
-                    activeTab === person.id
+                    activeTab === `person-${index}`
                       ? "border-indigo-500 text-indigo-600"
                       : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300`}
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300 cursor-pointer`}
+                  onClick={() => setActiveTab(`person-${index}`)}
                 >
                   {person.name}
-                </button>
+                  {!person.locked && !person.finished && user?.uid && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClaimPersonTab(index);
+                      }}
+                      className="ml-2 px-2 py-1 bg-indigo-200 text-indigo-700 rounded-full text-xs hover:bg-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      Soy yo
+                    </button>
+                  )}
+                  {person.finished && (
+                    <span className="ml-2 text-green-500">✅ Terminado</span>
+                  )}
+                  {person.locked && person.userId !== user?.uid && (
+                    <span className="ml-2 text-red-500">🔒 En uso</span>
+                  )}
+                </div>
               ))}
             </nav>
           </div>
@@ -1667,36 +1918,50 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
 
           {people.map(
             (person, index) =>
-              activeTab === person.id && (
+              activeTab === `person-${index}` && (
                 <PersonOrder
-                  key={person.id}
+                  key={person.personIndex}
                   person={person}
                   index={index}
                   menuCategories={menuCategories}
                   menu={menu}
-                  onAddItemToPerson={handleAddItemToPerson}
-                  onPersonOrderItemQuantityChange={
-                    handlePersonOrderItemQuantityChange
+                  // Corrected prop passing: directly pass index and item
+                  onAddItemToPerson={(index, menuItem) =>
+                    handleAddItemToPerson(index, menuItem)
                   }
-                  onRemoveItemFromPerson={handleRemoveItemFromPerson}
+                  onPersonOrderItemQuantityChange={(index, itemId, quantity) =>
+                    handlePersonOrderItemQuantityChange(index, itemId, quantity)
+                  }
+                  onRemoveItemFromPerson={(index, itemId) =>
+                    handleRemoveItemFromPerson(index, itemId)
+                  }
                   calculateSubtotal={calculateSubtotal}
                   personOrderSummaryRef={personOrderSummaryRef}
                   activeTab={activeTab}
+                  onPersonFinishedOrder={handlePersonFinishedOrder}
+                  isFinished={person.finished || false}
+                  personIndex={index} // Pass personIndex as prop
                 />
               )
           )}
 
           <div className="flex justify-center mt-8">
-            <button
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl focus:outline-none focus:shadow-outline disabled:opacity-50 transition-colors duration-300 animate-pulse hover:animate-none"
-              onClick={handleReviewOrder}
-              disabled={
-                people.some((person) => person.items.length === 0) &&
-                sharedOrderItems.length === 0
-              }
-            >
-              ¡Revisar Pedido Grupal! ✅
-            </button>
+            {isOwner && allFinished ? (
+              <button
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl focus:outline-none focus:shadow-outline disabled:opacity-50 transition-colors duration-300 animate-pulse hover:animate-none"
+                onClick={handleReviewOrder}
+              >
+                ¡Revisar Pedido Grupal! ✅
+              </button>
+            ) : !isOwner ? (
+              <p className="text-center text-gray-600">
+                Espera a que el dueño del pedido revise y confirme.
+              </p>
+            ) : !allFinished ? (
+              <p className="text-center text-gray-600">
+                Aún faltan personas por confirmar su pedido.
+              </p>
+            ) : null}
           </div>
         </>
       ) : (
@@ -1723,14 +1988,78 @@ export default GroupOrderPage;
 
 /* Fin src\components\menu\GroupOrderPage.tsx */
 
-/* Inicio src\components\menu\MenuForm.tsx */
+/* Fin src\components\menu\GroupOrderPage.tsx */
+
+/* Inicio src\components\menu\JoinOrderModal.tsx */
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from "@mui/material";
 import React, { useState } from "react";
-import { MenuItem as MenuItemType } from "../../context/AppContext";
+
+interface JoinOrderModalProps {
+  open: boolean;
+  onClose: () => void;
+  onJoinOrder: (code: string) => void;
+}
+
+const JoinOrderModal: React.FC<JoinOrderModalProps> = ({
+  open,
+  onClose,
+  onJoinOrder,
+}) => {
+  const [code, setCode] = useState("");
+
+  const handleJoin = () => {
+    onJoinOrder(code);
+    onClose();
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>Unirse a Pedido Compartido</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus
+          margin="dense"
+          id="code"
+          label="Código del pedido"
+          type="text"
+          fullWidth
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary">
+          Cancelar
+        </Button>
+        <Button onClick={handleJoin} color="primary">
+          Unirme
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+export default JoinOrderModal;
+
+/* Fin src\components\menu\JoinOrderModal.tsx */
+
+/* Inicio src\components\menu\MenuForm.tsx */
+/* Inicio src\components\forms\MenuForm.tsx */
+/* src\components\forms\MenuForm.tsx */
+import React, { useState } from "react";
+import { MenuItem } from "../../context/AppContext";
 import { useMenu } from "../../hooks/useMenu";
 
 interface MenuFormProps {
-  initialValues?: Partial<MenuItemType>;
-  onSubmit: (values: Partial<MenuItemType>) => void;
+  initialValues?: Partial<MenuItem>;
+  onSubmit: (values: Partial<MenuItem>) => void;
   onClose: () => void; // Add onClose prop
 }
 
@@ -1948,7 +2277,6 @@ export default MenuForm;
 /* Fin src\components\menu\MenuForm.tsx */
 
 /* Inicio src\components\menu\MenuItem.tsx */
-/* Inicio src\components\menu\MenuItem.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../context/AppContext";
 
@@ -1973,6 +2301,16 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onEdit, onDelete }) => {
 
   const statusBadgeClass = `inline-block ${getStatusBadgeClass()} rounded-full px-3 py-1 text-sm font-semibold mr-2 mb-2`;
 
+  // Function to format price to Colombian Pesos
+  const formatPriceCOP = (price: number) => {
+    return price.toLocaleString("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0, // Remove cents if whole number
+      maximumFractionDigits: 0,
+    });
+  };
+
   return (
     <div className="max-w-sm rounded overflow-hidden shadow-lg">
       {" "}
@@ -1995,7 +2333,9 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, onEdit, onDelete }) => {
         {/* Nombre del item */}
         <p className="text-gray-700 text-base">{item.description}</p>{" "}
         {/* Descripción */}
-        <p className="text-gray-700 text-lg mt-2">Precio: ${item.price}</p>{" "}
+        <p className="text-gray-700 text-lg mt-2">
+          Precio: {formatPriceCOP(item.price)}
+        </p>{" "}
         {/* Precio */}
         <div>
           {item.recommendation && (
@@ -2138,17 +2478,15 @@ export default MenuModal;
 
 /* Inicio src\components\menu\partials\OrderReview.tsx */
 /* src\components\menu\partials\OrderReview.tsx */
+import { Typography } from "@mui/material";
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
 import PedidoForm from "../../forms/PedidoForm";
+import { Person, SharedOrderItem } from "../GroupOrderPage"; // Import Person and SharedOrderItem interfaces
 
 interface OrderReviewProps {
-  people: {
-    id: string;
-    name: string;
-    items: { id: string; quantity: number }[];
-  }[];
-  sharedOrderItems: { itemId: string; quantity: number; personIds: string[] }[];
+  people: Person[]; // Use the imported Person interface
+  sharedOrderItems: SharedOrderItem[]; // Use the imported SharedOrderItem interface
   menu: MenuItemType[];
   onClosePedidoForm: () => void;
   calculateSharedSubtotal: () => number;
@@ -2165,73 +2503,156 @@ const OrderReview: React.FC<OrderReviewProps> = ({
   calculateSharedSubtotal,
   calculateSubtotal,
 }) => {
+  // Calculate total order amount
+  const totalOrderAmount =
+    calculateSharedSubtotal() +
+    people.reduce((sum, person) => sum + calculateSubtotal(person.items), 0);
+
+  // Function to format price to Colombian Pesos
+  const formatPriceCOP = (price: number) => {
+    return price.toLocaleString("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0, // Remove cents if whole number
+      maximumFractionDigits: 0,
+    });
+  };
+
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-md animate-fade-in">
       <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center text-indigo-700">
-        ¡Revisa tu Pedido Grupal! 🧐
+        Revisión Detallada del Pedido Grupal 🧐
       </h2>
-      {sharedOrderItems.length > 0 && (
+
+      {/* Shared Order Section */}
+      {sharedOrderItems && sharedOrderItems.length > 0 && (
         <div className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-50">
           <h3 className="text-lg font-semibold text-gray-900 mb-3 text-indigo-600">
-            Pedido Compartido 🤝
+            Detalle del Pedido Compartido 🤝
           </h3>
           <ul>
             {sharedOrderItems.map((sharedItem) => {
               const menuItem = menu.find((m) => m.id === sharedItem.itemId);
-              return menuItem ? (
-                <li
-                  key={sharedItem.itemId}
-                  className="py-1 flex justify-between"
-                >
-                  <span className="flex-1">
-                    {menuItem.name} x {sharedItem.quantity}
-                  </span>
-                  <span className="w-12 text-right">
-                    ${(menuItem.price * sharedItem.quantity).toFixed(2)}
-                  </span>
-                </li>
-              ) : null;
+              if (menuItem) {
+                const itemTotalPrice = menuItem.price * sharedItem.quantity;
+                return (
+                  <li
+                    key={sharedItem.itemId}
+                    className="py-2 flex items-center justify-between" // Align items vertically and justify content
+                  >
+                    <div className="flex items-center">
+                      {" "}
+                      {/* Container for item name and quantity */}
+                      <span className="mr-2">{menuItem.name}</span>
+                      <span className="text-sm text-gray-500">
+                        x {sharedItem.quantity}
+                      </span>
+                    </div>
+                    <span className="w-12 text-right">
+                      {formatPriceCOP(itemTotalPrice)}
+                    </span>
+                  </li>
+                );
+              } else {
+                return null; // Handle case where menuItem is not found
+              }
             })}
           </ul>
-          <div className="font-semibold text-right">
-            Subtotal:{" "}
-            <span className="text-indigo-700">
-              ${calculateSharedSubtotal().toFixed(2)}
+          <div className="font-semibold text-right mt-2">
+            Subtotal Compartido:
+            <span className="text-indigo-700 ml-1">
+              {formatPriceCOP(calculateSharedSubtotal())}
             </span>
           </div>
         </div>
       )}
-      {people.map((person) => (
-        <div
-          key={person.id}
-          className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-50"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 mb-3 text-indigo-600">
-            {person.name}
-          </h3>
-          <ul>
-            {person.items.map((it) => {
-              const menuItem = menu.find((m) => m.id === it.id);
-              return menuItem ? (
-                <li key={it.id} className="py-1 flex justify-between">
-                  <span className="flex-1">
-                    {menuItem.name} x {it.quantity}
-                  </span>
-                  <span className="w-12 text-right">
-                    ${(menuItem.price * it.quantity).toFixed(2)}
-                  </span>
-                </li>
-              ) : null;
-            })}
-          </ul>
-          <div className="font-semibold text-right">
-            Subtotal:{" "}
-            <span className="text-indigo-700">
-              ${calculateSubtotal(person.items).toFixed(2)}
-            </span>
+
+      {/* Individual Orders Section */}
+      {people &&
+        people.map((person) => (
+          <div
+            key={person.personIndex}
+            className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-50"
+          >
+            <h3 className="text-lg font-semibold text-gray-900 mb-3 text-indigo-600">
+              Detalle del Pedido Individual - {person.name} 👤
+            </h3>
+            <ul>
+              {person.items.map((it) => {
+                const menuItem = menu.find((m) => m.id === it.id);
+                if (menuItem) {
+                  const itemTotalPrice = menuItem.price * it.quantity;
+                  return (
+                    <li
+                      key={it.id}
+                      className="py-2 flex items-center justify-between" // Align items vertically and justify content
+                    >
+                      <div className="flex items-center">
+                        {" "}
+                        {/* Container for item name and quantity */}
+                        <span className="mr-2">{menuItem.name}</span>
+                        <span className="text-sm text-gray-500">
+                          x {it.quantity}
+                        </span>
+                      </div>
+                      <span className="w-12 text-right">
+                        {formatPriceCOP(itemTotalPrice)}
+                      </span>
+                    </li>
+                  );
+                } else {
+                  return null; // Handle menu item not found case
+                }
+              })}
+            </ul>
+            <div className="font-semibold text-right mt-2">
+              Subtotal Individual:
+              <span className="text-indigo-700 ml-1">
+                {formatPriceCOP(calculateSubtotal(person.items))}
+              </span>
+            </div>
+          </div>
+        ))}
+
+      {/* Total Order Section */}
+      <div className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-100">
+        <h3 className="text-xl font-semibold text-gray-900 mb-3 text-indigo-600 text-center">
+          Resumen del Pedido Grupal Completo 💰
+        </h3>
+        <div className="flex justify-between items-center">
+          {" "}
+          {/* Flex container for labels and total */}
+          <div className="font-semibold text-gray-700">
+            {" "}
+            {/* Left side labels container */}
+            <Typography>Subtotal Compartido:</Typography>
+            {people.map((person) => (
+              <Typography key={person.personIndex}>
+                Subtotal {person.name}:
+              </Typography>
+            ))}
+            <Typography className="font-bold mt-2">
+              Total del Pedido:
+            </Typography>{" "}
+            {/* Bold Total label */}
+          </div>
+          <div className="text-right font-semibold text-xl text-indigo-700">
+            {" "}
+            {/* Right side amounts container */}
+            <Typography>{formatPriceCOP(calculateSharedSubtotal())}</Typography>
+            {people.map((person) => (
+              <Typography key={person.personIndex}>
+                {formatPriceCOP(calculateSubtotal(person.items))}
+              </Typography>
+            ))}
+            <Typography className="font-bold mt-2">
+              {formatPriceCOP(totalOrderAmount)}
+            </Typography>{" "}
+            {/* Bold Total amount */}
           </div>
         </div>
-      ))}
+      </div>
+
       <PedidoForm
         onClose={onClosePedidoForm}
         people={people}
@@ -2246,12 +2667,12 @@ export default OrderReview;
 /* Fin src\components\menu\partials\OrderReview.tsx */
 
 /* Inicio src\components\menu\partials\PeopleSelection.tsx */
-/* src\components\menu\partials\PeopleSelection.tsx */
-import React from 'react';
+import React from "react";
+import { Person } from "../GroupOrderPage";
 
 interface PeopleSelectionProps {
   numPeople: number;
-  people: { id: string; name: string }[];
+  people: Person[];
   onNumPeopleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onPersonNameChange: (index: number, name: string) => void;
   onStartOrder: () => void;
@@ -2308,36 +2729,37 @@ const PeopleSelection: React.FC<PeopleSelectionProps> = ({
     </div>
   );
 };
-
 export default PeopleSelection;
 /* Fin src\components\menu\partials\PeopleSelection.tsx */
 
 /* Inicio src\components\menu\partials\PersonOrder.tsx */
 /* src\components\menu\partials\PersonOrder.tsx */
+/* src\components\menu\partials\PersonOrder.tsx */
+/* src\components\menu\partials\PersonOrder.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
+import { Person } from "../GroupOrderPage"; // Import the Person interface from GroupOrderPage
 
 interface PersonOrderProps {
-  person: {
-    id: string;
-    name: string;
-    items: { id: string; quantity: number }[];
-  };
+  person: Person; // Use the imported Person interface here
   index: number;
   menuCategories: { [category: string]: MenuItemType[] };
   menu: MenuItemType[];
-  onAddItemToPerson: (personId: string, item: MenuItemType) => void;
+  onAddItemToPerson: (personIndex: number, item: MenuItemType) => void;
   onPersonOrderItemQuantityChange: (
-    personId: string,
+    personIndex: number,
     itemId: string,
     quantity: number
   ) => void;
-  onRemoveItemFromPerson: (personId: string, itemId: string) => void;
+  onRemoveItemFromPerson: (personIndex: number, itemId: string) => void;
   calculateSubtotal: (
     personItems: { id: string; quantity: number }[]
   ) => number;
   personOrderSummaryRef: React.RefObject<HTMLDivElement>;
   activeTab: string;
+  onPersonFinishedOrder: (personIndex: number) => void;
+  isFinished: boolean;
+  personIndex: number;
 }
 
 const PersonOrder: React.FC<PersonOrderProps> = ({
@@ -2350,9 +2772,22 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
   onRemoveItemFromPerson,
   calculateSubtotal,
   personOrderSummaryRef,
+  onPersonFinishedOrder,
+  isFinished,
+  personIndex,
 }) => {
+  // Function to format price to Colombian Pesos
+  const formatPriceCOP = (price: number) => {
+    return price.toLocaleString("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0, // Remove cents if whole number
+      maximumFractionDigits: 0,
+    });
+  };
+
   return (
-    <div key={person.id} className="mb-8" ref={personOrderSummaryRef}>
+    <div key={person.personIndex} className="mb-8" ref={personOrderSummaryRef}>
       <div className="sticky top-16 bg-white p-4 shadow-md z-20 rounded-md transition-transform duration-200 ease-out transform translate-y-0 hover:translate-y-[-2px] ring-2 ring-indigo-500 ring-opacity-50 hover:ring-opacity-100">
         <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">
           Pedido de {person.name || `Persona ${index + 1}`} 😋
@@ -2362,7 +2797,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
             const menuItem = menu.find((m) => m.id === it.id);
             return menuItem ? (
               <li
-                key={it.id}
+                key={it.id} // Added key prop here
                 className="flex justify-between items-center py-2 border-b border-gray-200"
               >
                 <span className="flex-1 min-w-0">{menuItem.name}</span>
@@ -2370,7 +2805,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
                   <button
                     onClick={() =>
                       onPersonOrderItemQuantityChange(
-                        person.id,
+                        personIndex,
                         it.id,
                         it.quantity - 1
                       )
@@ -2383,7 +2818,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
                   <button
                     onClick={() =>
                       onPersonOrderItemQuantityChange(
-                        person.id,
+                        personIndex,
                         it.id,
                         it.quantity + 1
                       )
@@ -2393,7 +2828,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
                     +
                   </button>
                   <button
-                    onClick={() => onRemoveItemFromPerson(person.id, it.id)}
+                    onClick={() => onRemoveItemFromPerson(personIndex, it.id)}
                     className="text-red-500 hover:text-red-700 transition-colors duration-200"
                   >
                     <svg
@@ -2413,7 +2848,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
                   </button>
                 </div>
                 <span className="w-12 text-right">
-                  ${(menuItem.price * it.quantity).toFixed(2)}
+                  {formatPriceCOP(menuItem.price * it.quantity)}
                 </span>
               </li>
             ) : null;
@@ -2422,11 +2857,28 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
             <li className="font-semibold text-right mt-2">
               Subtotal:{" "}
               <span className="text-indigo-700">
-                ${calculateSubtotal(person.items).toFixed(2)}
+                {formatPriceCOP(calculateSubtotal(person.items))}
               </span>
             </li>
           )}
         </ul>
+        <div className="flex justify-end">
+          {" "}
+          {/* Container for button at the bottom */}
+          {!isFinished && (
+            <button
+              onClick={() => onPersonFinishedOrder(personIndex)}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              He Terminado!
+            </button>
+          )}
+          {isFinished && (
+            <span className="text-green-600 font-semibold">
+              ¡Pedido Terminado! ✅
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -2439,34 +2891,39 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
               {categoryName}
             </h3>
             <div className="flex flex-col space-y-2">
-              {items.map((item) => (
-                <button
-                  key={item.id}
-                  disabled={item.availabilityStatus !== "disponible"}
-                  className={`bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-left transition-colors duration-300 ${
-                    item.availabilityStatus !== "disponible"
-                      ? "opacity-50 cursor-not-allowed line-through pointer-events-none"
-                      : ""
-                  }`}
-                  onClick={
-                    item.availabilityStatus === "disponible"
-                      ? () => onAddItemToPerson(person.id, item)
-                      : undefined
-                  }
-                >
-                  {item.name} - ${item.price}
-                  {item.availabilityStatus === "noDisponibleMomento" && (
-                    <span className="ml-2 text-yellow-500 font-normal italic">
-                      (No disponible ahora)
-                    </span>
-                  )}
-                  {item.availabilityStatus === "noDisponibleLargoPlazo" && (
-                    <span className="ml-2 text-red-500 font-normal italic">
-                      (Ya no disponible)
-                    </span>
-                  )}
-                </button>
-              ))}
+              {items.map(
+                (
+                  menuItem // Changed parameter name to menuItem here
+                ) => (
+                  <button
+                    key={menuItem.id}
+                    disabled={menuItem.availabilityStatus !== "disponible"}
+                    className={`bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-left transition-colors duration-300 ${
+                      menuItem.availabilityStatus !== "disponible"
+                        ? "opacity-50 cursor-not-allowed line-through pointer-events-none"
+                        : ""
+                    }`}
+                    onClick={() => {
+                      console.log("PersonOrder - onAddItemToPerson CALL", personIndex, menuItem); // ADD THIS LOG - Log in PersonOrder.tsx
+                      onAddItemToPerson(personIndex, menuItem);
+                    }}
+                  >
+                    {menuItem.name} - {formatPriceCOP(menuItem.price)}{" "}
+                    {/* Use menuItem here */}
+                    {menuItem.availabilityStatus === "noDisponibleMomento" && (
+                      <span className="ml-2 text-yellow-500 font-normal italic">
+                        (No disponible ahora)
+                      </span>
+                    )}
+                    {menuItem.availabilityStatus ===
+                      "noDisponibleLargoPlazo" && (
+                      <span className="ml-2 text-red-500 font-normal italic">
+                        (Ya no disponible)
+                      </span>
+                    )}
+                  </button>
+                )
+              )}
             </div>
           </div>
         ))}
@@ -2478,9 +2935,9 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
 export default PersonOrder;
 
 /* Fin src\components\menu\partials\PersonOrder.tsx */
+/* Fin src\components\menu\partials\PersonOrder.tsx */
 
 /* Inicio src\components\menu\partials\SharedOrder.tsx */
-/* src\components\menu\partials\SharedOrder.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
 
@@ -2507,6 +2964,16 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
 
   menu,
 }) => {
+  // Function to format price to Colombian Pesos
+  const formatPriceCOP = (price: number) => {
+    return price.toLocaleString("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0, // Remove cents if whole number
+      maximumFractionDigits: 0,
+    });
+  };
+
   return (
     <div className="mb-8">
       <div
@@ -2570,7 +3037,7 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
                   </button>
                 </div>
                 <span className="w-12 text-right">
-                  ${(menuItem.price * sharedItem.quantity).toFixed(2)}
+                  {formatPriceCOP(menuItem.price * sharedItem.quantity)}
                 </span>
               </li>
             ) : null;
@@ -2579,7 +3046,7 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
             <li className="font-semibold text-right mt-2">
               Subtotal:{" "}
               <span className="text-indigo-700">
-                ${calculateSharedSubtotal().toFixed(2)}
+                {formatPriceCOP(calculateSharedSubtotal())}
               </span>
             </li>
           )}
@@ -2613,7 +3080,7 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
                       : undefined
                   }
                 >
-                  {item.name} - ${item.price}
+                  {item.name} - {formatPriceCOP(item.price)}
                   {item.availabilityStatus === "noDisponibleMomento" && (
                     <span className="ml-2 text-yellow-500 font-normal italic">
                       (No disponible ahora)
@@ -3195,27 +3662,9 @@ export default PedidoItem;
 /* Fin src\components\pedidos\PedidoItem.tsx */
 
 /* Inicio src\components\pedidos\PedidoList.tsx */
+/* Directorio: src\components\pedidos */
+/* Inicio src\components\pedidos\PedidoList.tsx */
 // src/components/pedidos/PedidoList.tsx
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogTitle,
-
-  FormControl,
-  Grid,
-  InputLabel,
-  List,
-  ListItem,
-  ListItemText,
-  MenuItem,
-  Paper,
-  Select,
-  Typography,
-} from "@mui/material";
-import { SelectChangeEvent } from "@mui/material/Select";
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import {
   collection,
   doc,
@@ -3226,6 +3675,7 @@ import {
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { useMenu } from "../../hooks/useMenu"; // Import useMenu hook
 import { COLLECTIONS } from "../../utils/constants";
 import { db } from "../../utils/firebase";
 
@@ -3242,14 +3692,21 @@ interface Pedido {
   paymentMethod: string;
   orderDate: Date;
   orderId: string;
+  sharedItems?: {
+    itemId: string;
+    quantity: number;
+    personIds: string[];
+  }[];
 }
 
 const PedidoList: React.FC = () => {
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const { user, userRole } = useAuth();
+  const { menu } = useMenu(); // Use useMenu hook to get menu data
   const [selectedStatus, setSelectedStatus] = useState("pendiente");
   const [openDetails, setOpenDetails] = useState(false);
-  const [selectedPedidoDetails, setSelectedPedidoDetails] = useState<Pedido | null>(null);
+  const [selectedPedidoDetails, setSelectedPedidoDetails] =
+    useState<Pedido | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -3284,8 +3741,9 @@ const PedidoList: React.FC = () => {
           deliveryFee: data.deliveryFee,
           deliveryIncluded: data.deliveryIncluded,
           paymentMethod: data.paymentMethod,
-          orderDate: data.orderDate ? (data.orderDate).toDate() : new Date(),
+          orderDate: data.orderDate ? data.orderDate.toDate() : new Date(),
           orderId: data.orderId,
+          sharedItems: data.sharedItems || [],
         } as Pedido;
       });
       setPedidos(pedidosData);
@@ -3295,7 +3753,7 @@ const PedidoList: React.FC = () => {
     return () => unsubscribe();
   }, [user, userRole, selectedStatus]);
 
-  const handleStatusChange = (event: SelectChangeEvent<string>) => {
+  const handleStatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedStatus(event.target.value);
   };
 
@@ -3306,7 +3764,7 @@ const PedidoList: React.FC = () => {
       });
     } catch (error) {
       console.error(
-        "Error actualizando el estado del pedido:",
+        "Error updating order status:",
         (error as { message: string }).message
       );
     }
@@ -3322,168 +3780,282 @@ const PedidoList: React.FC = () => {
     setOpenDetails(false);
   };
 
-  // Definir columnas para DataGrid
-  const columns: GridColDef[] = [
-    { field: 'id', headerName: 'ID del Pedido', width: 150 },
-    { field: 'sede', headerName: 'Sede', width: 120 },
-    { field: 'status', headerName: 'Estado', width: 120 },
-    { field: 'total', headerName: 'Total ($)', width: 100 },
-    { field: 'deliveryFee', headerName: 'Envío ($)', width: 100 },
-    { field: 'paymentMethod', headerName: 'Pago', width: 150 },
-    { 
-      field: 'orderDate', 
-      headerName: 'Fecha', 
-      width: 180, 
-      valueFormatter: (params) => new Date((params as {value: string}).value).toLocaleString(),
-    },
-    {
-      field: 'actions',
-      headerName: 'Acciones',
-      width: 200,
-      sortable: false,
-      renderCell: (params) => {
-        const order: Pedido = params.row;
-        return (
-          <Box>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => handleOpenDetails(order)}
-              sx={{ mr: 1 }}
-            >
-              Ver Detalles
-            </Button>
-            {(userRole === "admin" || userRole === "encargado") && (
-              <>
-                <Button
-                  variant="contained"
-                  size="small"
-                  color="primary"
-                  onClick={() => handleStatusUpdate(order.id, "atendiendo")}
-                  disabled={order.status === "atendiendo"}
-                  sx={{ mr: 1 }}
-                >
-                  Atender
-                </Button>
-                <Button
-                  variant="contained"
-                  size="small"
-                  color="warning"
-                  onClick={() => handleStatusUpdate(order.id, "preparando")}
-                  disabled={order.status === "preparando"}
-                  sx={{ mr: 1 }}
-                >
-                  Preparar
-                </Button>
-                <Button
-                  variant="contained"
-                  size="small"
-                  color="success"
-                  onClick={() => handleStatusUpdate(order.id, "enviado")}
-                  disabled={order.status === "enviado"}
-                >
-                  Enviar
-                </Button>
-              </>
-            )}
-          </Box>
-        );
-      },
-    },
-  ];
+  // Function to format price to Colombian Pesos
+  const formatPriceCOP = (price: number) => {
+    if (typeof price === "number") {
+      return price.toLocaleString("es-CO", {
+        style: "currency",
+        currency: "COP",
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      });
+    } else {
+      return "N/A";
+    }
+  };
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case "pendiente":
+        return "bg-yellow-200 text-yellow-800";
+      case "atendiendo":
+        return "bg-blue-200 text-blue-800";
+      case "preparando":
+        return "bg-orange-200 text-orange-800";
+      case "enviado":
+        return "bg-green-200 text-green-800";
+      default:
+        return "bg-gray-200 text-gray-800";
+    }
+  };
 
   return (
-    <Box>
-      <Typography variant="h5" component="h2" gutterBottom>
-        Tus Pedidos
-      </Typography>
+    <div className="container mx-auto my-8 p-4">
+      <h2 className="text-2xl font-bold text-gray-900 mb-4">
+        Lista de Pedidos
+      </h2>
+
       {userRole !== "client" && (
-        <FormControl fullWidth sx={{ marginBottom: 2 }}>
-          <InputLabel>Filtrar por estado</InputLabel>
-          <Select
-            value={selectedStatus}
-            label="Filtrar por estado"
-            onChange={handleStatusChange}
+        <div className="mb-6">
+          <label
+            htmlFor="status-filter"
+            className="block text-gray-700 text-sm font-bold mb-2"
           >
-            <MenuItem value="pendiente">Pendiente</MenuItem>
-            <MenuItem value="atendiendo">Atendiendo</MenuItem>
-            <MenuItem value="preparando">Preparando</MenuItem>
-            <MenuItem value="enviado">Enviado</MenuItem>
-          </Select>
-        </FormControl>
+            Filtrar por estado:
+          </label>
+          <select
+            id="status-filter"
+            value={selectedStatus}
+            onChange={handleStatusChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          >
+            <option value="pendiente">Pendiente</option>
+            <option value="atendiendo">Atendiendo</option>
+            <option value="preparando">Preparando</option>
+            <option value="enviado">Enviado</option>
+          </select>
+        </div>
       )}
+
       {loading ? (
-        <CircularProgress />
+        <div className="flex justify-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500"></div>
+        </div>
       ) : (
-        <Paper sx={{ height: 600, width: '100%' }}>
-          <DataGrid
-            rows={pedidos}
-            columns={columns}
-            pageSize={10} 
-            rowsPerPageOptions={[10, 25, 50]}
-            disableSelectionOnClick
-            getRowId={(row) => row.id}
-          />
-        </Paper>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {pedidos.map((order) => (
+            <div key={order.id} className="bg-white rounded-lg shadow-md p-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Orden No. {order.orderId.substring(0, 8)}
+              </h3>
+              <div className="flex items-center mb-2">
+                <span className="text-gray-700 mr-2">Estado:</span>
+                <span
+                  className={`inline-block px-2 py-1 font-semibold text-sm rounded-full ${getStatusBadgeClass(
+                    order.status
+                  )}`}
+                >
+                  {order.status}
+                </span>
+              </div>
+              <p className="text-gray-700 mb-2">Sede: {order.sede}</p>
+              <p className="text-gray-700 mb-2">
+                Fecha: {order.orderDate.toLocaleDateString()}{" "}
+                {order.orderDate.toLocaleTimeString()}
+              </p>
+              <p className="text-gray-700 mb-3 font-semibold">
+                Total: {formatPriceCOP(order.total)}
+              </p>
+
+              <div className="flex justify-between">
+                <button
+                  onClick={() => handleOpenDetails(order)}
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-sm"
+                >
+                  Ver Detalles
+                </button>
+                {(userRole === "admin" || userRole === "encargado") && (
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => handleStatusUpdate(order.id, "atendiendo")}
+                      disabled={order.status === "atendiendo"}
+                      className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-2 rounded focus:outline-none focus:shadow-outline text-xs"
+                    >
+                      Atender
+                    </button>
+                    <button
+                      onClick={() => handleStatusUpdate(order.id, "preparando")}
+                      disabled={order.status === "preparando"}
+                      className="bg-yellow-500 hover:bg-yellow-700 text-gray-800 font-bold py-2 px-2 rounded focus:outline-none focus:shadow-outline text-xs"
+                    >
+                      Preparar
+                    </button>
+                    <button
+                      onClick={() => handleStatusUpdate(order.id, "enviado")}
+                      disabled={order.status === "enviado"}
+                      className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-2 rounded focus:outline-none focus:shadow-outline text-xs"
+                    >
+                      Enviar
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       )}
-      <Dialog open={openDetails} onClose={handleCloseDetails} fullWidth maxWidth="md">
-        <DialogTitle>Detalle del Pedido</DialogTitle>
-        {selectedPedidoDetails && (
-          <Box sx={{ padding: 2 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body1">
-                  <strong>ID del Pedido:</strong> {selectedPedidoDetails.id}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Estado:</strong> {selectedPedidoDetails.status}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Total:</strong> ${selectedPedidoDetails.total}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Costo de Envío:</strong> ${selectedPedidoDetails.deliveryFee}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Método de Pago:</strong> {selectedPedidoDetails.paymentMethod}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Domicilio Incluido:</strong> {selectedPedidoDetails.deliveryIncluded ? "Sí" : "No"}
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body1">
-                  <strong>Sede:</strong> {selectedPedidoDetails.sede}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Personas:</strong> {selectedPedidoDetails.people.map((p) => p.name).join(", ")}
-                </Typography>
-                <Typography variant="body1">
-                  <strong>Fecha del Pedido:</strong> {selectedPedidoDetails.orderDate.toLocaleString()}
-                </Typography>
-              </Grid>
-            </Grid>
-            <Typography variant="h6" sx={{ mt: 3 }}>
-              Items:
-            </Typography>
-            <List>
-              {selectedPedidoDetails.items.map((item, index) => (
-                <ListItem key={index}>
-                  <ListItemText
-                    primary={`- ${item.id} (Cantidad: ${item.quantity})`}
-                    secondary={`Asignado a: ${item.assignedTo || "N/A"}`}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </Box>
-        )}
-      </Dialog>
-    </Box>
+
+      {openDetails && selectedPedidoDetails && (
+        <div
+          className="fixed z-50 inset-0 overflow-y-auto"
+          aria-labelledby="modal-title"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div
+              className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+              aria-hidden="true"
+              onClick={handleCloseDetails}
+            ></div>
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            ></span>
+            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <h3
+                  className="text-lg leading-6 font-medium text-gray-900"
+                  id="modal-title"
+                >
+                  Detalle Completo de la Orden No.{" "}
+                  {selectedPedidoDetails.orderId.substring(0, 8)}
+                </h3>
+                <div className="mt-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <p>
+                        <strong>Order ID:</strong> {selectedPedidoDetails.id}
+                      </p>
+                      <p>
+                        <strong>Estado:</strong>{" "}
+                        <span
+                          className={`inline-block px-2 py-1 font-semibold text-sm rounded-full ${getStatusBadgeClass(
+                            selectedPedidoDetails.status
+                          )}`}
+                        >
+                          {selectedPedidoDetails.status}
+                        </span>
+                      </p>
+                      <p>
+                        <strong>Total:</strong>{" "}
+                        {formatPriceCOP(selectedPedidoDetails.total)}
+                      </p>
+                      <p>
+                        <strong>Costo de Envío:</strong>{" "}
+                        {formatPriceCOP(selectedPedidoDetails.deliveryFee)}
+                      </p>
+                      <p>
+                        <strong>Método de Pago:</strong>{" "}
+                        {selectedPedidoDetails.paymentMethod}
+                      </p>
+                      <p>
+                        <strong>Domicilio Incluido:</strong>{" "}
+                        {selectedPedidoDetails.deliveryIncluded ? "Sí" : "No"}
+                      </p>
+                      <p>
+                        <strong>Sede:</strong> {selectedPedidoDetails.sede}
+                      </p>
+                      <p>
+                        <strong>Fecha del Pedido:</strong>{" "}
+                        {selectedPedidoDetails.orderDate.toLocaleString()}
+                      </p>
+                      <p>
+                        <strong>Personas:</strong>{" "}
+                        {selectedPedidoDetails.people
+                          .map((p) => p.name)
+                          .join(", ")}
+                      </p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">
+                        Pedidos por Persona:
+                      </h4>
+                      {selectedPedidoDetails.people.map((person) => (
+                        <div
+                          key={person.id}
+                          className="mb-3 p-2 rounded border border-gray-200"
+                        >
+                          <h5 className="font-semibold">{person.name}</h5>
+                          <ul className="list-disc pl-5">
+                            {selectedPedidoDetails.items
+                              .filter((item) => item.assignedTo === person.name)
+                              .map((item, index) => {
+                                const menuItem = menu.find(
+                                  (menuItem) => menuItem.id === item.id
+                                ); // Find menu item by id
+                                return (
+                                  <li key={index}>
+                                    {menuItem
+                                      ? menuItem.name
+                                      : "Producto no encontrado"}{" "}
+                                    (Cantidad: {item.quantity})
+                                    {/* Display item name */}
+                                  </li>
+                                );
+                              })}
+                          </ul>
+                        </div>
+                      ))}
+                      {selectedPedidoDetails.sharedItems &&
+                        selectedPedidoDetails.sharedItems.length > 0 && (
+                          <div className="mb-3 p-2 rounded border border-gray-200">
+                            <h5 className="font-semibold">Pedido Compartido</h5>
+                            <ul className="list-disc pl-5">
+                              {selectedPedidoDetails.sharedItems.map(
+                                (sharedItem, index) => {
+                                  const menuItem = menu.find(
+                                    (menuItem) =>
+                                      menuItem.id === sharedItem.itemId
+                                  ); // Find shared menu item by id
+                                  return (
+                                    <li key={index}>
+                                      {menuItem
+                                        ? menuItem.name
+                                        : "Producto no encontrado"}{" "}
+                                      (Cantidad Compartida:{" "}
+                                      {sharedItem.quantity})
+                                      {/* Display shared item name */}
+                                    </li>
+                                  );
+                                }
+                              )}
+                            </ul>
+                          </div>
+                        )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-gray-100 text-base font-medium text-gray-700 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                  onClick={handleCloseDetails}
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
 export default PedidoList;
+/* Fin src\components\pedidos\PedidoList.tsx */
 
 /* Fin src\components\pedidos\PedidoList.tsx */
 
@@ -3743,7 +4315,8 @@ export default TextField;
 /* Fin src\components\ui\TextField.tsx */
 
 /* Inicio src\context\AppContext.tsx */
-/* Inicio src\context\AppContext.tsx */
+/* src\context\AppContext.tsx */
+/* src\context\AppContext.tsx */
 import { CircularProgress } from "@mui/material";
 import { collection, onSnapshot } from "firebase/firestore";
 import React, { createContext, ReactNode, useEffect, useState } from "react";
@@ -3752,6 +4325,7 @@ import { COLLECTIONS } from "../utils/constants";
 import { db } from "../utils/firebase";
 
 export interface MenuItem {
+  // Exporta la interfaz MenuItem
   id: string;
   name: string;
   description: string;
@@ -3763,11 +4337,13 @@ export interface MenuItem {
   availabilityStatus:
     | "disponible"
     | "noDisponibleMomento"
-    | "noDisponibleLargoPlazo"; // Estado de disponibilidad del menú: "disponible", "noDisponibleMomento", "noDisponibleLargoPlazo"
+    | "noDisponibleLargoPlazo";
 }
 
+export type MenuItemType = MenuItem; // Define y exporta MenuItemType como alias de MenuItem
+
 export interface AppContextProps {
-  menu: MenuItem[];
+  menu: MenuItemType[]; // Usa MenuItemType aquí
   loading: boolean;
 }
 
@@ -3781,7 +4357,7 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [menu, setMenu] = useState<MenuItem[]>([]);
+  const [menu, setMenu] = useState<MenuItemType[]>([]); // Usa MenuItemType aquí
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     let unsubscribe: () => void;
@@ -3789,7 +4365,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       const menuCollection = collection(db, COLLECTIONS.MENU);
       unsubscribe = onSnapshot(menuCollection, (snapshot) => {
         const menuData = snapshot.docs.map(
-          (doc) => ({ id: doc.id, ...doc.data() } as MenuItem)
+          (doc) => ({ id: doc.id, ...doc.data() } as MenuItemType) // Cassting a MenuItemType
         );
         setMenu(menuData);
         setLoading(false);
@@ -3809,9 +4385,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 };
 
 /* Fin src\context\AppContext.tsx */
-/* Fin src\context\AppContext.tsx */
 
 /* Inicio src\context\AuthContext.tsx */
+/* src\context\AuthContext.tsx */
 // src/context/AuthContext.tsx
 
 import {
@@ -3859,27 +4435,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
       if (currentUser) {
-        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
-        if (userDoc.exists()) {
-          setUserRole(userDoc.data().role);
-          setPoints(userDoc.data().points || 0);
-        } else {
-          // Crear documento de usuario si no existe
-          await setDoc(doc(db, "users", currentUser.uid), {
-            role: "client",
-            points: 0,
-            email: currentUser.email,
-          });
-          setUserRole("client");
-          setPoints(0);
+        const userDocRef = doc(db, "users", currentUser.uid);
+        try {
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            setUserRole(userDoc.data().role);
+            setPoints(userDoc.data().points || 0);
+          } else {
+            // Crear documento de usuario si no existe
+            await setDoc(userDocRef, {
+              role: "client",
+              points: 0,
+              email: currentUser.email,
+            });
+            setUserRole("client");
+            setPoints(0);
+          }
+          setUser(currentUser);
+        } catch (error) {
+          console.error("Error fetching user document:", error);
+          setUser(currentUser); // Even with error, set user to prevent login loop
+        } finally {
+          setLoading(false);
         }
       } else {
+        setUser(null);
         setUserRole(null);
         setPoints(0);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -3915,14 +4500,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         password
       );
       const user = userCredential.user;
-      console.log("Usuario registrado:", user.uid);
 
       await setDoc(doc(db, "users", user.uid), {
         role: "client",
         points: 0,
         email: email,
       });
-      console.log("Documento de usuario creado en Firestore");
 
       setUserRole("client");
       setPoints(0);
@@ -4018,8 +4601,7 @@ createRoot(document.getElementById('root')!).render(
 /* Fin src\main.tsx */
 
 /* Inicio src\pages\Dashboard.tsx */
-/* src/pages/Dashboard.tsx */
-/* src/pages/Dashboard.tsx */
+/* src\pages\Dashboard.tsx */
 import {
   BarElement,
   CategoryScale,
@@ -4032,9 +4614,11 @@ import {
 import {
   collection,
   doc,
-  onSnapshot,
+  onSnapshot, // Import updateDoc here
+  query,
   setDoc,
-  updateDoc, // Import updateDoc here
+  updateDoc,
+  where,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
@@ -4057,6 +4641,7 @@ interface Pedido {
   status: string;
   total: number;
   orderDate: Date;
+  userId: string; // Asegúrate de que tu interfaz Pedido incluya userId
 }
 
 interface Task {
@@ -4110,7 +4695,7 @@ const periodicTasksConfig = [
 ];
 
 const Dashboard: React.FC = () => {
-  const { user, userRole } = useAuth();
+  const { user, userRole, points } = useAuth();
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -4126,6 +4711,7 @@ const Dashboard: React.FC = () => {
   const [monthSales, setMonthSales] = useState<number>(0);
   const [pendingOrdersCount, setPendingOrdersCount] = useState<number>(0);
   const [totalOrders, setTotalOrders] = useState<number>(0);
+  const [, setClientTotalOrders] = useState<number>(0); // Total pedidos del cliente
 
   // Gráficos (últimos 7 días + últimos 6 meses)
   const [dailyLabels, setDailyLabels] = useState<string[]>([]);
@@ -4135,7 +4721,12 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     // Escuchamos la colección 'pedidos'
-    const unsubscribe = onSnapshot(collection(db, "pedidos"), (snapshot) => {
+    let pedidosQuery = collection(db, "pedidos");
+    if (userRole === 'client' && user) {
+      pedidosQuery = query(pedidosQuery, where("userId", "==", user.uid)) as never;
+    }
+
+    const unsubscribe = onSnapshot(pedidosQuery, (snapshot) => {
       const pedidosData: Pedido[] = snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
@@ -4145,89 +4736,101 @@ const Dashboard: React.FC = () => {
           orderDate: data.orderDate?.toDate
             ? data.orderDate.toDate()
             : new Date(), // fallback
+          userId: data.userId, // Asegúrate de mapear userId
         } as Pedido;
       });
       setPedidos(pedidosData);
       setLoading(false);
+    }, (error) => {
+      console.error("Error en el listener de pedidos:", error);
+      setLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [user, userRole]);
 
   useEffect(() => {
-    const today = new Date();
-    const todayDateString = today.toISOString().split("T")[0];
+    // Conditionally subscribe to tasks only if user is admin or encargado
+    if (userRole === 'admin' || userRole === 'encargado') {
+      const today = new Date();
+      const todayDateString = today.toISOString().split("T")[0];
 
-    const tasksCollection = collection(db, "tasks");
-    const unsubscribeTasks = onSnapshot(tasksCollection, (snapshot) => {
-      let fetchedTasks: Task[] = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          taskId: data.taskId,
-          taskName: data.taskName,
-          taskType: data.taskType,
-          dueDate: data.dueDate ? data.dueDate.toDate() : null,
-          dailyCompletions: data.dailyCompletions || {}, // Initialize dailyCompletions
-          completionDate: data.completionDate
-            ? data.completionDate.toDate()
-            : null,
-          subtasks: data.subtasks || [],
-        } as Task;
-      });
-
-      // Filter for today's daily tasks and periodic tasks due today
-      fetchedTasks = fetchedTasks.filter((task) => {
-        if (task.taskType === "daily") {
-          return true; // Show all daily tasks
-        } else if (task.taskType === "periodic" && task.dueDate) {
-          const taskDueDate = task.dueDate;
-          return taskDueDate.toISOString().split("T")[0] === todayDateString;
-        }
-        return false;
-      });
-      setTasks(fetchedTasks);
-      setLoadingTasks(false);
-
-      if (fetchedTasks.length === 0) {
-        // Initialize daily tasks if none exist for today
-        defaultDailyTasks.forEach(async (defaultTask) => {
-          await addDefaultTask(
-            defaultTask.taskName,
-            "daily",
-            defaultTask.subtasks
-          );
+      const tasksCollection = collection(db, "tasks");
+      const unsubscribeTasks = onSnapshot(tasksCollection, (snapshot) => {
+        let fetchedTasks: Task[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            taskId: data.taskId,
+            taskName: data.taskName,
+            taskType: data.taskType,
+            dueDate: data.dueDate ? data.dueDate.toDate() : null,
+            dailyCompletions: data.dailyCompletions || {}, // Initialize dailyCompletions
+            completionDate: data.completionDate
+              ? data.completionDate.toDate()
+              : null,
+            subtasks: data.subtasks || [],
+          } as Task;
         });
-        // Initialize periodic tasks if today is the day for them and they don't exist
-        periodicTasksConfig.forEach(async (periodicTaskConfig) => {
-          if (today.getDate() === periodicTaskConfig.dayOfMonth) {
-            const taskExists = fetchedTasks.some(
-              (task) =>
-                task.taskType === "periodic" &&
-                task.taskName === periodicTaskConfig.taskName &&
-                task.dueDate &&
-                task.dueDate.getDate() === today.getDate() &&
-                task.dueDate.getMonth() === today.getMonth() &&
-                task.dueDate.getFullYear() === today.getFullYear()
-            );
-            if (!taskExists) {
-              const dueDate = new Date(
-                today.getFullYear(),
-                today.getMonth(),
-                periodicTaskConfig.dayOfMonth
-              );
-              await addDefaultTask(
-                periodicTaskConfig.taskName,
-                "periodic",
-                [],
-                dueDate
-              );
-            }
+
+        // Filter for today's daily tasks and periodic tasks due today
+        fetchedTasks = fetchedTasks.filter((task) => {
+          if (task.taskType === "daily") {
+            return true; // Show all daily tasks
+          } else if (task.taskType === "periodic" && task.dueDate) {
+            const taskDueDate = task.dueDate;
+            return taskDueDate.toISOString().split("T")[0] === todayDateString;
           }
+          return false;
         });
-      }
-    });
-    return () => unsubscribeTasks();
-  }, []);
+        setTasks(fetchedTasks);
+        setLoadingTasks(false);
+
+        if (fetchedTasks.length === 0) {
+          // Initialize daily tasks if none exist for today
+          defaultDailyTasks.forEach(async (defaultTask) => {
+            await addDefaultTask(
+              defaultTask.taskName,
+              "daily",
+              defaultTask.subtasks
+            );
+          });
+          // Initialize periodic tasks if today is the day for them and they don't exist
+          periodicTasksConfig.forEach(async (periodicTaskConfig) => {
+            if (today.getDate() === periodicTaskConfig.dayOfMonth) {
+              const taskExists = fetchedTasks.some(
+                (task) =>
+                  task.taskType === "periodic" &&
+                  task.taskName === periodicTaskConfig.taskName &&
+                  task.dueDate &&
+                  task.dueDate.getDate() === today.getDate() &&
+                  task.dueDate.getMonth() === today.getMonth() &&
+                  task.dueDate.getFullYear() === today.getFullYear()
+              );
+              if (!taskExists) {
+                const dueDate = new Date(
+                  today.getFullYear(),
+                  today.getMonth(),
+                  periodicTaskConfig.dayOfMonth
+                );
+                await addDefaultTask(
+                  periodicTaskConfig.taskName,
+                  "periodic",
+                  [],
+                  dueDate
+                );
+              }
+            }
+          });
+        }
+      }, (error) => {
+        console.error("Error en el listener de tareas:", error);
+        setLoadingTasks(false);
+      });
+      return () => unsubscribeTasks();
+    } else {
+      setLoadingTasks(false); // If not admin/encargado, we are not loading tasks
+    }
+  }, [userRole]);
 
   const addDefaultTask = async (
     taskName: string,
@@ -4263,6 +4866,7 @@ const Dashboard: React.FC = () => {
       setDailyData([]);
       setMonthlyLabels([]);
       setMonthlyData([]);
+      setClientTotalOrders(0); // Reset client total orders
       return;
     }
 
@@ -4283,6 +4887,7 @@ const Dashboard: React.FC = () => {
     let sumMonth = 0;
     let pendingCount = 0;
     const totalCount = filtered.length;
+    let clientOrderCount = 0; // Contador para pedidos del cliente
 
     filtered.forEach((pedido) => {
       // Fecha sin hora del pedido
@@ -4309,12 +4914,17 @@ const Dashboard: React.FC = () => {
       if (pedido.status === "pendiente") {
         pendingCount++;
       }
+
+      if (userRole === 'client' && user && pedido.userId === user.uid) {
+        clientOrderCount++; // Incrementa solo si es pedido del cliente
+      }
     });
 
     setTodaySales(sumToday);
     setMonthSales(sumMonth);
     setPendingOrdersCount(pendingCount);
     setTotalOrders(totalCount);
+    setClientTotalOrders(clientOrderCount); // Establece el total de pedidos del cliente
 
     // ---------- Gráfico: últimos 7 días ----------
     const last7Dates = Array.from({ length: 7 }).map((_, i) => {
@@ -4385,7 +4995,7 @@ const Dashboard: React.FC = () => {
 
     setMonthlyLabels(monthLabels);
     setMonthlyData(monthTotals);
-  }, [pedidos, selectedStatus]);
+  }, [pedidos, selectedStatus, userRole, user]);
 
   // Opciones genéricas para los gráficos
   const chartOptions = {
@@ -4399,6 +5009,23 @@ const Dashboard: React.FC = () => {
         backgroundColor: "#1e293b", // gris oscuro
         titleColor: "#fff",
         bodyColor: "#fff",
+        callbacks: {
+          label: function (context) {
+            let label = context.dataset.label || "";
+            if (label) {
+              label += ": ";
+            }
+            if (context.parsed.y !== null) {
+              label += new Intl.NumberFormat("es-CO", {
+                style: "currency",
+                currency: "COP",
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              }).format(context.parsed.y);
+            }
+            return label;
+          },
+        },
       },
     },
   };
@@ -4432,6 +5059,7 @@ const Dashboard: React.FC = () => {
   // Para saber si debemos mostrar la parte de admin/encargado
   const showAdminStats = userRole === "admin" || userRole === "encargado";
   const showChecklist = userRole === "admin" || userRole === "encargado";
+  const showClientStats = userRole === 'client';
 
   const handleTaskCompletionChange = async (
     taskId: string,
@@ -4475,14 +5103,17 @@ const Dashboard: React.FC = () => {
     (day) => day.toISOString().split("T")[0]
   );
 
-  const taskCompletionData = tasks.map((task) => {
-    return {
-      taskName: task.taskName,
-      completionStatus: last7DaysFormatted.map((date) => {
-        return task.dailyCompletions[date] ? "✅" : "❌";
-      }),
-    };
-  });
+
+
+  // Function to format price to Colombian Pesos
+  const formatPriceCOP = (price: number) => {
+    return price.toLocaleString("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0, // Remove cents if whole number
+      maximumFractionDigits: 0,
+    });
+  };
 
   if (loading || loadingTasks) {
     return (
@@ -4492,18 +5123,37 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  if (!showAdminStats && !showChecklist) {
+  if (showClientStats) {
     return (
       <div className="pt-20 p-4 md:p-6 bg-gray-100 min-h-screen">
         <h1 className="text-3xl font-bold text-gray-900 mb-4 transition-all duration-300 hover:scale-105">
-          Dashboard <span className="text-sm ml-2">({user?.email})</span>
+          Bienvenido a SrPol! <span className="text-sm ml-2">({user?.email})</span>
         </h1>
-        <div className="mb-8">
-          <div className="bg-white rounded shadow p-4 text-center">
-            <p className="text-gray-600">Total de Pedidos</p>
-            <p className="text-2xl font-bold text-indigo-600">{totalOrders}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
+            <p className="text-gray-700 font-semibold text-lg mb-2">Descubre nuestro Menú</p>
+            <p className="text-gray-600">Explora deliciosos platos y arma tu pedido.</p>
+             <p className="text-2xl font-bold text-indigo-600 mt-4">¡Haz tu pedido ahora!</p>
+          </div>
+          <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
+            <p className="text-gray-700 font-semibold text-lg mb-2">Acumula Puntos</p>
+            <p className="text-gray-600">Cada pedido te da puntos para descuentos.</p>
+            <p className="text-2xl font-bold text-green-600 mt-4">Tienes {points} puntos.</p>
           </div>
         </div>
+
+        <div className="bg-white rounded shadow p-4 mb-6 text-center">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">
+              ¿Listo para ordenar?
+            </h2>
+            <p className="text-gray-600 mb-4">
+                Navega por nuestro menú, personaliza tu pedido y disfruta de la mejor comida.
+            </p>
+            <p className="text-lg text-indigo-700 font-semibold">
+                ¡Empieza a explorar nuestro menú hoy mismo!
+            </p>
+          </div>
+
       </div>
     );
   }
@@ -4517,37 +5167,42 @@ const Dashboard: React.FC = () => {
       </h1>
 
       {/* Filtro por estado */}
-      <div className="flex flex-wrap items-center mb-6 gap-2">
-        <button
-          onClick={() => setSelectedStatus("todos")}
-          className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm transition transform hover:scale-105
-            ${
-              selectedStatus === "todos"
-                ? "bg-indigo-600 text-white"
-                : "bg-white text-gray-800 hover:bg-gray-200"
-            }`}
-        >
-          Todos
-        </button>
-        {ALL_STATUSES.map((status) => (
+      {showAdminStats && (
+        <div className="flex flex-wrap items-center mb-6 gap-2">
+          {/* ... filter buttons for admin/encargado ... */}
           <button
-            key={status}
-            onClick={() => setSelectedStatus(status)}
+            onClick={() => setSelectedStatus("todos")}
             className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm transition transform hover:scale-105
               ${
-                selectedStatus === status
+                selectedStatus === "todos"
                   ? "bg-indigo-600 text-white"
                   : "bg-white text-gray-800 hover:bg-gray-200"
               }`}
           >
-            {status.charAt(0).toUpperCase() + status.slice(1)}
+            Todos
           </button>
-        ))}
-      </div>
+          {ALL_STATUSES.map((status) => (
+            <button
+              key={status}
+              onClick={() => setSelectedStatus(status)}
+              className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm transition transform hover:scale-105
+                ${
+                  selectedStatus === status
+                    ? "bg-indigo-600 text-white"
+                    : "bg-white text-gray-800 hover:bg-gray-200"
+                }`}
+            >
+              {status.charAt(0).toUpperCase() + status.slice(1)}
+            </button>
+          ))}
+        </div>
+      )}
+
 
       {/* Sección de Tarjetas de estadísticas */}
       {showAdminStats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          {/* ... statistic cards for admin/encargado ... */}
           <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
             <p className="text-gray-600">Total de Pedidos</p>
             <p className="text-2xl font-bold text-indigo-600">{totalOrders}</p>
@@ -4555,13 +5210,13 @@ const Dashboard: React.FC = () => {
           <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
             <p className="text-gray-600">Ventas Hoy</p>
             <p className="text-2xl font-bold text-indigo-600">
-              ${todaySales.toFixed(2)}
+              {formatPriceCOP(todaySales)}
             </p>
           </div>
           <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
             <p className="text-gray-600">Ventas del Mes</p>
             <p className="text-2xl font-bold text-indigo-600">
-              ${monthSales.toFixed(2)}
+              {formatPriceCOP(monthSales)}
             </p>
           </div>
           <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
@@ -4574,28 +5229,37 @@ const Dashboard: React.FC = () => {
       )}
 
       {/* Gráfico de Ventas Diarias (últimos 7 días) */}
-      <div className="bg-white rounded shadow p-4 mb-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">
-          Ventas diarias (últimos 7 días)
-        </h2>
-        <div className="h-64">
-          <Bar data={dailyChartData} options={chartOptions} />
+      {showAdminStats && (
+        <div className="bg-white rounded shadow p-4 mb-6">
+          {/* ... daily sales chart for admin/encargado ... */}
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">
+            Ventas diarias (últimos 7 días)
+          </h2>
+          <div className="h-64">
+            <Bar data={dailyChartData} options={chartOptions} />
+          </div>
         </div>
-      </div>
+      )}
+
 
       {/* Gráfico de Ventas Mensuales (últimos 6 meses) */}
-      <div className="bg-white rounded shadow p-4 mb-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">
-          Ventas mensuales (últimos 6 meses)
-        </h2>
-        <div className="h-64">
-          <Bar data={monthlyChartData} options={chartOptions} />
+      {showAdminStats && (
+        <div className="bg-white rounded shadow p-4 mb-6">
+          {/* ... monthly sales chart for admin/encargado ... */}
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">
+            Ventas mensuales (últimos 6 meses)
+          </h2>
+          <div className="h-64">
+            <Bar data={monthlyChartData} options={chartOptions} />
+          </div>
         </div>
-      </div>
+      )}
+
 
       {/* Daily Checklist Section */}
       {showChecklist && (
         <div className="bg-white rounded shadow p-4 mb-6">
+          {/* ... daily checklist for admin/encargado ... */}
           <h2 className="text-xl font-semibold mb-4 text-gray-800">
             Checklist Diario de Tareas (Hoy)
           </h2>
@@ -4642,6 +5306,7 @@ const Dashboard: React.FC = () => {
 
       {showChecklist && (
         <div className="bg-white rounded shadow p-4 mb-6 overflow-x-auto">
+          {/* ... weekly task status table for admin/encargado ... */}
           <h2 className="text-xl font-semibold mb-4 text-gray-800">
             Estado de Tareas Semanal
           </h2>
@@ -4668,7 +5333,7 @@ const Dashboard: React.FC = () => {
                     <td className="border border-gray-200 px-4 py-2">
                       {task.taskName}
                     </td>
-                    {last7DaysFormatted.map((date, index) => (
+                    {last7DaysFormatted.map((date) => (
                       <td
                         key={`${task.taskId}-${date}`}
                         className="border border-gray-200 px-4 py-2 text-center"
@@ -4692,8 +5357,6 @@ const Dashboard: React.FC = () => {
 export default Dashboard;
 /* Fin src\pages\Dashboard.tsx */
 
-/* Inicio src\pages\GestionMenu.tsx */
-/* Inicio src\pages\GestionMenu.tsx */
 /* Inicio src\pages\GestionMenu.tsx */
 import { Alert, Snackbar } from "@mui/material";
 import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
@@ -4835,7 +5498,7 @@ const GestionMenu: React.FC = () => {
       {
         name: "Hamburguesa Clásica",
         description: "Carne de res, queso cheddar, lechuga, tomate y cebolla.",
-        price: 8.99,
+        price: 28000, // COP Approx. $8.99 USD
         imageUrl:
           "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
         available: true,
@@ -4844,9 +5507,20 @@ const GestionMenu: React.FC = () => {
         availabilityStatus: "disponible",
       },
       {
-        name: "Pizza Margarita",
+        name: "Pizza Margarita Personal",
         description: "Salsa de tomate, mozzarella fresca y albahaca.",
-        price: 12.5,
+        price: 35000, // COP Approx. $12.5 USD (Adjusted for personal size)
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Pizzas",
+        observations: "Opción vegana disponible con queso de almendras.",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Pizza Margarita Familiar",
+        description: "Salsa de tomate, mozzarella fresca y albahaca.",
+        price: 65000, // COP Approx. $12.5 USD (Adjusted for family size)
         imageUrl:
           "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
         available: true,
@@ -4857,7 +5531,7 @@ const GestionMenu: React.FC = () => {
       {
         name: "Ensalada César",
         description: "Lechuga romana, crutones, parmesano y aderezo César.",
-        price: 6.75,
+        price: 22000, // COP Approx. $6.75 USD
         imageUrl:
           "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
         available: true,
@@ -4869,7 +5543,7 @@ const GestionMenu: React.FC = () => {
         name: "Pasta Carbonara",
         description:
           "Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.",
-        price: 10.2,
+        price: 32000, // COP Approx. $10.2 USD
         imageUrl:
           "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
         available: true,
@@ -4878,9 +5552,10 @@ const GestionMenu: React.FC = () => {
         availabilityStatus: "disponible",
       },
       {
-        name: "Tacos al Pastor",
-        description: "Carne de cerdo adobada, piña, cebolla y cilantro.",
-        price: 9.5,
+        name: "Tacos al Pastor (3 unidades)",
+        description:
+          "Carne de cerdo adobada, piña, cebolla y cilantro, en tortilla de maíz. Orden de 3 tacos.",
+        price: 30000, // COP Approx. $9.5 USD (for 3 tacos)
         imageUrl:
           "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
         available: true,
@@ -4890,8 +5565,8 @@ const GestionMenu: React.FC = () => {
       },
       {
         name: "Sushi Variado (12 piezas)",
-        description: "Selección de nigiris y makis variados.",
-        price: 15.99,
+        description: "Selección de nigiris y makis variados. 12 piezas.",
+        price: 50000, // COP Approx. $15.99 USD
         imageUrl:
           "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
         available: true,
@@ -4900,9 +5575,9 @@ const GestionMenu: React.FC = () => {
         availabilityStatus: "disponible",
       },
       {
-        name: "Pollo Frito",
-        description: "Crujientes piezas de pollo frito, receta secreta.",
-        price: 7.8,
+        name: "Pollo Frito Individual",
+        description: "1 presa grande de pollo frito, crujiente y jugoso.",
+        price: 15000, // COP - Individual piece
         imageUrl:
           "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
         available: true,
@@ -4911,9 +5586,44 @@ const GestionMenu: React.FC = () => {
         availabilityStatus: "disponible",
       },
       {
+        name: "Combo Pollo Frito Personal",
+        description:
+          "2 presas de pollo frito, papas fritas pequeñas y gaseosa personal.",
+        price: 30000, // COP - Personal combo
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Combos de Pollo",
+        observations: "Incluye gaseosa personal a elección.",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Combo Pollo Frito Familiar",
+        description:
+          "6 presas de pollo frito, papas fritas familiares, ensalada coleslaw familiar y gaseosa 1.5L.",
+        price: 85000, // COP - Family combo
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Combos de Pollo",
+        observations: "Ideal para compartir en familia.",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Pollo Asado Entero",
+        description: "Pollo entero asado al carbón, jugoso y lleno de sabor.",
+        price: 55000, // COP - Whole roasted chicken
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Pollos",
+        observations: "Perfecto para compartir.",
+        availabilityStatus: "disponible",
+      },
+      {
         name: "Sopa de Tomate",
         description: "Sopa cremosa de tomate, hecha en casa.",
-        price: 5.5,
+        price: 18000, // COP Approx. $5.5 USD
         imageUrl:
           "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
         available: true,
@@ -4924,7 +5634,7 @@ const GestionMenu: React.FC = () => {
       {
         name: "Brownie con Helado",
         description: "Brownie de chocolate caliente con helado de vainilla.",
-        price: 6.25,
+        price: 20000, // COP Approx. $6.25 USD
         imageUrl:
           "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
         available: true,
@@ -4933,14 +5643,58 @@ const GestionMenu: React.FC = () => {
         availabilityStatus: "disponible",
       },
       {
-        name: "Jugo de Naranja Natural",
-        description: "Jugo de naranja recién exprimido.",
-        price: 3.5,
+        name: "Jugo de Naranja",
+        description: "Jugo de naranja natural, recién exprimido.",
+        price: 8000, // COP
         imageUrl:
           "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
         available: true,
         recommendation: "Bebidas",
         observations: "Sin azúcar añadida.",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Limonada Natural",
+        description: "Limonada refrescante, preparada al momento.",
+        price: 7000, // COP
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Bebidas",
+        observations: "Puedes pedirla endulzada o sin azúcar.",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Coca-Cola Personal",
+        description: "Gaseosa Coca-Cola en presentación personal.",
+        price: 5000, // COP
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Gaseosas",
+        observations: "",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Sprite Personal",
+        description: "Gaseosa Sprite en presentación personal.",
+        price: 5000, // COP
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Gaseosas",
+        observations: "",
+        availabilityStatus: "disponible",
+      },
+      {
+        name: "Agua con gas Personal",
+        description: "Agua con gas en presentación personal.",
+        price: 4000, // COP
+        imageUrl:
+          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        available: true,
+        recommendation: "Bebidas",
+        observations: "",
         availabilityStatus: "disponible",
       },
     ];
@@ -4995,9 +5749,6 @@ const GestionMenu: React.FC = () => {
 };
 
 export default GestionMenu;
-
-/* Fin src\pages\GestionMenu.tsx */
-/* Fin src\pages\GestionMenu.tsx */
 
 /* Fin src\pages\GestionMenu.tsx */
 
@@ -5146,22 +5897,24 @@ export default Login;
 /* Fin src\pages\Login.tsx */
 
 /* Inicio src\pages\MenuPage.tsx */
-/* Inicio src\pages\MenuPage.tsx */
-/* src/pages/MenuPage.tsx */
-import { addDoc, collection } from "firebase/firestore";
+/* src\pages\MenuPage.tsx */
+/* src\pages\MenuPage.tsx */
+import { Typography } from "@mui/material";
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
+import { GroupOrder, Person } from "../components/menu/GroupOrderPage"; // Importa interfaces
+import JoinOrderModal from "../components/menu/JoinOrderModal";
 import PedidoForm from "../components/pedidos/PedidoForm";
-import { MenuItem } from "../context/AppContext";
+import Button from "../components/ui/Button";
+import Container from "../components/ui/Container";
+import TextField from "../components/ui/TextField";
+import { MenuItemType } from "../context/AppContext"; // Importa MenuItemType
+import { useAuth } from "../hooks/useAuth";
 import { useMenu } from "../hooks/useMenu";
 import { COLLECTIONS } from "../utils/constants";
 import { db } from "../utils/firebase";
-
-interface Person {
-  id: string;
-  name: string;
-  items: { id: string; quantity: number }[];
-}
 
 const MenuPage: React.FC = () => {
   const { menu } = useMenu();
@@ -5169,8 +5922,13 @@ const MenuPage: React.FC = () => {
   const [people, setPeople] = useState<Person[]>([]);
   const [showMenu, setShowMenu] = useState(false);
   const [, setOpenPedidoModal] = useState(false);
-  const [loadingAddSampleData, setLoadingAddSampleData] = useState(false); // Estado para el botón de carga de ejemplo
-  const [message, setMessage] = useState<string | null>(null); // Estado para mensajes de feedback
+  const [loadingAddSampleData, setLoadingAddSampleData] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [isCreatingSharedOrder, setIsCreatingSharedOrder] = useState(false);
+  const [isJoiningOrder, setIsJoiningOrder] = useState(false);
+  const [, setJoinCode] = useState("");
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleNumPeopleChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -5184,41 +5942,80 @@ const MenuPage: React.FC = () => {
     setPeople(updatedPeople);
   };
 
-  const handleStartOrder = () => {
+  const handleStartOrder = async () => {
+    setIsCreatingSharedOrder(true);
     const initialPeople = Array.from({ length: numPeople }, (_, index) => ({
-      id: uuidv4(),
+      personIndex: index, // Añade personIndex aquí
+      userId: null,
       name: `Persona ${index + 1}`,
       items: [],
+      locked: false,
+      finished: false,
     }));
     setPeople(initialPeople);
     setShowMenu(true);
+
+    const code = generateCode();
+    try {
+      if (!user) {
+        setMessage("Debes iniciar sesión para crear un pedido compartido.");
+        setTimeout(() => setMessage(null), 5000);
+        setIsCreatingSharedOrder(false);
+        return;
+      }
+      const groupOrderRef = await addDoc(
+        collection(db, COLLECTIONS.GROUP_ORDERS),
+        {
+          code: code,
+          ownerId: user.uid,
+          status: "open",
+          maxPeople: numPeople,
+          createdAt: new Date(),
+          participants: initialPeople,
+          sharedItems: [],
+        } as GroupOrder // Asegura el tipado aquí
+      );
+      navigate(`/menu/${groupOrderRef.id}?code=${code}`);
+    } catch (error) {
+      console.error("Error al crear pedido compartido en Firestore:", error);
+      setMessage("Error al crear el pedido compartido.");
+      setTimeout(() => setMessage(null), 5000);
+      setIsCreatingSharedOrder(false);
+    }
   };
 
-  const handleAddItemToPerson = (personId: string, item: MenuItem) => {
+  const handleAddItemToPerson = (personIndex: number, item: MenuItemType) => {
     setPeople((prevPeople) =>
-      prevPeople.map((person) =>
-        person.id === personId
+      prevPeople.map((person, index) =>
+        index === personIndex
           ? {
               ...person,
-              items: [...person.items, { id: item.id, quantity: 1 }],
+              items: [...person.items, { itemId: item.id, quantity: 1 }], // Usa itemId en lugar de id
             }
           : person
       )
     );
   };
 
-  const handleQuantityChange = (
-    personId: string,
+  const handlePersonOrderItemQuantityChange = (
+    personIndex: number,
     itemId: string,
-    quantity: number
+    quantity: string
   ) => {
+    const quantityNumber = parseInt(quantity, 10);
+    if (isNaN(quantityNumber) || quantityNumber < 0) {
+      return;
+    }
+
     setPeople((prevPeople) =>
-      prevPeople.map((person) =>
-        person.id === personId
+      prevPeople.map((person, index) =>
+        index === personIndex
           ? {
               ...person,
               items: person.items.map((item) =>
-                item.id === itemId ? { ...item, quantity: quantity } : item
+                item.itemId === itemId // Usa itemId para comparar
+                  ? { ...item, quantity: quantityNumber }
+                  : item
               ),
             }
           : person
@@ -5226,13 +6023,13 @@ const MenuPage: React.FC = () => {
     );
   };
 
-  const handleRemoveItemFromPerson = (personId: string, itemId: string) => {
+  const handleRemoveItemFromPerson = (personIndex: number, itemId: string) => {
     setPeople((prevPeople) =>
-      prevPeople.map((person) =>
-        person.id === personId
+      prevPeople.map((person, index) =>
+        index === personIndex
           ? {
               ...person,
-              items: person.items.filter((item) => item.id !== itemId),
+              items: person.items.filter((item) => item.itemId !== itemId), // Usa itemId para filtrar
             }
           : person
       )
@@ -5252,103 +6049,113 @@ const MenuPage: React.FC = () => {
       {
         name: "Hamburguesa Clásica",
         description: "Carne de res, queso cheddar, lechuga, tomate y cebolla.",
-        price: 8.99,
+        price: 28000,
         imageUrl: "https://ejemplo.com/hamburguesa.jpg",
         available: true,
         recommendation: "Ideal con papas fritas.",
         observations: "Se puede pedir sin cebolla.",
-        availabilityStatus: "disponible", // Por defecto disponible
+        availabilityStatus: "disponible",
+        id: "sample_item_1", // Añade IDs únicos
       },
       {
         name: "Pizza Margarita",
         description: "Salsa de tomate, mozzarella fresca y albahaca.",
-        price: 12.5,
+        price: 35000,
         imageUrl: "https://ejemplo.com/pizza.jpg",
         available: true,
         recommendation: "Perfecta para compartir.",
         observations: "Opción vegana disponible con queso de almendras.",
-        availabilityStatus: "disponible", // Por defecto disponible
+        availabilityStatus: "disponible",
+        id: "sample_item_2",
       },
       {
         name: "Ensalada César",
         description: "Lechuga romana, crutones, parmesano y aderezo César.",
-        price: 6.75,
+        price: 22000,
         imageUrl: "https://ejemplo.com/ensalada.jpg",
         available: true,
         recommendation: "Ligera y refrescante.",
         observations: "Se puede añadir pollo a la parrilla.",
-        availabilityStatus: "disponible", // Por defecto disponible
+        availabilityStatus: "disponible",
+        id: "sample_item_3",
       },
       {
         name: "Pasta Carbonara",
         description:
           "Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.",
-        price: 10.2,
+        price: 32000,
         imageUrl: "https://ejemplo.com/pasta_carbonara.jpg",
         available: true,
         recommendation: "Un clásico italiano.",
         observations: "Sin gluten disponible con pasta de arroz.",
-        availabilityStatus: "disponible", // Por defecto disponible
+        availabilityStatus: "disponible",
+        id: "sample_item_4",
       },
       {
         name: "Tacos al Pastor",
         description: "Carne de cerdo adobada, piña, cebolla y cilantro.",
-        price: 9.5,
+        price: 30000,
         imageUrl: "https://ejemplo.com/tacos_pastor.jpg",
         available: true,
         recommendation: "Sabor auténtico mexicano.",
         observations: "Picante medio.",
-        availabilityStatus: "disponible", // Por defecto disponible
+        availabilityStatus: "disponible",
+        id: "sample_item_5",
       },
       {
         name: "Sushi Variado (12 piezas)",
         description: "Selección de nigiris y makis variados.",
-        price: 15.99,
+        price: 50000,
         imageUrl: "https://ejemplo.com/sushi.jpg",
         available: true,
         recommendation: "Para amantes del sushi.",
         observations: "Incluye salsa de soya, wasabi y jengibre.",
-        availabilityStatus: "disponible", // Por defecto disponible
+        availabilityStatus: "disponible",
+        id: "sample_item_6",
       },
       {
         name: "Pollo Frito",
         description: "Crujientes piezas de pollo frito, receta secreta.",
-        price: 7.8,
+        price: 15000,
         imageUrl: "https://ejemplo.com/pollo_frito.jpg",
         available: true,
         recommendation: "Ideal para niños y adultos.",
         observations: "Opción extra crujiente disponible.",
-        availabilityStatus: "disponible", // Por defecto disponible
+        availabilityStatus: "disponible",
+        id: "sample_item_7",
       },
       {
         name: "Sopa de Tomate",
         description: "Sopa cremosa de tomate, hecha en casa.",
-        price: 5.5,
+        price: 18000,
         imageUrl: "https://ejemplo.com/sopa_tomate.jpg",
         available: true,
         recommendation: "Caliente y reconfortante.",
         observations: "Servida con pan tostado.",
-        availabilityStatus: "disponible", // Por defecto disponible
+        availabilityStatus: "disponible",
+        id: "sample_item_8",
       },
       {
         name: "Brownie con Helado",
         description: "Brownie de chocolate caliente con helado de vainilla.",
-        price: 6.25,
+        price: 20000,
         imageUrl: "https://ejemplo.com/brownie_helado.jpg",
         available: true,
         recommendation: "Postre perfecto.",
         observations: "Se puede pedir sin nueces.",
-        availabilityStatus: "disponible", // Por defecto disponible
+        availabilityStatus: "disponible",
+        id: "sample_item_9",
       },
       {
         name: "Jugo de Naranja Natural",
         description: "Jugo de naranja recién exprimido.",
-        price: 3.5,
+        price: 8000,
         imageUrl: "https://ejemplo.com/jugo_naranja.jpg",
         available: true,
         recommendation: "Bebida refrescante.",
         observations: "Sin azúcar añadida.",
-        availabilityStatus: "disponible", // Por defecto disponible
+        availabilityStatus: "disponible",
+        id: "sample_item_10",
       },
     ];
   };
@@ -5368,27 +6175,90 @@ const MenuPage: React.FC = () => {
       setMessage("Error al agregar datos de ejemplo.");
     } finally {
       setLoadingAddSampleData(false);
-      setTimeout(() => setMessage(null), 5000); // Limpiar mensaje después de 5 segundos
+      setTimeout(() => setMessage(null), 5000);
     }
   };
 
+  const generateCode = () => {
+    return Math.floor(1000 + Math.random() * 9000).toString();
+  };
+
+  const handleJoinOrder = () => {
+    setIsJoiningOrder(true);
+  };
+
+  const processJoinOrder = async (code: string) => {
+    setIsJoiningOrder(false);
+    setJoinCode(code);
+    const q = query(
+      collection(db, COLLECTIONS.GROUP_ORDERS),
+      where("code", "==", code),
+      where("status", "==", "open")
+    );
+    try {
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const groupOrderDoc = querySnapshot.docs[0];
+        navigate(`/menu/${groupOrderDoc.id}?code=${code}`);
+      } else {
+        setMessage(
+          "No hay pedido activo con este código o el código es incorrecto."
+        );
+        setTimeout(() => setMessage(null), 5000);
+      }
+    } catch (error) {
+      console.error("Error al buscar pedido compartido:", error);
+      setMessage("Error al unirse al pedido compartido.");
+      setTimeout(() => setMessage(null), 5000);
+    }
+  };
+
+  const formatPriceCOP = (price: number) => {
+    return price.toLocaleString("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+  };
+
   return (
-    <div className="container mx-auto my-8 p-4 md:p-8">
-                <button
-              onClick={handleAddSampleData}
-              disabled={loadingAddSampleData}
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
-            >
-              {loadingAddSampleData
-                ? "Agregando..."
-                : "Agregar Datos de Ejemplo al Menú"}
-            </button>
-      {/* Container principal con Tailwind */}
-      <h1 className="text-3xl font-bold text-gray-900 mb-4">Menú</h1>
-      {/* Título principal */}
-      {!showMenu ? (
+    <Container className="my-8">
+      <div className="mb-4 flex justify-between items-center">
+        <Typography
+          variant="h4"
+          component="h1"
+          className="text-3xl font-bold text-gray-900"
+        >
+          Menú
+        </Typography>
+        <Button
+          onClick={handleAddSampleData}
+          disabled={loadingAddSampleData}
+          variant="contained"
+          color="success"
+        >
+          {loadingAddSampleData ? "Cargando..." : "Cargar Menú Ejemplo"}
+        </Button>
+      </div>
+
+      <div className="mb-6 flex space-x-4">
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setIsCreatingSharedOrder(true)}
+        >
+          Crear Pedido Compartido
+        </Button>
+        <Button variant="outlined" color="primary" onClick={handleJoinOrder}>
+          Unirme a Pedido Existente
+        </Button>
+      </div>
+
+      {message && <div className="mb-4 text-red-500">{message}</div>}
+
+      {isCreatingSharedOrder && !showMenu && (
         <div className="grid gap-4 mb-4 md:grid-cols-2">
-          {/* Contenedor para selección de personas */}
           <div className="mb-4">
             <label
               htmlFor="numPeople"
@@ -5396,7 +6266,7 @@ const MenuPage: React.FC = () => {
             >
               Número de personas:
             </label>
-            <input
+            <TextField
               type="number"
               id="numPeople"
               value={numPeople}
@@ -5405,92 +6275,84 @@ const MenuPage: React.FC = () => {
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />
           </div>
-          {people.map((person, index) => (
-            <div key={person.id} className="mb-4">
+          {Array.from({ length: numPeople }).map((_, index) => (
+            <div key={index} className="mb-4">
               <label
                 htmlFor={`personName-${index}`}
                 className="block text-gray-700 text-sm font-bold mb-2"
               >
                 Nombre de la persona {index + 1} (Opcional):
               </label>
-              <input
+              <TextField
                 type="text"
                 id={`personName-${index}`}
-                value={person.name}
+                value={people[index]?.name}
                 onChange={(e) => handleNameChange(index, e.target.value)}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               />
             </div>
           ))}
           <div>
-            <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            <Button
+              variant="contained"
+              color="primary"
               onClick={handleStartOrder}
             >
-              Empezar Pedido
-            </button>
+              Empezar Pedido Compartido
+            </Button>
           </div>
         </div>
-      ) : (
+      )}
+
+      {showMenu && (
         <>
-          <div className="mb-4">
-            {" "}
-            {/* Contenedor para el botón "Agregar Datos de Ejemplo" */}
-            <button
-              onClick={handleAddSampleData}
-              disabled={loadingAddSampleData}
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50"
-            >
-              {loadingAddSampleData
-                ? "Agregando..."
-                : "Agregar Datos de Ejemplo al Menú"}
-            </button>
-            {message && <p className="mt-2 text-sm text-gray-700">{message}</p>}{" "}
-            {/* Mensaje de feedback */}
-          </div>
           <div className="grid gap-6 md:grid-cols-3">
-            {/* Grid para personas y menú */}
-            {people.map((person) => (
-              <div key={person.id} className="p-4 border rounded-lg shadow-md">
-                {/* Card persona */}
+            {people.map((person, personIndex) => (
+              <div
+                key={person.personIndex} // Usa personIndex como key
+                className="p-4 border rounded-lg shadow-md"
+              >
                 <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  {person.name || "Persona sin nombre"}
+                  {person.name || `Persona ${personIndex + 1}`}
                 </h2>
-                {/* Título persona */}
                 <p className="text-gray-700 mb-2">Items:</p>
                 {person.items.length > 0 ? (
                   <ul className="list-none pl-0 mb-4">
-                    {/* Lista de items */}
                     {person.items.map((item) => {
                       const menuItem = menu.find(
-                        (menuItem) => menuItem.id === item.id
+                        (menuItem) => menuItem.id === item.itemId // Usa itemId para buscar
                       );
                       return menuItem ? (
-                        <li key={item.id} className="mb-2">
+                        <li key={item.itemId} className="mb-2">
                           <div className="flex items-center justify-between">
                             <p className="text-gray-700">{menuItem.name} x </p>
                             <div className="flex items-center space-x-2">
-                              <input
+                              <TextField
                                 type="number"
                                 value={item.quantity}
                                 onChange={(e) =>
-                                  handleQuantityChange(
-                                    person.id,
-                                    item.id,
-                                    parseInt(e.target.value)
+                                  handlePersonOrderItemQuantityChange(
+                                    personIndex,
+                                    item.itemId,
+                                    e.target.value
                                   )
                                 }
                                 min="1"
                                 className="shadow appearance-none border rounded w-16 py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-center"
                               />
-                              <button
-                                className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline text-sm"
+                              <Button
+                                variant="contained"
+                                color="error"
                                 onClick={() =>
-                                  handleRemoveItemFromPerson(person.id, item.id)
+                                  handleRemoveItemFromPerson(
+                                    personIndex,
+                                    item.itemId
+                                  )
                                 }
+                                sx={{ py: 1, px: 2, fontSize: "0.8rem" }}
                               >
                                 Eliminar
-                              </button>
+                              </Button>
                             </div>
                           </div>
                         </li>
@@ -5504,33 +6366,39 @@ const MenuPage: React.FC = () => {
                 )}
                 <p className="text-gray-700 font-semibold mb-2">Menú:</p>
                 <div className="grid gap-2 md:grid-cols-2">
-                  {/* Grid menú por persona */}
                   {menu.map((item) => (
-                    <button
+                    <Button
                       key={item.id}
-                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                      onClick={() => handleAddItemToPerson(person.id, item)}
+                      variant="contained"
+                      color="primary"
+                      onClick={() => handleAddItemToPerson(personIndex, item)}
                     >
-                      {item.name}
-                    </button>
+                      {item.name} - {formatPriceCOP(item.price)}
+                    </Button>
                   ))}
                 </div>
               </div>
             ))}
           </div>
           <div className="mt-6">
-            <button
-              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            <Button
+              variant="contained"
+              color="success"
               onClick={handleOpenPedidoModal}
             >
               Realizar Pedido
-            </button>
+            </Button>
           </div>
           <PedidoForm onClose={handleClosePedidoModal} people={people} />
         </>
       )}
-      
-    </div>
+
+      <JoinOrderModal
+        open={isJoiningOrder}
+        onClose={() => setIsJoiningOrder(false)}
+        onJoinOrder={processJoinOrder}
+      />
+    </Container>
   );
 };
 
@@ -5868,26 +6736,34 @@ declare module '*.css';
 
 /* Inicio src\types\global.d.ts */
 // src/types/global.d.ts
-interface MercadoPago {
-    new (publicKey: string, options?): {
-       checkout: (params) => void;
-    }
-  }
-  
+import { MenuItem } from "../context/AppContext";
+
+declare global {
   interface Window {
     MercadoPago?: MercadoPago;
-  }
-
-  interface window {
     Stripe: (publicKey: string) => void;
   }
+  export type MenuItemType = MenuItem; // Exporta MenuItemType
+}
+
+interface MercadoPago {
+  new(publicKey: string, options?): {
+    checkout: (params) => void;
+  }
+}
+
+
+export { }; // Exporta un objeto vacío para evitar error de módulo
+
 /* Fin src\types\global.d.ts */
 
 /* Inicio src\utils\constants.ts */
+/* src\utils\constants.ts */
 export const COLLECTIONS = {
-    MENU: 'menu',
-    PEDIDOS: 'pedidos',
-  };
+  MENU: 'menu',
+  PEDIDOS: 'pedidos',
+  GROUP_ORDERS: 'groupOrders', // Añadida la nueva colección
+};
 /* Fin src\utils\constants.ts */
 
 /* Inicio src\utils\firebase.ts */

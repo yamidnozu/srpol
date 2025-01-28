@@ -1,15 +1,13 @@
+/* src\components\menu\partials\OrderReview.tsx */
 import { Typography } from "@mui/material";
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
 import PedidoForm from "../../forms/PedidoForm";
+import { Person, SharedOrderItem } from "../GroupOrderPage"; // Import Person and SharedOrderItem interfaces
 
 interface OrderReviewProps {
-  people: {
-    id: string;
-    name: string;
-    items: { id: string; quantity: number }[];
-  }[];
-  sharedOrderItems: { itemId: string; quantity: number; personIds: string[] }[];
+  people: Person[]; // Use the imported Person interface
+  sharedOrderItems: SharedOrderItem[]; // Use the imported SharedOrderItem interface
   menu: MenuItemType[];
   onClosePedidoForm: () => void;
   calculateSharedSubtotal: () => number;
@@ -94,7 +92,7 @@ const OrderReview: React.FC<OrderReviewProps> = ({
       {people &&
         people.map((person) => (
           <div
-            key={person.id}
+            key={person.personIndex}
             className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-50"
           >
             <h3 className="text-lg font-semibold text-gray-900 mb-3 text-indigo-600">
@@ -150,7 +148,9 @@ const OrderReview: React.FC<OrderReviewProps> = ({
             {/* Left side labels container */}
             <Typography>Subtotal Compartido:</Typography>
             {people.map((person) => (
-              <Typography key={person.id}>Subtotal {person.name}:</Typography>
+              <Typography key={person.personIndex}>
+                Subtotal {person.name}:
+              </Typography>
             ))}
             <Typography className="font-bold mt-2">
               Total del Pedido:
@@ -162,7 +162,7 @@ const OrderReview: React.FC<OrderReviewProps> = ({
             {/* Right side amounts container */}
             <Typography>{formatPriceCOP(calculateSharedSubtotal())}</Typography>
             {people.map((person) => (
-              <Typography key={person.id}>
+              <Typography key={person.personIndex}>
                 {formatPriceCOP(calculateSubtotal(person.items))}
               </Typography>
             ))}

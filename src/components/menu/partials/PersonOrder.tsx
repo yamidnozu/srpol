@@ -1,27 +1,33 @@
+/* src\components\menu\partials\PersonOrder.tsx */
+/* src\components\menu\partials\PersonOrder.tsx */
+/* src\components\menu\partials\PersonOrder.tsx */
+/* src\components\menu\partials\PersonOrder.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
+import { Person } from "../GroupOrderPage"; // Import the Person interface from GroupOrderPage
 
 interface PersonOrderProps {
-  person: {
-    id: string;
-    name: string;
-    items: { id: string; quantity: number }[];
-  };
+  person: Person; // Use the imported Person interface here
   index: number;
   menuCategories: { [category: string]: MenuItemType[] };
   menu: MenuItemType[];
-  onAddItemToPerson: (personId: string, item: MenuItemType) => void;
+  onAddItemToPerson: (personIndex: number, item: MenuItemType) => void;
   onPersonOrderItemQuantityChange: (
-    personId: string,
+    personIndex: number,
     itemId: string,
     quantity: number
   ) => void;
-  onRemoveItemFromPerson: (personId: string, itemId: string) => void;
+  onRemoveItemFromPerson: (personIndex: number, itemId: string) => void;
   calculateSubtotal: (
     personItems: { id: string; quantity: number }[]
   ) => number;
   personOrderSummaryRef: React.RefObject<HTMLDivElement>;
   activeTab: string;
+  onPersonFinishedOrder: (personIndex: number) => void;
+  isFinished: boolean;
+  personLocked: boolean; // Prop to indicate if the tab is locked
+  isCurrentUserTab: boolean; // Prop to check if it's the current user's tab
+  personIndex: number;
 }
 
 const PersonOrder: React.FC<PersonOrderProps> = ({
@@ -34,6 +40,11 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
   onRemoveItemFromPerson,
   calculateSubtotal,
   personOrderSummaryRef,
+  onPersonFinishedOrder,
+  isFinished,
+  personLocked,
+  isCurrentUserTab,
+  personIndex,
 }) => {
   // Function to format price to Colombian Pesos
   const formatPriceCOP = (price: number) => {
@@ -46,17 +57,26 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
   };
 
   return (
-    <div key={person.id} className="mb-8" ref={personOrderSummaryRef}>
-      <div className="sticky top-16 bg-white p-4 shadow-md z-20 rounded-md transition-transform duration-200 ease-out transform translate-y-0 hover:translate-y-[-2px] ring-2 ring-indigo-500 ring-opacity-50 hover:ring-opacity-100">
+    <div key={person.personIndex} className="mb-8" ref={personOrderSummaryRef}>
+      <div
+        className={`sticky top-16 bg-white p-4 shadow-md z-20 rounded-md transition-transform duration-200 ease-out transform translate-y-0 hover:translate-y-[-2px] ring-2 ring-indigo-500 ring-opacity-50 hover:ring-opacity-100 ${
+          personLocked && !isCurrentUserTab
+            ? "opacity-50 pointer-events-none"
+            : ""
+        }`}
+      >
         <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">
           Pedido de {person.name || `Persona ${index + 1}`} 😋
+          {personLocked && !isCurrentUserTab && (
+            <span className="ml-2 text-red-500">🔒 (Bloqueado)</span>
+          )}
         </h2>
         <ul className="mb-4">
           {person.items.map((it) => {
             const menuItem = menu.find((m) => m.id === it.id);
             return menuItem ? (
               <li
-                key={it.id}
+                key={it.id} // Added key prop here
                 className="flex justify-between items-center py-2 border-b border-gray-200"
               >
                 <span className="flex-1 min-w-0">{menuItem.name}</span>
@@ -64,12 +84,13 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
                   <button
                     onClick={() =>
                       onPersonOrderItemQuantityChange(
-                        person.id,
+                        personIndex,
                         it.id,
                         it.quantity - 1
                       )
                     }
                     className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                    disabled={personLocked && !isCurrentUserTab} // Disable if locked and not current user
                   >
                     -
                   </button>
@@ -77,18 +98,20 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
                   <button
                     onClick={() =>
                       onPersonOrderItemQuantityChange(
-                        person.id,
+                        personIndex,
                         it.id,
                         it.quantity + 1
                       )
                     }
                     className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                    disabled={personLocked && !isCurrentUserTab} // Disable if locked and not current user
                   >
                     +
                   </button>
                   <button
-                    onClick={() => onRemoveItemFromPerson(person.id, it.id)}
+                    onClick={() => onRemoveItemFromPerson(personIndex, it.id)}
                     className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                    disabled={personLocked && !isCurrentUserTab} // Disable if locked and not current user
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -121,6 +144,24 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
             </li>
           )}
         </ul>
+        <div className="flex justify-end">
+          {" "}
+          {/* Container for button at the bottom */}
+          {!isFinished && (
+            <button
+              onClick={() => onPersonFinishedOrder(personIndex)}
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              disabled={personLocked && !isCurrentUserTab} // Disable if locked and not current user
+            >
+              He Terminado!
+            </button>
+          )}
+          {isFinished && (
+            <span className="text-green-600 font-semibold">
+              ¡Pedido Terminado! ✅
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -133,34 +174,46 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
               {categoryName}
             </h3>
             <div className="flex flex-col space-y-2">
-              {items.map((item) => (
-                <button
-                  key={item.id}
-                  disabled={item.availabilityStatus !== "disponible"}
-                  className={`bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-left transition-colors duration-300 ${
-                    item.availabilityStatus !== "disponible"
-                      ? "opacity-50 cursor-not-allowed line-through pointer-events-none"
-                      : ""
-                  }`}
-                  onClick={
-                    item.availabilityStatus === "disponible"
-                      ? () => onAddItemToPerson(person.id, item)
-                      : undefined
-                  }
-                >
-                  {item.name} - {formatPriceCOP(item.price)}
-                  {item.availabilityStatus === "noDisponibleMomento" && (
-                    <span className="ml-2 text-yellow-500 font-normal italic">
-                      (No disponible ahora)
-                    </span>
-                  )}
-                  {item.availabilityStatus === "noDisponibleLargoPlazo" && (
-                    <span className="ml-2 text-red-500 font-normal italic">
-                      (Ya no disponible)
-                    </span>
-                  )}
-                </button>
-              ))}
+              {items.map(
+                (
+                  menuItem // Changed parameter name to menuItem here
+                ) => (
+                  <button
+                    key={menuItem.id}
+                    disabled={
+                      menuItem.availabilityStatus !== "disponible" ||
+                      (personLocked && !isCurrentUserTab)
+                    } // Disable if item not available or tab locked and not current user
+                    className={`bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-left transition-colors duration-300 ${
+                      menuItem.availabilityStatus !== "disponible"
+                        ? "opacity-50 cursor-not-allowed line-through pointer-events-none"
+                        : ""
+                    }`}
+                    onClick={() => {
+                      console.log(
+                        "PersonOrder - onAddItemToPerson CALL",
+                        personIndex,
+                        menuItem
+                      ); // ADD THIS LOG - Log in PersonOrder.tsx
+                      onAddItemToPerson(personIndex, menuItem);
+                    }}
+                  >
+                    {menuItem.name} - {formatPriceCOP(menuItem.price)}{" "}
+                    {/* Use menuItem here */}
+                    {menuItem.availabilityStatus === "noDisponibleMomento" && (
+                      <span className="ml-2 text-yellow-500 font-normal italic">
+                        (No disponible ahora)
+                      </span>
+                    )}
+                    {menuItem.availabilityStatus ===
+                      "noDisponibleLargoPlazo" && (
+                      <span className="ml-2 text-red-500 font-normal italic">
+                        (Ya no disponible)
+                      </span>
+                    )}
+                  </button>
+                )
+              )}
             </div>
           </div>
         ))}

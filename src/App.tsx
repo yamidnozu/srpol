@@ -1,3 +1,5 @@
+/* src\App.tsx */
+/* Inicio src\App.tsx */
 import React from "react";
 import {
   Navigate,
@@ -17,6 +19,7 @@ import GestionUsuarios from "./pages/GestionUsuarios";
 import Login from "./pages/Login";
 
 import GroupOrderPage from "./components/menu/GroupOrderPage";
+import MenuPage from "./pages/MenuPage"; // Importa MenuPage
 import PedidosPage from "./pages/PedidosPage";
 import Perfil from "./pages/Perfil";
 import Success from "./pages/Success";
@@ -84,11 +87,21 @@ const App: React.FC = () => {
                   </PrivateRoute>
                 }
               />
+              {/* Ruta modificada para GroupOrderPage que recibe groupOrderId como parámetro */}
+              <Route
+                path="/menu/:groupOrderId"
+                element={
+                  <PrivateRoute>
+                    <GroupOrderPage name="" />
+                  </PrivateRoute>
+                }
+              />
+              {/* Nueva ruta para MenuPage (punto de entrada) */}
               <Route
                 path="/menu"
                 element={
                   <PrivateRoute>
-                    <GroupOrderPage />
+                    <MenuPage />
                   </PrivateRoute>
                 }
               />
@@ -144,3 +157,5 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+/* Fin src\App.tsx */

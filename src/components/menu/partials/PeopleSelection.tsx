@@ -1,9 +1,9 @@
-/* src\components\menu\partials\PeopleSelection.tsx */
-import React from 'react';
+import React from "react";
+import { Person } from "../GroupOrderPage";
 
 interface PeopleSelectionProps {
   numPeople: number;
-  people: { id: string; name: string }[];
+  people: Person[];
   onNumPeopleChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onPersonNameChange: (index: number, name: string) => void;
   onStartOrder: () => void;
@@ -60,5 +60,4 @@ const PeopleSelection: React.FC<PeopleSelectionProps> = ({
     </div>
   );
 };
-
 export default PeopleSelection;

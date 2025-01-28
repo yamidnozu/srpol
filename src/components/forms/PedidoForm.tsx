@@ -1,3 +1,4 @@
+/* src\components\forms\PedidoForm.tsx */
 // src/components/pedidos/PedidoForm.tsx
 /* Directorio: src\components\forms\PedidoForm.tsx */
 // src/components/forms/PedidoForm.tsx
@@ -7,14 +8,10 @@ import { v4 as uuidv4 } from "uuid";
 import { useAuth } from "../../hooks/useAuth";
 import { useMenu } from "../../hooks/useMenu";
 import { db } from "../../utils/firebase";
-
+import { Person } from "../menu/GroupOrderPage";
 interface PedidoFormProps {
   onClose: () => void;
-  people?: {
-    id: string;
-    name: string;
-    items: { id: string; quantity: number }[];
-  }[];
+  people?: Person[];
   sharedOrderItems?: {
     itemId: string;
     quantity: number;
@@ -44,7 +41,7 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
   useEffect(() => {
     if (people) {
       setPeopleOrder(
-        people.map((person) => ({ id: person.id, name: person.name }))
+        people.map((person) => ({ id: person.userId, name: person.name }))
       );
       // Flatten person items and assign person name
       const personItems = people.flatMap((person) =>
