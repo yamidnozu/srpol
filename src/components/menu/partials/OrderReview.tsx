@@ -1,4 +1,3 @@
-/* src\components\menu\partials\OrderReview.tsx */
 import { Typography } from "@mui/material";
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
@@ -14,6 +13,7 @@ interface OrderReviewProps {
   calculateSubtotal: (
     personItems: { id: string; quantity: number }[]
   ) => number;
+  isOrderOwner: boolean; // New prop to indicate if the viewer is the order owner
 }
 
 const OrderReview: React.FC<OrderReviewProps> = ({
@@ -23,6 +23,7 @@ const OrderReview: React.FC<OrderReviewProps> = ({
   onClosePedidoForm,
   calculateSharedSubtotal,
   calculateSubtotal,
+  isOrderOwner, // Destructure the new prop
 }) => {
   // Calculate total order amount
   const totalOrderAmount =
@@ -69,9 +70,11 @@ const OrderReview: React.FC<OrderReviewProps> = ({
                         x {sharedItem.quantity}
                       </span>
                     </div>
-                    <span className="w-12 text-right">
-                      {formatPriceCOP(itemTotalPrice)}
-                    </span>
+                    {isOrderOwner && ( // Conditionally render price for owner
+                      <span className="w-12 text-right">
+                        {formatPriceCOP(itemTotalPrice)}
+                      </span>
+                    )}
                   </li>
                 );
               } else {
@@ -79,12 +82,14 @@ const OrderReview: React.FC<OrderReviewProps> = ({
               }
             })}
           </ul>
-          <div className="font-semibold text-right mt-2">
-            Subtotal Compartido:
-            <span className="text-indigo-700 ml-1">
-              {formatPriceCOP(calculateSharedSubtotal())}
-            </span>
-          </div>
+          {isOrderOwner && ( // Conditionally render subtotal for owner
+            <div className="font-semibold text-right mt-2">
+              Subtotal Compartido:
+              <span className="text-indigo-700 ml-1">
+                {formatPriceCOP(calculateSharedSubtotal())}
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -116,9 +121,11 @@ const OrderReview: React.FC<OrderReviewProps> = ({
                           x {it.quantity}
                         </span>
                       </div>
-                      <span className="w-12 text-right">
-                        {formatPriceCOP(itemTotalPrice)}
-                      </span>
+                      {isOrderOwner && ( // Conditionally render price for owner
+                        <span className="w-12 text-right">
+                          {formatPriceCOP(itemTotalPrice)}
+                        </span>
+                      )}
                     </li>
                   );
                 } else {
@@ -126,12 +133,14 @@ const OrderReview: React.FC<OrderReviewProps> = ({
                 }
               })}
             </ul>
-            <div className="font-semibold text-right mt-2">
-              Subtotal Individual:
-              <span className="text-indigo-700 ml-1">
-                {formatPriceCOP(calculateSubtotal(person.items))}
-              </span>
-            </div>
+            {isOrderOwner && ( // Conditionally render subtotal for owner
+              <div className="font-semibold text-right mt-2">
+                Subtotal Individual:
+                <span className="text-indigo-700 ml-1">
+                  {formatPriceCOP(calculateSubtotal(person.items))}
+                </span>
+              </div>
+            )}
           </div>
         ))}
 
@@ -152,24 +161,32 @@ const OrderReview: React.FC<OrderReviewProps> = ({
                 Subtotal {person.name}:
               </Typography>
             ))}
-            <Typography className="font-bold mt-2">
-              Total del Pedido:
-            </Typography>{" "}
-            {/* Bold Total label */}
+            {isOrderOwner && ( // Conditionally render "Total del Pedido" label for owner
+              <Typography className="font-bold mt-2">
+                Total del Pedido:
+              </Typography>
+            )}
           </div>
           <div className="text-right font-semibold text-xl text-indigo-700">
             {" "}
             {/* Right side amounts container */}
-            <Typography>{formatPriceCOP(calculateSharedSubtotal())}</Typography>
+            {isOrderOwner && ( // Conditionally render shared subtotal for owner
+              <Typography>
+                {formatPriceCOP(calculateSharedSubtotal())}
+              </Typography>
+            )}
             {people.map((person) => (
               <Typography key={person.personIndex}>
-                {formatPriceCOP(calculateSubtotal(person.items))}
+                {isOrderOwner
+                  ? formatPriceCOP(calculateSubtotal(person.items)) // Conditionally render individual subtotal for owner
+                  : ""}
               </Typography>
             ))}
-            <Typography className="font-bold mt-2">
-              {formatPriceCOP(totalOrderAmount)}
-            </Typography>{" "}
-            {/* Bold Total amount */}
+            {isOrderOwner && ( // Conditionally render total order amount for owner
+              <Typography className="font-bold mt-2">
+                {formatPriceCOP(totalOrderAmount)}
+              </Typography>
+            )}
           </div>
         </div>
       </div>

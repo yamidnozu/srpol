@@ -1,7 +1,3 @@
-/* src\components\menu\partials\PersonOrder.tsx */
-/* src\components\menu\partials\PersonOrder.tsx */
-/* src\components\menu\partials\PersonOrder.tsx */
-/* src\components\menu\partials\PersonOrder.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
 import { Person } from "../GroupOrderPage"; // Import the Person interface from GroupOrderPage
@@ -56,19 +52,17 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
     });
   };
 
+  const isControlEnabled = !personLocked || isCurrentUserTab;
+
   return (
     <div key={person.personIndex} className="mb-8" ref={personOrderSummaryRef}>
       <div
-        className={`sticky top-16 bg-white p-4 shadow-md z-20 rounded-md transition-transform duration-200 ease-out transform translate-y-0 hover:translate-y-[-2px] ring-2 ring-indigo-500 ring-opacity-50 hover:ring-opacity-100 ${
-          personLocked && !isCurrentUserTab
-            ? "opacity-50 pointer-events-none"
-            : ""
-        }`}
+        className={`sticky top-16 bg-white p-4 shadow-md z-20 rounded-md transition-transform duration-200 ease-out transform translate-y-0 hover:translate-y-[-2px] ring-2 ring-indigo-500 ring-opacity-50 hover:ring-opacity-100`}
       >
         <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">
           Pedido de {person.name || `Persona ${index + 1}`} 😋
           {personLocked && !isCurrentUserTab && (
-            <span className="ml-2 text-red-500">🔒 (Bloqueado)</span>
+            <span className="ml-2 text-red-500">🔒 (Viendo)</span>
           )}
         </h2>
         <ul className="mb-4">
@@ -90,7 +84,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
                       )
                     }
                     className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
-                    disabled={personLocked && !isCurrentUserTab} // Disable if locked and not current user
+                    disabled={!isControlEnabled}
                   >
                     -
                   </button>
@@ -104,14 +98,14 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
                       )
                     }
                     className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
-                    disabled={personLocked && !isCurrentUserTab} // Disable if locked and not current user
+                    disabled={!isControlEnabled}
                   >
                     +
                   </button>
                   <button
                     onClick={() => onRemoveItemFromPerson(personIndex, it.id)}
                     className="text-red-500 hover:text-red-700 transition-colors duration-200"
-                    disabled={personLocked && !isCurrentUserTab} // Disable if locked and not current user
+                    disabled={!isControlEnabled}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -151,7 +145,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
             <button
               onClick={() => onPersonFinishedOrder(personIndex)}
               className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              disabled={personLocked && !isCurrentUserTab} // Disable if locked and not current user
+              disabled={!isControlEnabled}
             >
               He Terminado!
             </button>
@@ -182,8 +176,8 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
                     key={menuItem.id}
                     disabled={
                       menuItem.availabilityStatus !== "disponible" ||
-                      (personLocked && !isCurrentUserTab)
-                    } // Disable if item not available or tab locked and not current user
+                      !isControlEnabled
+                    }
                     className={`bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-left transition-colors duration-300 ${
                       menuItem.availabilityStatus !== "disponible"
                         ? "opacity-50 cursor-not-allowed line-through pointer-events-none"

@@ -1,9 +1,3 @@
-/* src\components\menu\GroupOrderPage.tsx */
-/* src\components\menu\GroupOrderPage.tsx */
-/* src\components\menu\GroupOrderPage.tsx */
-/* src\components\menu\GroupOrderPage.tsx */
-/* src\components\menu\GroupOrderPage.tsx */
-/* src\components\menu\GroupOrderPage.tsx */
 import React, { useEffect, useRef, useState } from "react";
 import { MenuItem as MenuItemType } from "../../context/AppContext";
 import { useMenu } from "../../hooks/useMenu";
@@ -57,9 +51,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [allFinished, setAllFinished] = useState(false);
   const [showNameModal, setShowNameModal] = useState(false); // Estado para el modal de nombre
-  const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(
-    null
-  ); // Indice de la persona actual para el modal de nombre
+  const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(null); // Indice de la persona actual para el modal de nombre
   const navigate = useNavigate();
 
   const sharedOrderSummaryRef = useRef<HTMLDivElement>(null);
@@ -605,44 +597,36 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
               >
                 🍕 Para Compartir
               </button>
-              {people.map((person, index) => {
-                console.log(`Rendering tab for person:`, person); // Debug log inside map
-                return (
-                  <div // Changed from button to div
-                    key={person.personIndex}
-                    className={`${
-                      activeTab === `person-${index}`
-                        ? "border-indigo-500 text-indigo-600"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                    } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300 cursor-pointer ${
-                      person.locked && person.userId !== user?.uid
-                        ? "opacity-50 pointer-events-none"
-                        : ""
-                    }`} // Bloqueo visual y funcional
-                    onClick={() => setActiveTab(`person-${index}`)}
-                    aria-disabled={person.locked && person.userId !== user?.uid} //Aria disabled for accessibility
-                  >
-                    {person.name}
-                    {!person.locked && !person.finished && user?.uid && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleClaimPersonTab(index);
-                        }}
-                        className="ml-2 px-2 py-1 bg-indigo-200 text-indigo-700 rounded-full text-xs hover:bg-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      >
-                        Soy yo
-                      </button>
-                    )}
-                    {person.finished && (
-                      <span className="ml-2 text-green-500">✅ Terminado</span>
-                    )}
-                    {person.locked && person.userId !== user?.uid && (
-                      <span className="ml-2 text-red-500">🔒 En uso</span>
-                    )}
-                  </div>
-                );
-              })}
+              {people.map((person, index) => (
+                <div
+                  key={person.personIndex}
+                  className={`${
+                    activeTab === `person-${index}`
+                      ? "border-indigo-500 text-indigo-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300 cursor-pointer`}
+                  onClick={() => setActiveTab(`person-${index}`)}
+                >
+                  {person.name}
+                  {!person.locked && !person.finished && user?.uid && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleClaimPersonTab(index);
+                      }}
+                      className="ml-2 px-2 py-1 bg-indigo-200 text-indigo-700 rounded-full text-xs hover:bg-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      Soy yo
+                    </button>
+                  )}
+                  {person.finished && (
+                    <span className="ml-2 text-green-500">✅ Terminado</span>
+                  )}
+                  {person.locked && person.userId !== user?.uid && (
+                    <span className="ml-2 text-red-500">🔒 Viendo</span>
+                  )}
+                </div>
+              ))}
             </nav>
           </div>
 
@@ -719,6 +703,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           onClosePedidoForm={() => setShowPedidoForm(false)}
           calculateSharedSubtotal={calculateSharedSubtotal}
           calculateSubtotal={calculateSubtotal}
+          isOrderOwner={isOwner} // Pass isOwner prop here
         />
       )}
 

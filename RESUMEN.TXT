@@ -21,16 +21,16 @@
 │   │   │   ├── PublicLayout.tsx [19]
 │   │   │   └── Sidebar.tsx [120]
 │   │   ├── 📂 menu
-│   │   │   ├── GroupOrderPage.tsx [687]
+│   │   │   ├── GroupOrderPage.tsx [725]
 │   │   │   ├── JoinOrderModal.tsx [57]
 │   │   │   ├── MenuForm.tsx [223]
 │   │   │   ├── MenuItem.tsx [95]
 │   │   │   ├── MenuList.tsx [29]
-│   │   │   ├── MenuModal.tsx [67]
+│   │   │   ├── MenuModal.tsx [97]
 │   │   │   ├── 📂 partials
-│   │   │   │   ├── OrderReview.tsx [187]
+│   │   │   │   ├── OrderReview.tsx [204]
 │   │   │   │   ├── PeopleSelection.tsx [63]
-│   │   │   │   ├── PersonOrder.tsx [202]
+│   │   │   │   ├── PersonOrder.tsx [220]
 │   │   │   │   └── SharedOrder.tsx [165]
 │   │   │   └── PersonMenuModal.tsx [223]
 │   │   ├── 📂 payment
@@ -79,7 +79,7 @@
 └── vite.config.ts [38]
 
 
-Total de líneas resumidas: 6709
+Total de líneas resumidas: 6812
 
 
 /* Inicio eslint.config.js */
@@ -1301,20 +1301,16 @@ export default Sidebar;
 /* Fin src\components\layout\Sidebar.tsx */
 
 /* Inicio src\components\menu\GroupOrderPage.tsx */
-/* Inicio src\components\menu\GroupOrderPage.tsx */
-/* src\components\menu\GroupOrderPage.tsx */
-/* src\components\menu\GroupOrderPage.tsx */
-/* src\components\menu\GroupOrderPage.tsx */
-/* src\components\menu\GroupOrderPage.tsx */
 import React, { useEffect, useRef, useState } from "react";
 import { MenuItem as MenuItemType } from "../../context/AppContext";
 import { useMenu } from "../../hooks/useMenu";
 
 import { doc, onSnapshot, updateDoc } from "firebase/firestore";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { COLLECTIONS } from "../../utils/constants";
 import { db } from "../../utils/firebase";
+import NameModal from "./MenuModal"; // Renamed import to NameModal to avoid confusion
 import OrderReview from "./partials/OrderReview";
 import PeopleSelection from "./partials/PeopleSelection";
 import PersonOrder from "./partials/PersonOrder";
@@ -1357,6 +1353,9 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const [groupOrderId, setGroupOrderId] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [allFinished, setAllFinished] = useState(false);
+  const [showNameModal, setShowNameModal] = useState(false); // Estado para el modal de nombre
+  const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(null); // Indice de la persona actual para el modal de nombre
+  const navigate = useNavigate();
 
   const sharedOrderSummaryRef = useRef<HTMLDivElement>(null);
   const personOrderSummaryRef = useRef<HTMLDivElement>(null);
@@ -1365,6 +1364,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const { groupOrderId: routeGroupId } = useParams();
   const [searchParams] = useSearchParams();
   const codeFromURL = searchParams.get("code");
+  const joiningWithCode = !!codeFromURL; // Determina si se está uniendo con código
 
   const filteredMenu = menu.filter(
     (item) => item.availabilityStatus !== "noDisponibleLargoPlazo"
@@ -1437,6 +1437,9 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           console.log(
             "GroupOrderPage - No existe el documento del pedido grupal!"
           );
+          // Si el documento no existe, podría ser un código inválido o pedido cancelado.
+          // Redirigir al usuario a una página de error o a la página principal del menú.
+          navigate("/menu"); // Redirige a la página del menú. Considera una página de error.
         }
       },
       (error) => {
@@ -1444,6 +1447,8 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           "GroupOrderPage - Error al suscribirse al pedido grupal:",
           error
         );
+        // Similar al caso de documento no encontrado, redirigir en caso de error de suscripción.
+        navigate("/menu"); // Redirige a la página del menú en caso de error.
       }
     );
   };
@@ -1792,6 +1797,13 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const handleClaimPersonTab = async (personIndex: number) => {
     if (!groupOrderId || !user) return;
 
+    const currentPerson = people[personIndex];
+    if (currentPerson && currentPerson.name.startsWith("Persona ")) {
+      setCurrentPersonIndex(personIndex);
+      setShowNameModal(true);
+      return; // Show name modal and exit
+    }
+
     const updatedParticipants = people.map((person, index) => {
       if (index === personIndex && !person.locked) {
         return { ...person, userId: user.uid, locked: true };
@@ -1820,8 +1832,29 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
     await updateDoc(groupOrderDocRef, {
       participants: updatedParticipants,
-      allFinished: allFinished,
+      allFinished: allAreFinished,
     });
+  };
+
+  const handleNameModalClose = () => {
+    setShowNameModal(false);
+    setCurrentPersonIndex(null);
+  };
+
+  const handleNameSubmit = async (name: string) => {
+    console.log("GroupOrderPage - handleNameSubmit - Name received:", name); // Debug log
+    if (currentPersonIndex !== null && groupOrderId) {
+      const updatedParticipants = people.map((person, index) =>
+        index === currentPersonIndex
+          ? { ...person, name, userId: user?.uid, locked: true }
+          : person
+      );
+      setPeople(updatedParticipants);
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+      await updateDoc(groupOrderDocRef, { participants: updatedParticipants });
+      setShowNameModal(false);
+      setCurrentPersonIndex(null);
+    }
   };
 
   return (
@@ -1842,7 +1875,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         </div>
       )}
 
-      {!showPeopleNames ? (
+      {!showPeopleNames && !joiningWithCode ? (
         <PeopleSelection
           numPeople={numPeople}
           people={people}
@@ -1893,7 +1926,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                     <span className="ml-2 text-green-500">✅ Terminado</span>
                   )}
                   {person.locked && person.userId !== user?.uid && (
-                    <span className="ml-2 text-red-500">🔒 En uso</span>
+                    <span className="ml-2 text-red-500">🔒 Viendo</span>
                   )}
                 </div>
               ))}
@@ -1925,7 +1958,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                   index={index}
                   menuCategories={menuCategories}
                   menu={menu}
-                  // Corrected prop passing: directly pass index and item
                   onAddItemToPerson={(index, menuItem) =>
                     handleAddItemToPerson(index, menuItem)
                   }
@@ -1940,6 +1972,8 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                   activeTab={activeTab}
                   onPersonFinishedOrder={handlePersonFinishedOrder}
                   isFinished={person.finished || false}
+                  personLocked={person.locked || false} // Pass locked status
+                  isCurrentUserTab={person.userId === user?.uid} // Check if is current user's tab
                   personIndex={index} // Pass personIndex as prop
                 />
               )
@@ -1972,6 +2006,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           onClosePedidoForm={() => setShowPedidoForm(false)}
           calculateSharedSubtotal={calculateSharedSubtotal}
           calculateSubtotal={calculateSubtotal}
+          isOrderOwner={isOwner} // Pass isOwner prop here
         />
       )}
 
@@ -1980,14 +2015,17 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           {feedbackMessage}
         </div>
       )}
+      <NameModal // Use NameModal here, not MenuModal
+        open={showNameModal}
+        onClose={handleNameModalClose}
+        onSubmit={handleNameSubmit}
+        initialValues={{ name: "" }}
+      />
     </div>
   );
 };
 
 export default GroupOrderPage;
-
-/* Fin src\components\menu\GroupOrderPage.tsx */
-
 /* Fin src\components\menu\GroupOrderPage.tsx */
 
 /* Inicio src\components\menu\JoinOrderModal.tsx */
@@ -2407,16 +2445,16 @@ export default MenuList;
 /* Fin src\components\menu\MenuList.tsx */
 
 /* Inicio src\components\menu\MenuModal.tsx */
+/* src\components\menu\MenuModal.tsx */
 
-import React from "react";
+import React, { useState } from "react";
 import { MenuItem } from "../../context/AppContext";
-import MenuFormComponent from "./MenuForm";
 
 interface MenuModalProps {
   open: boolean;
   onClose: () => void;
   initialValues?: Partial<MenuItem>;
-  onSubmit: (values: Partial<MenuItem>) => void;
+  onSubmit: (name: string) => void; // Change onSubmit prop type to accept name string
 }
 
 const MenuModal: React.FC<MenuModalProps> = ({
@@ -2425,11 +2463,19 @@ const MenuModal: React.FC<MenuModalProps> = ({
   initialValues,
   onSubmit,
 }) => {
+  const [name, setName] = useState(initialValues?.name || "");
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    console.log("NameModal - handleSubmit - Name being submitted:", name); // Debug log
+    onSubmit(name); // Submit only the name string
+    onClose();
+  };
+
   if (!open) return null;
 
   return (
     <div className="fixed z-50 inset-0 overflow-y-auto">
-      {" "}
       {/* Overlay y contenedor modal */}
       {/* Overlay */}
       <div
@@ -2439,32 +2485,54 @@ const MenuModal: React.FC<MenuModalProps> = ({
       ></div>
       {/* Modal container */}
       <div className="flex items-center justify-center min-h-screen px-4 py-8">
-        {" "}
         {/* Centrado vertical y horizontal */}
         {/* Modal panel */}
         <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden transform transition-all sm:w-full sm:mx-auto">
-          {" "}
           {/* Panel modal */}
           <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            {" "}
             {/* Header modal */}
             <h3
               className="text-lg font-semibold text-gray-900"
               id="modal-headline"
             >
-              {initialValues?.id
-                ? "Editar Item del Menú"
-                : "Agregar Nuevo Item al Menú"}
+              Ingresa tu Nombre
             </h3>
           </div>
           <div className="p-6">
-            {" "}
             {/* Body modal */}
-            <MenuFormComponent
-              initialValues={initialValues}
-              onSubmit={onSubmit}
-              onClose={onClose}
-            />
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Nombre:
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button
+                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  onClick={onClose}
+                  type="button"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                >
+                  Guardar
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -2477,7 +2545,6 @@ export default MenuModal;
 /* Fin src\components\menu\MenuModal.tsx */
 
 /* Inicio src\components\menu\partials\OrderReview.tsx */
-/* src\components\menu\partials\OrderReview.tsx */
 import { Typography } from "@mui/material";
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
@@ -2493,6 +2560,7 @@ interface OrderReviewProps {
   calculateSubtotal: (
     personItems: { id: string; quantity: number }[]
   ) => number;
+  isOrderOwner: boolean; // New prop to indicate if the viewer is the order owner
 }
 
 const OrderReview: React.FC<OrderReviewProps> = ({
@@ -2502,6 +2570,7 @@ const OrderReview: React.FC<OrderReviewProps> = ({
   onClosePedidoForm,
   calculateSharedSubtotal,
   calculateSubtotal,
+  isOrderOwner, // Destructure the new prop
 }) => {
   // Calculate total order amount
   const totalOrderAmount =
@@ -2548,9 +2617,11 @@ const OrderReview: React.FC<OrderReviewProps> = ({
                         x {sharedItem.quantity}
                       </span>
                     </div>
-                    <span className="w-12 text-right">
-                      {formatPriceCOP(itemTotalPrice)}
-                    </span>
+                    {isOrderOwner && ( // Conditionally render price for owner
+                      <span className="w-12 text-right">
+                        {formatPriceCOP(itemTotalPrice)}
+                      </span>
+                    )}
                   </li>
                 );
               } else {
@@ -2558,12 +2629,14 @@ const OrderReview: React.FC<OrderReviewProps> = ({
               }
             })}
           </ul>
-          <div className="font-semibold text-right mt-2">
-            Subtotal Compartido:
-            <span className="text-indigo-700 ml-1">
-              {formatPriceCOP(calculateSharedSubtotal())}
-            </span>
-          </div>
+          {isOrderOwner && ( // Conditionally render subtotal for owner
+            <div className="font-semibold text-right mt-2">
+              Subtotal Compartido:
+              <span className="text-indigo-700 ml-1">
+                {formatPriceCOP(calculateSharedSubtotal())}
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -2595,9 +2668,11 @@ const OrderReview: React.FC<OrderReviewProps> = ({
                           x {it.quantity}
                         </span>
                       </div>
-                      <span className="w-12 text-right">
-                        {formatPriceCOP(itemTotalPrice)}
-                      </span>
+                      {isOrderOwner && ( // Conditionally render price for owner
+                        <span className="w-12 text-right">
+                          {formatPriceCOP(itemTotalPrice)}
+                        </span>
+                      )}
                     </li>
                   );
                 } else {
@@ -2605,12 +2680,14 @@ const OrderReview: React.FC<OrderReviewProps> = ({
                 }
               })}
             </ul>
-            <div className="font-semibold text-right mt-2">
-              Subtotal Individual:
-              <span className="text-indigo-700 ml-1">
-                {formatPriceCOP(calculateSubtotal(person.items))}
-              </span>
-            </div>
+            {isOrderOwner && ( // Conditionally render subtotal for owner
+              <div className="font-semibold text-right mt-2">
+                Subtotal Individual:
+                <span className="text-indigo-700 ml-1">
+                  {formatPriceCOP(calculateSubtotal(person.items))}
+                </span>
+              </div>
+            )}
           </div>
         ))}
 
@@ -2631,24 +2708,32 @@ const OrderReview: React.FC<OrderReviewProps> = ({
                 Subtotal {person.name}:
               </Typography>
             ))}
-            <Typography className="font-bold mt-2">
-              Total del Pedido:
-            </Typography>{" "}
-            {/* Bold Total label */}
+            {isOrderOwner && ( // Conditionally render "Total del Pedido" label for owner
+              <Typography className="font-bold mt-2">
+                Total del Pedido:
+              </Typography>
+            )}
           </div>
           <div className="text-right font-semibold text-xl text-indigo-700">
             {" "}
             {/* Right side amounts container */}
-            <Typography>{formatPriceCOP(calculateSharedSubtotal())}</Typography>
+            {isOrderOwner && ( // Conditionally render shared subtotal for owner
+              <Typography>
+                {formatPriceCOP(calculateSharedSubtotal())}
+              </Typography>
+            )}
             {people.map((person) => (
               <Typography key={person.personIndex}>
-                {formatPriceCOP(calculateSubtotal(person.items))}
+                {isOrderOwner
+                  ? formatPriceCOP(calculateSubtotal(person.items)) // Conditionally render individual subtotal for owner
+                  : ""}
               </Typography>
             ))}
-            <Typography className="font-bold mt-2">
-              {formatPriceCOP(totalOrderAmount)}
-            </Typography>{" "}
-            {/* Bold Total amount */}
+            {isOrderOwner && ( // Conditionally render total order amount for owner
+              <Typography className="font-bold mt-2">
+                {formatPriceCOP(totalOrderAmount)}
+              </Typography>
+            )}
           </div>
         </div>
       </div>
@@ -2733,9 +2818,6 @@ export default PeopleSelection;
 /* Fin src\components\menu\partials\PeopleSelection.tsx */
 
 /* Inicio src\components\menu\partials\PersonOrder.tsx */
-/* src\components\menu\partials\PersonOrder.tsx */
-/* src\components\menu\partials\PersonOrder.tsx */
-/* src\components\menu\partials\PersonOrder.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
 import { Person } from "../GroupOrderPage"; // Import the Person interface from GroupOrderPage
@@ -2759,6 +2841,8 @@ interface PersonOrderProps {
   activeTab: string;
   onPersonFinishedOrder: (personIndex: number) => void;
   isFinished: boolean;
+  personLocked: boolean; // Prop to indicate if the tab is locked
+  isCurrentUserTab: boolean; // Prop to check if it's the current user's tab
   personIndex: number;
 }
 
@@ -2774,6 +2858,8 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
   personOrderSummaryRef,
   onPersonFinishedOrder,
   isFinished,
+  personLocked,
+  isCurrentUserTab,
   personIndex,
 }) => {
   // Function to format price to Colombian Pesos
@@ -2786,11 +2872,18 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
     });
   };
 
+  const isControlEnabled = !personLocked || isCurrentUserTab;
+
   return (
     <div key={person.personIndex} className="mb-8" ref={personOrderSummaryRef}>
-      <div className="sticky top-16 bg-white p-4 shadow-md z-20 rounded-md transition-transform duration-200 ease-out transform translate-y-0 hover:translate-y-[-2px] ring-2 ring-indigo-500 ring-opacity-50 hover:ring-opacity-100">
+      <div
+        className={`sticky top-16 bg-white p-4 shadow-md z-20 rounded-md transition-transform duration-200 ease-out transform translate-y-0 hover:translate-y-[-2px] ring-2 ring-indigo-500 ring-opacity-50 hover:ring-opacity-100`}
+      >
         <h2 className="text-xl font-semibold text-gray-900 mb-4 text-center">
           Pedido de {person.name || `Persona ${index + 1}`} 😋
+          {personLocked && !isCurrentUserTab && (
+            <span className="ml-2 text-red-500">🔒 (Viendo)</span>
+          )}
         </h2>
         <ul className="mb-4">
           {person.items.map((it) => {
@@ -2811,6 +2904,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
                       )
                     }
                     className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                    disabled={!isControlEnabled}
                   >
                     -
                   </button>
@@ -2824,12 +2918,14 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
                       )
                     }
                     className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                    disabled={!isControlEnabled}
                   >
                     +
                   </button>
                   <button
                     onClick={() => onRemoveItemFromPerson(personIndex, it.id)}
                     className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                    disabled={!isControlEnabled}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -2869,6 +2965,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
             <button
               onClick={() => onPersonFinishedOrder(personIndex)}
               className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              disabled={!isControlEnabled}
             >
               He Terminado!
             </button>
@@ -2897,14 +2994,21 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
                 ) => (
                   <button
                     key={menuItem.id}
-                    disabled={menuItem.availabilityStatus !== "disponible"}
+                    disabled={
+                      menuItem.availabilityStatus !== "disponible" ||
+                      !isControlEnabled
+                    }
                     className={`bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-left transition-colors duration-300 ${
                       menuItem.availabilityStatus !== "disponible"
                         ? "opacity-50 cursor-not-allowed line-through pointer-events-none"
                         : ""
                     }`}
                     onClick={() => {
-                      console.log("PersonOrder - onAddItemToPerson CALL", personIndex, menuItem); // ADD THIS LOG - Log in PersonOrder.tsx
+                      console.log(
+                        "PersonOrder - onAddItemToPerson CALL",
+                        personIndex,
+                        menuItem
+                      ); // ADD THIS LOG - Log in PersonOrder.tsx
                       onAddItemToPerson(personIndex, menuItem);
                     }}
                   >
@@ -2934,7 +3038,6 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
 
 export default PersonOrder;
 
-/* Fin src\components\menu\partials\PersonOrder.tsx */
 /* Fin src\components\menu\partials\PersonOrder.tsx */
 
 /* Inicio src\components\menu\partials\SharedOrder.tsx */
