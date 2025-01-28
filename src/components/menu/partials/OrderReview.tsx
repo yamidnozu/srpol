@@ -1,3 +1,4 @@
+/* Inicio src\components\menu\partials\OrderReview.tsx */
 import { Typography } from "@mui/material";
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
@@ -14,6 +15,7 @@ interface OrderReviewProps {
     personItems: { id: string; quantity: number }[]
   ) => number;
   isOrderOwner: boolean; // New prop to indicate if the viewer is the order owner
+  onOrderPlaced: () => void; // Add callback for order placement
 }
 
 const OrderReview: React.FC<OrderReviewProps> = ({
@@ -23,7 +25,8 @@ const OrderReview: React.FC<OrderReviewProps> = ({
   onClosePedidoForm,
   calculateSharedSubtotal,
   calculateSubtotal,
-  isOrderOwner, // Destructure the new prop
+  isOrderOwner,
+  onOrderPlaced, // Destructure the new prop
 }) => {
   // Calculate total order amount
   const totalOrderAmount =
@@ -38,6 +41,11 @@ const OrderReview: React.FC<OrderReviewProps> = ({
       minimumFractionDigits: 0, // Remove cents if whole number
       maximumFractionDigits: 0,
     });
+  };
+
+  const handlePedidoFormClose = () => {
+    onClosePedidoForm();
+    onOrderPlaced(); // Call the callback when PedidoForm is closed after submit
   };
 
   return (
@@ -145,54 +153,48 @@ const OrderReview: React.FC<OrderReviewProps> = ({
         ))}
 
       {/* Total Order Section */}
-      <div className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-100">
-        <h3 className="text-xl font-semibold text-gray-900 mb-3 text-indigo-600 text-center">
-          Resumen del Pedido Grupal Completo 💰
-        </h3>
-        <div className="flex justify-between items-center">
-          {" "}
-          {/* Flex container for labels and total */}
-          <div className="font-semibold text-gray-700">
+      {isOrderOwner && (
+        <div className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-100">
+          <h3 className="text-xl font-semibold text-gray-900 mb-3 text-indigo-600 text-center">
+            Resumen del Pedido Grupal Completo 💰
+          </h3>
+          <div className="flex justify-between items-center">
             {" "}
-            {/* Left side labels container */}
-            <Typography>Subtotal Compartido:</Typography>
-            {people.map((person) => (
-              <Typography key={person.personIndex}>
-                Subtotal {person.name}:
-              </Typography>
-            ))}
-            {isOrderOwner && ( // Conditionally render "Total del Pedido" label for owner
+            {/* Flex container for labels and total */}
+            <div className="font-semibold text-gray-700">
+              {" "}
+              {/* Left side labels container */}
+              <Typography>Subtotal Compartido:</Typography>
+              {people.map((person) => (
+                <Typography key={person.personIndex}>
+                  Subtotal {person.name}:
+                </Typography>
+              ))}
               <Typography className="font-bold mt-2">
                 Total del Pedido:
               </Typography>
-            )}
-          </div>
-          <div className="text-right font-semibold text-xl text-indigo-700">
-            {" "}
-            {/* Right side amounts container */}
-            {isOrderOwner && ( // Conditionally render shared subtotal for owner
+            </div>
+            <div className="text-right font-semibold text-xl text-indigo-700">
+              {" "}
+              {/* Right side amounts container */}
               <Typography>
                 {formatPriceCOP(calculateSharedSubtotal())}
               </Typography>
-            )}
-            {people.map((person) => (
-              <Typography key={person.personIndex}>
-                {isOrderOwner
-                  ? formatPriceCOP(calculateSubtotal(person.items)) // Conditionally render individual subtotal for owner
-                  : ""}
-              </Typography>
-            ))}
-            {isOrderOwner && ( // Conditionally render total order amount for owner
+              {people.map((person) => (
+                <Typography key={person.personIndex}>
+                  {formatPriceCOP(calculateSubtotal(person.items))}
+                </Typography>
+              ))}
               <Typography className="font-bold mt-2">
                 {formatPriceCOP(totalOrderAmount)}
               </Typography>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <PedidoForm
-        onClose={onClosePedidoForm}
+        onClose={handlePedidoFormClose} // Use the modified close handler
         people={people}
         sharedOrderItems={sharedOrderItems}
       />
@@ -201,3 +203,5 @@ const OrderReview: React.FC<OrderReviewProps> = ({
 };
 
 export default OrderReview;
+
+/* Fin src\components\menu\partials\OrderReview.tsx */

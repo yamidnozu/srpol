@@ -1,12 +1,20 @@
+/* Inicio src\components\forms\PedidoForm.tsx */
 /* src\components\forms\PedidoForm.tsx */
 // src/components/pedidos/PedidoForm.tsx
 /* Directorio: src\components\forms\PedidoForm.tsx */
 // src/components/forms/PedidoForm.tsx
-import { Timestamp, addDoc, collection } from "firebase/firestore";
+import {
+  Timestamp,
+  addDoc,
+  collection,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { useAuth } from "../../hooks/useAuth";
 import { useMenu } from "../../hooks/useMenu";
+import { COLLECTIONS } from "../../utils/constants";
 import { db } from "../../utils/firebase";
 import { Person } from "../menu/GroupOrderPage";
 interface PedidoFormProps {
@@ -17,12 +25,14 @@ interface PedidoFormProps {
     quantity: number;
     personIds: string[];
   }[];
+  groupOrderId?: string | null; // Add groupOrderId prop
 }
 
 const PedidoForm: React.FC<PedidoFormProps> = ({
   onClose,
   people,
   sharedOrderItems,
+  groupOrderId, // Receive groupOrderId prop
 }) => {
   const { menu } = useMenu();
   const { user, addPoints } = useAuth();
@@ -124,6 +134,14 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
       };
 
       await addDoc(collection(db, "pedidos"), orderData);
+      if (groupOrderId) {
+        const groupOrderDocRef = doc(
+          db,
+          COLLECTIONS.GROUP_ORDERS,
+          groupOrderId
+        );
+        await updateDoc(groupOrderDocRef, { orderPlaced: true }); // Update group order as placed
+      }
       handlePaymentSuccess();
     } catch (error) {
       console.error("Error al agregar el pedido:", error);
@@ -227,3 +245,4 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
 };
 
 export default PedidoForm;
+/* Fin src\components\forms\PedidoForm.tsx */

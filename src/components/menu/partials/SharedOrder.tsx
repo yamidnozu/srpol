@@ -1,3 +1,4 @@
+/* Inicio src\components\menu\partials\SharedOrder.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
 
@@ -11,6 +12,7 @@ interface SharedOrderProps {
   sharedOrderSummaryRef: React.RefObject<HTMLDivElement>;
   activeTab: string;
   menu: MenuItemType[];
+  disabled?: boolean; // Prop to disable interactions
 }
 
 const SharedOrder: React.FC<SharedOrderProps> = ({
@@ -21,8 +23,8 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
   onRemoveSharedOrderItem,
   calculateSharedSubtotal,
   sharedOrderSummaryRef,
-
   menu,
+  disabled = false, // Default to false
 }) => {
   // Function to format price to Colombian Pesos
   const formatPriceCOP = (price: number) => {
@@ -61,6 +63,7 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
                       )
                     }
                     className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                    disabled={disabled} // Disable button if prop disabled is true
                   >
                     -
                   </button>
@@ -73,12 +76,14 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
                       )
                     }
                     className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                    disabled={disabled} // Disable button if prop disabled is true
                   >
                     +
                   </button>
                   <button
                     onClick={() => onRemoveSharedOrderItem(sharedItem.itemId)}
                     className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                    disabled={disabled} // Disable button if prop disabled is true
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -128,14 +133,16 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
               {items.map((item) => (
                 <button
                   key={item.id}
-                  disabled={item.availabilityStatus !== "disponible"}
+                  disabled={
+                    item.availabilityStatus !== "disponible" || disabled
+                  } // Disable button if prop disabled is true or item not available
                   className={`bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-left transition-colors duration-300 ${
                     item.availabilityStatus !== "disponible"
                       ? "opacity-50 cursor-not-allowed line-through pointer-events-none"
                       : ""
                   }`}
                   onClick={
-                    item.availabilityStatus === "disponible"
+                    item.availabilityStatus === "disponible" && !disabled // Only allow click if available and not disabled
                       ? () => onAddToSharedOrder(item)
                       : undefined
                   }
@@ -162,3 +169,5 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
 };
 
 export default SharedOrder;
+
+/* Fin src\components\menu\partials\SharedOrder.tsx */

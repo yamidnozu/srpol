@@ -1,3 +1,4 @@
+/* Inicio src\components\menu\GroupOrderPage.tsx */
 import React, { useEffect, useRef, useState } from "react";
 import { MenuItem as MenuItemType } from "../../context/AppContext";
 import { useMenu } from "../../hooks/useMenu";
@@ -51,8 +52,11 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const [isOwner, setIsOwner] = useState(false);
   const [allFinished, setAllFinished] = useState(false);
   const [showNameModal, setShowNameModal] = useState(false); // Estado para el modal de nombre
-  const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(null); // Indice de la persona actual para el modal de nombre
+  const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(
+    null
+  ); // Indice de la persona actual para el modal de nombre
   const navigate = useNavigate();
+  const [orderPlaced, setOrderPlaced] = useState(false); // New state to track if order is placed
 
   const sharedOrderSummaryRef = useRef<HTMLDivElement>(null);
   const personOrderSummaryRef = useRef<HTMLDivElement>(null);
@@ -122,12 +126,20 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
               groupOrderData.participants as Person[]
             )?.every((p) => p.finished);
             setAllFinished(finishedCheck);
+            setOrderPlaced(groupOrderData.orderPlaced || false); // Get orderPlaced status
 
             if (
               groupOrderData.participants &&
               groupOrderData.participants.length !== numPeople
             ) {
               setNumPeople(groupOrderData.participants.length);
+            }
+
+            if (groupOrderData.orderPlaced) {
+              // If order is placed, show summary
+              setShowPedidoForm(true);
+            } else {
+              setShowPedidoForm(false); // Otherwise, ensure PedidoForm is closed
             }
           }
         } else {
@@ -228,6 +240,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   };
 
   const handleAddToSharedOrder = async (item: MenuItemType) => {
+    if (showPedidoForm || orderPlaced) return; // Prevent adding if PedidoForm is open or order is placed
     if (item.availabilityStatus !== "disponible") {
       return;
     }
@@ -258,6 +271,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     itemId: string,
     quantity: number
   ) => {
+    if (showPedidoForm || orderPlaced) return; // Prevent quantity change if PedidoForm is open or order is placed
     if (quantity < 0) return;
     const updatedSharedOrderItems = sharedOrderItems.map((sharedItem) =>
       sharedItem.itemId === itemId ? { ...sharedItem, quantity } : sharedItem
@@ -272,6 +286,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   };
 
   const handleRemoveSharedOrderItem = async (itemId: string) => {
+    if (showPedidoForm || orderPlaced) return; // Prevent removal if PedidoForm is open or order is placed
     const updatedSharedOrderItems = sharedOrderItems.filter(
       (item) => item.itemId !== itemId
     );
@@ -351,19 +366,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     personIndex: number,
     menuItemToAdd: MenuItemType // More descriptive parameter name
   ) => {
-    console.log(
-      "GroupOrderPage - handleAddItemToPerson CALLED",
-      personIndex,
-      menuItemToAdd
-    ); // Log: function call
-    console.log(
-      "GroupOrderPage - handleAddItemToPerson - Item:",
-      menuItemToAdd
-    ); // Log: item details
-    console.log(
-      "GroupOrderPage - handleAddItemToPerson - Typeof menuItemToAdd:",
-      typeof menuItemToAdd
-    ); // Log: type of menuItemToAdd
+    if (showPedidoForm || orderPlaced) return; // Prevent adding items if PedidoForm is open or order is placed
 
     if (
       !menuItemToAdd ||
@@ -387,9 +390,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           (orderItem) => orderItem.id === menuItemToAdd.id
         );
         if (itemExists) {
-          console.log(
-            "GroupOrderPage - handleAddItemToPerson - Item exists, updating quantity"
-          ); // Log: item exists
           return {
             ...p,
             items: p.items.map((orderItem) =>
@@ -399,9 +399,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
             ),
           };
         } else {
-          console.log(
-            "GroupOrderPage - handleAddItemToPerson - Item does not exist, adding new item"
-          ); // Log: new item
           return {
             ...p,
             items: [...p.items, { id: menuItemToAdd.id, quantity: 1 }],
@@ -411,15 +408,8 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
       return p;
     });
     setPeople(updatedParticipants);
-    console.log(
-      "GroupOrderPage - handleAddItemToPerson - Updated Participants:",
-      updatedParticipants
-    ); // Log: updated state
 
     if (groupOrderId) {
-      console.log(
-        "GroupOrderPage - handleAddItemToPerson - Updating Firestore..."
-      ); // Log: Firestore update start
       try {
         const groupOrderDocRef = doc(
           db,
@@ -429,19 +419,12 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         await updateDoc(groupOrderDocRef, {
           participants: updatedParticipants,
         });
-        console.log(
-          "GroupOrderPage - handleAddItemToPerson - Firestore update SUCCESS"
-        ); // Log: Firestore update success
       } catch (error) {
         console.error(
           "GroupOrderPage - handleAddItemToPerson - Firestore update FAILED",
           error
         ); // Log: Firestore update fail
       }
-    } else {
-      console.log(
-        "GroupOrderPage - handleAddItemToPerson - No groupOrderId, Firestore update skipped"
-      ); // Log: Firestore skip
     }
   };
 
@@ -450,6 +433,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     itemId: string,
     quantity: number
   ) => {
+    if (showPedidoForm || orderPlaced) return; // Prevent quantity changes if PedidoForm is open or order is placed
     if (quantity < 0) return;
     const updatedParticipants = people.map((person, index) => {
       if (index === personIndex) {
@@ -474,6 +458,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     personIndex: number,
     itemId: string
   ) => {
+    if (showPedidoForm || orderPlaced) return; // Prevent item removal if PedidoForm is open or order is placed
     const updatedParticipants = people.map((person, index) => {
       if (index === personIndex) {
         return {
@@ -492,6 +477,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   };
 
   const handleClaimPersonTab = async (personIndex: number) => {
+    if (showPedidoForm || orderPlaced) return; // Prevent claiming tab if PedidoForm is open or order is placed
     if (!groupOrderId || !user) return;
 
     const currentPerson = people[personIndex];
@@ -514,7 +500,17 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   };
 
   const handlePersonFinishedOrder = async (personIndex: number) => {
-    if (!groupOrderId) return;
+    if (showPedidoForm || orderPlaced) return; // Prevent finishing order if PedidoForm is open or order is placed
+
+    if (!groupOrderId || !user) return; // Ensure groupOrderId and user are valid
+
+    const currentUserPersonIndex = people.findIndex(
+      (p) => p.userId === user.uid
+    );
+    if (currentUserPersonIndex !== personIndex) {
+      alert("No puedes terminar el pedido de otra persona."); // Or handle appropriately, maybe do nothing
+      return;
+    }
 
     const updatedParticipants = people.map((person, index) => {
       if (index === personIndex) {
@@ -539,7 +535,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   };
 
   const handleNameSubmit = async (name: string) => {
-    console.log("GroupOrderPage - handleNameSubmit - Name received:", name); // Debug log
+    if (showPedidoForm || orderPlaced) return; // Prevent name submission if PedidoForm is open or order is placed
     if (currentPersonIndex !== null && groupOrderId) {
       const updatedParticipants = people.map((person, index) =>
         index === currentPersonIndex
@@ -552,6 +548,13 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
       setShowNameModal(false);
       setCurrentPersonIndex(null);
     }
+  };
+
+  const handleOrderPlacement = async () => {
+    if (!groupOrderId) return;
+    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+    await updateDoc(groupOrderDocRef, { orderPlaced: true }); // Set orderPlaced to true in Firestore
+    setShowPedidoForm(true); // Show OrderReview for everyone in realtime
   };
 
   return (
@@ -643,6 +646,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
               sharedOrderSummaryRef={sharedOrderSummaryRef}
               activeTab={activeTab}
               menu={menu}
+              disabled={showPedidoForm || orderPlaced}
             />
           )}
 
@@ -672,18 +676,24 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                   personLocked={person.locked || false} // Pass locked status
                   isCurrentUserTab={person.userId === user?.uid} // Check if is current user's tab
                   personIndex={index} // Pass personIndex as prop
+                  disabled={showPedidoForm || orderPlaced}
                 />
               )
           )}
 
           <div className="flex justify-center mt-8">
-            {isOwner && allFinished ? (
+            {isOwner && allFinished && !orderPlaced ? ( // Conditionally render button based on orderPlaced state
               <button
                 className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl focus:outline-none focus:shadow-outline disabled:opacity-50 transition-colors duration-300 animate-pulse hover:animate-none"
                 onClick={handleReviewOrder}
+                disabled={showPedidoForm || orderPlaced}
               >
                 ¡Revisar Pedido Grupal! ✅
               </button>
+            ) : isOwner && orderPlaced ? (
+              <p className="text-center text-green-600 font-semibold">
+                Pedido realizado. Revisando resumen...
+              </p>
             ) : !isOwner ? (
               <p className="text-center text-gray-600">
                 Espera a que el dueño del pedido revise y confirme.
@@ -704,6 +714,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           calculateSharedSubtotal={calculateSharedSubtotal}
           calculateSubtotal={calculateSubtotal}
           isOrderOwner={isOwner} // Pass isOwner prop here
+          onOrderPlaced={handleOrderPlacement} // Callback when order is placed
         />
       )}
 
@@ -723,3 +734,4 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
 };
 
 export default GroupOrderPage;
+/* Fin src\components\menu\GroupOrderPage.tsx */

@@ -1,3 +1,4 @@
+/* Inicio src\components\menu\partials\PersonOrder.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
 import { Person } from "../GroupOrderPage"; // Import the Person interface from GroupOrderPage
@@ -24,6 +25,7 @@ interface PersonOrderProps {
   personLocked: boolean; // Prop to indicate if the tab is locked
   isCurrentUserTab: boolean; // Prop to check if it's the current user's tab
   personIndex: number;
+  disabled?: boolean; // Prop to disable interactions
 }
 
 const PersonOrder: React.FC<PersonOrderProps> = ({
@@ -41,6 +43,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
   personLocked,
   isCurrentUserTab,
   personIndex,
+  disabled = false, // Default to false
 }) => {
   // Function to format price to Colombian Pesos
   const formatPriceCOP = (price: number) => {
@@ -52,7 +55,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
     });
   };
 
-  const isControlEnabled = !personLocked || isCurrentUserTab;
+  const isControlEnabled = (!personLocked || isCurrentUserTab) && !disabled; // Add disabled prop check
 
   return (
     <div key={person.personIndex} className="mb-8" ref={personOrderSummaryRef}>
@@ -145,7 +148,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
             <button
               onClick={() => onPersonFinishedOrder(personIndex)}
               className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              disabled={!isControlEnabled}
+              disabled={!isControlEnabled || isFinished} // Disable if PedidoForm is open or already finished
             >
               He Terminado!
             </button>
@@ -217,3 +220,5 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
 };
 
 export default PersonOrder;
+
+/* Fin src\components\menu\partials\PersonOrder.tsx */
