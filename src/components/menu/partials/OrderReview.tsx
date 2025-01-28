@@ -16,6 +16,7 @@ interface OrderReviewProps {
   ) => number;
   isOrderOwner: boolean; // New prop to indicate if the viewer is the order owner
   onOrderPlaced: () => void; // Add callback for order placement
+  orderPlaced: boolean; // Prop to determine if the order is already placed
 }
 
 const OrderReview: React.FC<OrderReviewProps> = ({
@@ -26,7 +27,8 @@ const OrderReview: React.FC<OrderReviewProps> = ({
   calculateSharedSubtotal,
   calculateSubtotal,
   isOrderOwner,
-  onOrderPlaced, // Destructure the new prop
+  onOrderPlaced,
+  orderPlaced, // Destructure the new prop
 }) => {
   // Calculate total order amount
   const totalOrderAmount =
@@ -193,11 +195,22 @@ const OrderReview: React.FC<OrderReviewProps> = ({
         </div>
       )}
 
-      <PedidoForm
-        onClose={handlePedidoFormClose} // Use the modified close handler
-        people={people}
-        sharedOrderItems={sharedOrderItems}
-      />
+      {!orderPlaced && ( // Conditionally render PedidoForm and button if order is not placed yet
+        <PedidoForm
+          onClose={handlePedidoFormClose} // Use the modified close handler
+          people={people}
+          sharedOrderItems={sharedOrderItems}
+          groupOrderId={undefined} // Pass groupOrderId if available
+        />
+      )}
+      {orderPlaced && (
+        <div className="text-center mt-6">
+          <Typography variant="h6" className="text-green-600">
+            ¡Pedido realizado con éxito!
+          </Typography>
+          {/* Opcional: Mostrar un mensaje adicional o botón para volver al menú */}
+        </div>
+      )}
     </div>
   );
 };

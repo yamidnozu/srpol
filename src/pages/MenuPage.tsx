@@ -1,11 +1,12 @@
+/* Inicio src\pages\MenuPage.tsx */
 /* src\pages\MenuPage.tsx */
 /* src\pages\MenuPage.tsx */
 import { Typography } from "@mui/material";
 import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { v4 as uuidv4 } from "uuid";
-import { GroupOrder, Person } from "../components/menu/GroupOrderPage"; // Importa interfaces
+
+import { Person } from "../components/menu/GroupOrderPage"; // Importa interfaces
 import JoinOrderModal from "../components/menu/JoinOrderModal";
 import PedidoForm from "../components/pedidos/PedidoForm";
 import Button from "../components/ui/Button";
@@ -20,10 +21,19 @@ import { db } from "../utils/firebase";
 const MenuPage: React.FC = () => {
   const { menu } = useMenu();
   const [numPeople, setNumPeople] = useState<number>(1);
-  const [people, setPeople] = useState<Person[]>([]);
+  const [people, setPeople] = useState<Person[]>(() => {
+    // Initialize people here
+    return Array.from({ length: 1 }, (_, index) => ({
+      personIndex: index,
+      userId: null,
+      name: `Persona ${index + 1}`, // Default name for initial render
+      items: [],
+      locked: false,
+      finished: false,
+    }));
+  });
   const [showMenu, setShowMenu] = useState(false);
   const [, setOpenPedidoModal] = useState(false);
-  const [loadingAddSampleData, setLoadingAddSampleData] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isCreatingSharedOrder, setIsCreatingSharedOrder] = useState(false);
   const [isJoiningOrder, setIsJoiningOrder] = useState(false);
@@ -34,26 +44,32 @@ const MenuPage: React.FC = () => {
   const handleNumPeopleChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setNumPeople(Number(event.target.value));
-  };
+    const num = Number(event.target.value);
+    setNumPeople(num);
 
-  const handleNameChange = (index: number, value: string) => {
-    const updatedPeople = [...people];
-    updatedPeople[index].name = value;
-    setPeople(updatedPeople);
-  };
-
-  const handleStartOrder = async () => {
-    setIsCreatingSharedOrder(true);
-    const initialPeople = Array.from({ length: numPeople }, (_, index) => ({
-      personIndex: index, // Añade personIndex aquí
+    // Initialize people array here based on numPeople
+    const initialPeople = Array.from({ length: num }, (_, index) => ({
+      personIndex: index,
       userId: null,
-      name: `Persona ${index + 1}`,
+      name: `Persona ${index + 1}`, // Default name
       items: [],
       locked: false,
       finished: false,
     }));
     setPeople(initialPeople);
+  };
+
+  const handleNameChange = (index: number, value: string) => {
+    const updatedPeople = [...people];
+    if (updatedPeople[index]) {
+      // Check if updatedPeople[index] is defined
+      updatedPeople[index].name = value;
+      setPeople(updatedPeople);
+    }
+  };
+
+  const handleStartOrder = async () => {
+    setIsCreatingSharedOrder(true);
     setShowMenu(true);
 
     const code = generateCode();
@@ -72,9 +88,9 @@ const MenuPage: React.FC = () => {
           status: "open",
           maxPeople: numPeople,
           createdAt: new Date(),
-          participants: initialPeople,
+          participants: people, // Use the 'people' state which is now initialized
           sharedItems: [],
-        } as GroupOrder // Asegura el tipado aquí
+        }
       );
       navigate(`/menu/${groupOrderRef.id}?code=${code}`);
     } catch (error) {
@@ -86,15 +102,16 @@ const MenuPage: React.FC = () => {
   };
 
   const handleAddItemToPerson = (personIndex: number, item: MenuItemType) => {
-    setPeople((prevPeople) =>
-      prevPeople.map((person, index) =>
-        index === personIndex
-          ? {
-              ...person,
-              items: [...person.items, { itemId: item.id, quantity: 1 }], // Usa itemId en lugar de id
-            }
-          : person
-      )
+    setPeople(
+      (prevPeople) =>
+        prevPeople.map((person, index) =>
+          index === personIndex
+            ? {
+                ...person,
+                items: [...person.items, { itemId: item.id, quantity: 1 }], // Usa itemId en lugar de id
+              }
+            : person
+        ) as Person[]
     );
   };
 
@@ -114,7 +131,7 @@ const MenuPage: React.FC = () => {
           ? {
               ...person,
               items: person.items.map((item) =>
-                item.itemId === itemId // Usa itemId para comparar
+                item.id === itemId // Usa itemId para comparar
                   ? { ...item, quantity: quantityNumber }
                   : item
               ),
@@ -130,7 +147,7 @@ const MenuPage: React.FC = () => {
         index === personIndex
           ? {
               ...person,
-              items: person.items.filter((item) => item.itemId !== itemId), // Usa itemId para filtrar
+              items: person.items.filter((item) => item.id !== itemId), // Usa itemId para filtrar
             }
           : person
       )
@@ -143,141 +160,6 @@ const MenuPage: React.FC = () => {
 
   const handleClosePedidoModal = () => {
     setOpenPedidoModal(false);
-  };
-
-  const generateSampleMenuItems = () => {
-    return [
-      {
-        name: "Hamburguesa Clásica",
-        description: "Carne de res, queso cheddar, lechuga, tomate y cebolla.",
-        price: 28000,
-        imageUrl: "https://ejemplo.com/hamburguesa.jpg",
-        available: true,
-        recommendation: "Ideal con papas fritas.",
-        observations: "Se puede pedir sin cebolla.",
-        availabilityStatus: "disponible",
-        id: "sample_item_1", // Añade IDs únicos
-      },
-      {
-        name: "Pizza Margarita",
-        description: "Salsa de tomate, mozzarella fresca y albahaca.",
-        price: 35000,
-        imageUrl: "https://ejemplo.com/pizza.jpg",
-        available: true,
-        recommendation: "Perfecta para compartir.",
-        observations: "Opción vegana disponible con queso de almendras.",
-        availabilityStatus: "disponible",
-        id: "sample_item_2",
-      },
-      {
-        name: "Ensalada César",
-        description: "Lechuga romana, crutones, parmesano y aderezo César.",
-        price: 22000,
-        imageUrl: "https://ejemplo.com/ensalada.jpg",
-        available: true,
-        recommendation: "Ligera y refrescante.",
-        observations: "Se puede añadir pollo a la parrilla.",
-        availabilityStatus: "disponible",
-        id: "sample_item_3",
-      },
-      {
-        name: "Pasta Carbonara",
-        description:
-          "Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.",
-        price: 32000,
-        imageUrl: "https://ejemplo.com/pasta_carbonara.jpg",
-        available: true,
-        recommendation: "Un clásico italiano.",
-        observations: "Sin gluten disponible con pasta de arroz.",
-        availabilityStatus: "disponible",
-        id: "sample_item_4",
-      },
-      {
-        name: "Tacos al Pastor",
-        description: "Carne de cerdo adobada, piña, cebolla y cilantro.",
-        price: 30000,
-        imageUrl: "https://ejemplo.com/tacos_pastor.jpg",
-        available: true,
-        recommendation: "Sabor auténtico mexicano.",
-        observations: "Picante medio.",
-        availabilityStatus: "disponible",
-        id: "sample_item_5",
-      },
-      {
-        name: "Sushi Variado (12 piezas)",
-        description: "Selección de nigiris y makis variados.",
-        price: 50000,
-        imageUrl: "https://ejemplo.com/sushi.jpg",
-        available: true,
-        recommendation: "Para amantes del sushi.",
-        observations: "Incluye salsa de soya, wasabi y jengibre.",
-        availabilityStatus: "disponible",
-        id: "sample_item_6",
-      },
-      {
-        name: "Pollo Frito",
-        description: "Crujientes piezas de pollo frito, receta secreta.",
-        price: 15000,
-        imageUrl: "https://ejemplo.com/pollo_frito.jpg",
-        available: true,
-        recommendation: "Ideal para niños y adultos.",
-        observations: "Opción extra crujiente disponible.",
-        availabilityStatus: "disponible",
-        id: "sample_item_7",
-      },
-      {
-        name: "Sopa de Tomate",
-        description: "Sopa cremosa de tomate, hecha en casa.",
-        price: 18000,
-        imageUrl: "https://ejemplo.com/sopa_tomate.jpg",
-        available: true,
-        recommendation: "Caliente y reconfortante.",
-        observations: "Servida con pan tostado.",
-        availabilityStatus: "disponible",
-        id: "sample_item_8",
-      },
-      {
-        name: "Brownie con Helado",
-        description: "Brownie de chocolate caliente con helado de vainilla.",
-        price: 20000,
-        imageUrl: "https://ejemplo.com/brownie_helado.jpg",
-        available: true,
-        recommendation: "Postre perfecto.",
-        observations: "Se puede pedir sin nueces.",
-        availabilityStatus: "disponible",
-        id: "sample_item_9",
-      },
-      {
-        name: "Jugo de Naranja Natural",
-        description: "Jugo de naranja recién exprimido.",
-        price: 8000,
-        imageUrl: "https://ejemplo.com/jugo_naranja.jpg",
-        available: true,
-        recommendation: "Bebida refrescante.",
-        observations: "Sin azúcar añadida.",
-        availabilityStatus: "disponible",
-        id: "sample_item_10",
-      },
-    ];
-  };
-
-  const handleAddSampleData = async () => {
-    setLoadingAddSampleData(true);
-    setMessage("Agregando datos de ejemplo...");
-    try {
-      const sampleMenuItems = generateSampleMenuItems();
-      const menuCollectionRef = collection(db, COLLECTIONS.MENU);
-      for (const item of sampleMenuItems) {
-        await addDoc(menuCollectionRef, item);
-      }
-      setMessage("Datos de ejemplo agregados exitosamente!");
-    } catch (error) {
-      console.error("Error al agregar datos de ejemplo:", error);
-      setMessage("Error al agregar datos de ejemplo.");
-    } finally {
-      setLoadingAddSampleData(false);
-      setTimeout(() => setMessage(null), 5000);
-    }
   };
 
   const generateCode = () => {
@@ -325,47 +207,53 @@ const MenuPage: React.FC = () => {
 
   return (
     <Container className="my-8">
-      <div className="mb-4 flex justify-between items-center">
+      <div className="text-center mb-8">
         <Typography
           variant="h4"
           component="h1"
-          className="text-3xl font-bold text-gray-900"
+          className="text-3xl font-bold text-gray-900 mb-2"
         >
-          Menú
+          ¡Descubre nuestro Menú y Pide Fácil!
         </Typography>
-        <Button
-          onClick={handleAddSampleData}
-          disabled={loadingAddSampleData}
-          variant="contained"
-          color="success"
-        >
-          {loadingAddSampleData ? "Cargando..." : "Cargar Menú Ejemplo"}
-        </Button>
+        <Typography className="text-gray-600">
+          Crea un pedido compartido con amigos o únete a uno existente.
+        </Typography>
       </div>
 
-      <div className="mb-6 flex space-x-4">
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-lg mx-auto">
         <Button
           variant="contained"
           color="primary"
           onClick={() => setIsCreatingSharedOrder(true)}
+          className="py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300"
         >
-          Crear Pedido Compartido
+          🎉 Crear Pedido Compartido
         </Button>
-        <Button variant="outlined" color="primary" onClick={handleJoinOrder}>
-          Unirme a Pedido Existente
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={handleJoinOrder}
+          className="py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300"
+        >
+          🤝 Unirme a Pedido Existente
         </Button>
       </div>
 
-      {message && <div className="mb-4 text-red-500">{message}</div>}
+      {message && (
+        <div className="mb-4 text-center text-red-500">{message}</div>
+      )}
 
       {isCreatingSharedOrder && !showMenu && (
-        <div className="grid gap-4 mb-4 md:grid-cols-2">
+        <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg bg-white animate-slide-down overflow-hidden">
+          <Typography variant="h6" className="text-gray-800 mb-4 text-center">
+            Configura tu Pedido Compartido
+          </Typography>
           <div className="mb-4">
             <label
               htmlFor="numPeople"
               className="block text-gray-700 text-sm font-bold mb-2"
             >
-              Número de personas:
+              ¿Cuántas personas?
             </label>
             <TextField
               type="number"
@@ -393,86 +281,95 @@ const MenuPage: React.FC = () => {
               />
             </div>
           ))}
-          <div>
+          <div className="mt-6 text-center">
             <Button
               variant="contained"
               color="primary"
               onClick={handleStartOrder}
+              className="py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300"
             >
-              Empezar Pedido Compartido
+              Comenzar a Pedir
             </Button>
           </div>
         </div>
       )}
 
       {showMenu && (
-        <>
-          <div className="grid gap-6 md:grid-cols-3">
+        <div className="mt-10">
+          <Typography
+            variant="h5"
+            className="font-bold text-gray-900 mb-6 text-center"
+          >
+            Nuestro Menú para Hoy
+          </Typography>
+          <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {people.map((person, personIndex) => (
               <div
                 key={person.personIndex} // Usa personIndex como key
-                className="p-4 border rounded-lg shadow-md"
+                className="p-6 border rounded-xl shadow-md bg-white hover:shadow-lg transition-shadow duration-300"
               >
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
                   {person.name || `Persona ${personIndex + 1}`}
                 </h2>
-                <p className="text-gray-700 mb-2">Items:</p>
-                {person.items.length > 0 ? (
-                  <ul className="list-none pl-0 mb-4">
-                    {person.items.map((item) => {
+                <p className="text-gray-700 mb-3">
+                  Selecciona tus items del menú:
+                </p>
+                <ul className="mb-4 space-y-3">
+                  {person.items.length > 0 ? (
+                    person.items.map((item) => {
                       const menuItem = menu.find(
-                        (menuItem) => menuItem.id === item.itemId // Usa itemId para buscar
+                        (menuItem) => menuItem.id === item.id // Usa itemId para buscar
                       );
                       return menuItem ? (
-                        <li key={item.itemId} className="mb-2">
-                          <div className="flex items-center justify-between">
-                            <p className="text-gray-700">{menuItem.name} x </p>
-                            <div className="flex items-center space-x-2">
-                              <TextField
-                                type="number"
-                                value={item.quantity}
-                                onChange={(e) =>
-                                  handlePersonOrderItemQuantityChange(
-                                    personIndex,
-                                    item.itemId,
-                                    e.target.value
-                                  )
-                                }
-                                min="1"
-                                className="shadow appearance-none border rounded w-16 py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-center"
-                              />
-                              <Button
-                                variant="contained"
-                                color="error"
-                                onClick={() =>
-                                  handleRemoveItemFromPerson(
-                                    personIndex,
-                                    item.itemId
-                                  )
-                                }
-                                sx={{ py: 1, px: 2, fontSize: "0.8rem" }}
-                              >
-                                Eliminar
-                              </Button>
-                            </div>
+                        <li
+                          key={item.id}
+                          className="py-2 px-4 rounded-md bg-gray-100 flex items-center justify-between"
+                        >
+                          <Typography className="text-gray-800">
+                            {menuItem.name} x {item.quantity}
+                          </Typography>
+                          <div className="flex items-center space-x-2">
+                            <TextField
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) =>
+                                handlePersonOrderItemQuantityChange(
+                                  personIndex,
+                                  item.id,
+                                  e.target.value
+                                )
+                              }
+                              min="1"
+                              className="shadow appearance-none border rounded w-16 py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-center"
+                            />
+                            <Button
+                              variant="contained"
+                              color="error"
+                              onClick={() =>
+                                handleRemoveItemFromPerson(personIndex, item.id)
+                              }
+                              className="py-1 px-3 text-sm rounded-md"
+                            >
+                              Eliminar
+                            </Button>
                           </div>
                         </li>
                       ) : null;
-                    })}
-                  </ul>
-                ) : (
-                  <p className="text-gray-500 mb-4">
-                    Esta persona aún no tiene items.
-                  </p>
-                )}
-                <p className="text-gray-700 font-semibold mb-2">Menú:</p>
-                <div className="grid gap-2 md:grid-cols-2">
+                    })
+                  ) : (
+                    <Typography className="text-gray-500">
+                      Aún no has seleccionado items.
+                    </Typography>
+                  )}
+                </ul>
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                   {menu.map((item) => (
                     <Button
                       key={item.id}
-                      variant="contained"
+                      variant="outlined"
                       color="primary"
                       onClick={() => handleAddItemToPerson(personIndex, item)}
+                      className="py-2 px-4 rounded-md transition-colors duration-300 border-blue-500 text-blue-500 hover:bg-blue-50"
                     >
                       {item.name} - {formatPriceCOP(item.price)}
                     </Button>
@@ -481,17 +378,18 @@ const MenuPage: React.FC = () => {
               </div>
             ))}
           </div>
-          <div className="mt-6">
+          <div className="mt-12 text-center">
             <Button
               variant="contained"
               color="success"
               onClick={handleOpenPedidoModal}
+              className="py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-xl"
             >
-              Realizar Pedido
+              ¡Realizar Pedido Grupal!
             </Button>
           </div>
           <PedidoForm onClose={handleClosePedidoModal} people={people} />
-        </>
+        </div>
       )}
 
       <JoinOrderModal
@@ -504,3 +402,4 @@ const MenuPage: React.FC = () => {
 };
 
 export default MenuPage;
+/* Fin src\pages\MenuPage.tsx */

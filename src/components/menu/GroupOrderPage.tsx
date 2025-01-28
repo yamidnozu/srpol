@@ -104,17 +104,12 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const subscribeToGroupOrder = (groupId: string) => {
     if (!groupId) return; // Avoid subscribing with empty groupId
     const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupId);
-    console.log(
-      "GroupOrderPage - Subscribing to group order with ID:",
-      groupId
-    );
 
     return onSnapshot(
       groupOrderDocRef,
       (docSnapshot) => {
         if (docSnapshot.exists()) {
           const groupOrderData = docSnapshot.data();
-          console.log("GroupOrderPage - Snapshot data:", groupOrderData);
           if (groupOrderData) {
             setGroupOrderCode(groupOrderData.code as string);
             setPeople(groupOrderData.participants as Person[]);
@@ -143,21 +138,11 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
             }
           }
         } else {
-          console.log(
-            "GroupOrderPage - No existe el documento del pedido grupal!"
-          );
-          // Si el documento no existe, podría ser un código inválido o pedido cancelado.
-          // Redirigir al usuario a una página de error o a la página principal del menú.
-          navigate("/menu"); // Redirige a la página del menú. Considera una página de error.
+          navigate("/menu");
         }
       },
-      (error) => {
-        console.error(
-          "GroupOrderPage - Error al suscribirse al pedido grupal:",
-          error
-        );
-        // Similar al caso de documento no encontrado, redirigir en caso de error de suscripción.
-        navigate("/menu"); // Redirige a la página del menú en caso de error.
+      () => {
+        navigate("/menu");
       }
     );
   };
@@ -501,14 +486,13 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
 
   const handlePersonFinishedOrder = async (personIndex: number) => {
     if (showPedidoForm || orderPlaced) return; // Prevent finishing order if PedidoForm is open or order is placed
-
-    if (!groupOrderId || !user) return; // Ensure groupOrderId and user are valid
+    if (!groupOrderId || !user) return;
 
     const currentUserPersonIndex = people.findIndex(
       (p) => p.userId === user.uid
     );
     if (currentUserPersonIndex !== personIndex) {
-      alert("No puedes terminar el pedido de otra persona."); // Or handle appropriately, maybe do nothing
+      alert("No puedes terminar el pedido de otra persona.");
       return;
     }
 
@@ -715,6 +699,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           calculateSubtotal={calculateSubtotal}
           isOrderOwner={isOwner} // Pass isOwner prop here
           onOrderPlaced={handleOrderPlacement} // Callback when order is placed
+          orderPlaced={orderPlaced} // Pass orderPlaced state to OrderReview
         />
       )}
 

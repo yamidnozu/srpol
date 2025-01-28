@@ -1,3 +1,4 @@
+/* Inicio src\components\menu\MenuModal.tsx */
 /* src\components\menu\MenuModal.tsx */
 
 import React, { useState } from "react";
@@ -48,7 +49,7 @@ const MenuModal: React.FC<MenuModalProps> = ({
               className="text-lg font-semibold text-gray-900"
               id="modal-headline"
             >
-              Ingresa tu Nombre
+              Ingresa tu Nombre (Opcional)
             </h3>
           </div>
           <div className="p-6">
@@ -66,7 +67,6 @@ const MenuModal: React.FC<MenuModalProps> = ({
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  required
                   className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
@@ -94,3 +94,5 @@ const MenuModal: React.FC<MenuModalProps> = ({
 };
 
 export default MenuModal;
+
+/* Fin src\components\menu\MenuModal.tsx */
