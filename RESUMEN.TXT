@@ -1,10 +1,11 @@
 
 /* Directorio:  */
-├── eslint.config.js [30]
-├── firebase.json [1]
+├── .prettierrc.json [9]
+├── eslint.config.js [16]
+├── firebase.json [13]
 ├── index.html [17]
-├── package.json [51]
-├── postcss.config.js [9]
+├── package.json [57]
+├── postcss.config.js [7]
 ├── README.md [51]
 ├── 📂 src
 │   ├── App.tsx [162]
@@ -14,29 +15,30 @@
 │   │   │   └── RegisterForm.tsx [83]
 │   │   ├── 📂 forms
 │   │   │   ├── MenuForm.tsx [222]
-│   │   │   └── PedidoForm.tsx [229]
+│   │   │   └── PedidoForm.tsx [228]
 │   │   ├── 📂 layout
 │   │   │   ├── MainLayout.tsx [37]
 │   │   │   ├── Navbar.tsx [59]
 │   │   │   ├── PublicLayout.tsx [19]
 │   │   │   └── Sidebar.tsx [120]
 │   │   ├── 📂 menu
-│   │   │   ├── GroupOrderPage.tsx [725]
+│   │   │   ├── GroupOrderPage.tsx [668]
 │   │   │   ├── JoinOrderModal.tsx [57]
 │   │   │   ├── MenuForm.tsx [223]
 │   │   │   ├── MenuItem.tsx [95]
 │   │   │   ├── MenuList.tsx [29]
-│   │   │   ├── MenuModal.tsx [97]
+│   │   │   ├── MenuModal.tsx [62]
+│   │   │   ├── NameModal.tsx [81]
 │   │   │   ├── 📂 partials
-│   │   │   │   ├── OrderReview.tsx [204]
+│   │   │   │   ├── OrderReview.tsx [199]
 │   │   │   │   ├── PeopleSelection.tsx [63]
-│   │   │   │   ├── PersonOrder.tsx [220]
-│   │   │   │   └── SharedOrder.tsx [165]
-│   │   │   └── PersonMenuModal.tsx [223]
+│   │   │   │   ├── PersonOrder.tsx [225]
+│   │   │   │   └── SharedOrder.tsx [174]
+│   │   │   └── PersonMenuModal.tsx [201]
 │   │   ├── 📂 payment
 │   │   │   └── PaymentForm.tsx [80]
 │   │   ├── 📂 pedidos
-│   │   │   ├── PedidoForm.tsx [232]
+│   │   │   ├── PedidoForm.tsx [228]
 │   │   │   ├── PedidoItem.tsx [9]
 │   │   │   └── PedidoList.tsx [395]
 │   │   └── 📂 ui
@@ -54,10 +56,10 @@
 │   ├── main.tsx [10]
 │   ├── 📂 pages
 │   │   ├── Dashboard.tsx [754]
-│   │   ├── GestionMenu.tsx [392]
+│   │   ├── GestionMenu.tsx [359]
 │   │   ├── GestionUsuarios.tsx [82]
 │   │   ├── Login.tsx [56]
-│   │   ├── MenuPage.tsx [507]
+│   │   ├── MenuPage.tsx [406]
 │   │   ├── PedidosPage.tsx [18]
 │   │   ├── Perfil.tsx [97]
 │   │   └── Success.tsx [41]
@@ -66,61 +68,71 @@
 │   ├── 📂 styles
 │   │   └── global.css [66]
 │   ├── 📂 types
-│   │   ├── css.d.ts [1]
-│   │   └── global.d.ts [20]
+│   │   ├── css.d.ts [2]
+│   │   └── global.d.ts [22]
 │   └── 📂 utils
 │       ├── constants.ts [6]
 │       ├── firebase.ts [16]
 │       └── theme.ts [43]
-├── tailwind.config.js [11]
-├── tsconfig.app.json [31]
-├── tsconfig.json [20]
+├── tailwind.config.js [9]
+├── tsconfig.app.json [26]
+├── tsconfig.json [32]
 ├── tsconfig.node.json [25]
 └── vite.config.ts [38]
 
 
-Total de líneas resumidas: 6812
+Total de líneas resumidas: 6668
 
+
+/* Inicio .prettierrc.json */
+{
+  "semi": false,
+  "trailingComma": "all",
+  "singleQuote": true,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false
+}
+
+/* Fin .prettierrc.json */
 
 /* Inicio eslint.config.js */
-
-import js from '@eslint/js'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import globals from 'globals'
-import tseslint from 'typescript-eslint'
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ['dist'] },
   {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ['**/*.{ts,tsx}'],
+    files: ["**/*.{ts,tsx}"], // Asegúrate de incluir esto para que se aplique a archivos TS/TSX
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-    },
-    plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-    },
-    rules: {
-      ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      parserOptions: {
+        project: ['./tsconfig.json'], //  <- Ruta a tu tsconfig.json
+        tsconfigRootDir: import.meta.dirname, // <-  Directorio raíz para tsconfig.json
+      },
     },
   },
-)
-
+  js.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+);
 /* Fin eslint.config.js */
 
 /* Inicio firebase.json */
+{
+  "hosting": {
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
 
 /* Fin firebase.json */
 
 /* Inicio index.html */
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -149,7 +161,8 @@ export default tseslint.config(
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "npx eslint . --fix && npx prettier . --write"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -176,13 +189,19 @@ export default tseslint.config(
     "@eslint/js": "^9.17.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
+    "@typescript-eslint/eslint-plugin": "^8.22.0",
+    "@typescript-eslint/parser": "^8.22.0",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.17",
-    "eslint": "^9.17.0",
-    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint": "^9.19.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^15.14.0",
     "postcss": "^8.4.35",
+    "prettier": "^3.4.2",
     "tailwindcss": "^3.4.1",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.18.2",
@@ -190,19 +209,16 @@ export default tseslint.config(
     "vite-plugin-pwa": "^0.21.1"
   }
 }
-
 /* Fin package.json */
 
 /* Inicio postcss.config.js */
-import autoprefixer from 'autoprefixer';
-import tailwindcss from 'tailwindcss';
+import autoprefixer from 'autoprefixer'
+import tailwindcss from 'tailwindcss'
 
 export default {
-  plugins: [
-    tailwindcss('./tailwind.config.js'),
-    autoprefixer,
-  ],
-};
+  plugins: [tailwindcss('./tailwind.config.js'), autoprefixer],
+}
+
 /* Fin postcss.config.js */
 
 /* Inicio README.md */
@@ -822,106 +838,116 @@ export default MenuForm;
 /* Fin src\components\forms\MenuForm.tsx */
 
 /* Inicio src\components\forms\PedidoForm.tsx */
-/* src\components\forms\PedidoForm.tsx */
 // src/components/pedidos/PedidoForm.tsx
-/* Directorio: src\components\forms\PedidoForm.tsx */
-// src/components/forms/PedidoForm.tsx
-import { Timestamp, addDoc, collection } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { useAuth } from "../../hooks/useAuth";
-import { useMenu } from "../../hooks/useMenu";
-import { db } from "../../utils/firebase";
-import { Person } from "../menu/GroupOrderPage";
-interface PedidoFormProps {
-  onClose: () => void;
-  people?: Person[];
-  sharedOrderItems?: {
-    itemId: string;
-    quantity: number;
-    personIds: string[];
-  }[];
+import { Timestamp, addDoc, collection } from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
+import { useAuth } from '../../hooks/useAuth'
+import { useMenu } from '../../hooks/useMenu'
+import { db } from '../../utils/firebase'
+
+/** Mismo tipo que uses en GroupOrderPage */
+interface Person {
+  personIndex: number
+  userId: string | null
+  name: string
+  items: { id: string; quantity: number }[]
+  locked?: boolean
+  finished?: boolean
 }
 
-const PedidoForm: React.FC<PedidoFormProps> = ({
-  onClose,
-  people,
-  sharedOrderItems,
-}) => {
-  const { menu } = useMenu();
-  const { user, addPoints } = useAuth();
+interface SharedOrderItem {
+  itemId: string
+  quantity: number
+  personIds: string[]
+}
 
+interface PedidoFormProps {
+  onClose: () => void
+  people?: Person[] // Aquí usamos la interface Person
+  sharedOrderItems?: SharedOrderItem[]
+}
+
+const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderItems }) => {
+  const { menu } = useMenu()
+  const { user, addPoints } = useAuth()
   const [items, setItems] = useState<
-    { id: string; quantity: number; assignedTo: string }[]
-  >([]);
-  const [peopleOrder, setPeopleOrder] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [sede, setSede] = useState("");
-  const [deliveryFee, setDeliveryFee] = useState(0);
-  const [deliveryIncluded, setDeliveryIncluded] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState("contraentrega");
+    {
+      id: string
+      quantity: number
+      assignedTo: string
+    }[]
+  >([])
+
+  const [peopleOrder, setPeopleOrder] = useState<{ userId: string | null; name: string }[]>([])
+  const [sede, setSede] = useState('')
+  const [deliveryFee, setDeliveryFee] = useState(0)
+  const [deliveryIncluded, setDeliveryIncluded] = useState(true)
+  const [paymentMethod, setPaymentMethod] = useState('contraentrega')
 
   useEffect(() => {
+    // Convertimos people en un estado con 'peopleOrder'
     if (people) {
-      setPeopleOrder(
-        people.map((person) => ({ id: person.userId, name: person.name }))
-      );
-      // Flatten person items and assign person name
+      const mapped = people.map((p) => ({
+        userId: p.userId,
+        name: p.name,
+      }))
+      setPeopleOrder(mapped)
+
+      // Flatten person items
       const personItems = people.flatMap((person) =>
         person.items.map((item) => ({
           id: item.id,
           quantity: item.quantity,
           assignedTo: person.name,
-        }))
-      );
-      setItems(personItems);
+        })),
+      )
+      setItems(personItems)
     }
-  }, [people]);
+  }, [people])
 
   useEffect(() => {
     if (sharedOrderItems) {
-      // Flatten shared items and assign 'Compartido' as assignedTo
+      // Flatten shared items -> assignedTo: 'Compartido'
       const sharedItemsForDisplay = sharedOrderItems.flatMap((sharedItem) =>
         Array(sharedItem.quantity)
           .fill(null)
           .map(() => ({
             id: sharedItem.itemId,
             quantity: 1,
-            assignedTo: "Compartido",
-          }))
-      );
-      setItems((prevItems) => [...prevItems, ...sharedItemsForDisplay]);
+            assignedTo: 'Compartido',
+          })),
+      )
+      setItems((prev) => [...prev, ...sharedItemsForDisplay])
     }
-  }, [sharedOrderItems]);
+  }, [sharedOrderItems])
 
-  // Simulación de sedes disponibles (puedes obtenerlas de Firestore)
-  const sedesDisponibles = ["Sede Norte", "Sede Sur", "Sede Centro"];
-
+  // Simulación sedes
+  const sedesDisponibles = ['Sede Norte', 'Sede Sur', 'Sede Centro']
   useEffect(() => {
     if (sedesDisponibles.length === 1) {
-      setSede(sedesDisponibles[0]);
+      setSede(sedesDisponibles[0])
     }
-  }, [sedesDisponibles]);
+  }, [sedesDisponibles])
 
   const calculateTotal = () => {
-    let total = 0;
+    let total = 0
     items.forEach((item) => {
-      const menuItem = menu.find((m) => m.id === item.id);
+      const menuItem = menu.find((m) => m.id === item.id)
       if (menuItem) {
-        total += menuItem.price * item.quantity;
+        total += menuItem.price * item.quantity
       }
-    });
-    return total + deliveryFee;
-  };
+    })
+    return total + deliveryFee
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!user) return;
+    event.preventDefault()
+    if (!user) return
 
     try {
-      const total = calculateTotal();
-      const orderId = uuidv4();
+      const total = calculateTotal()
+      const orderId = uuidv4()
       const orderData = {
         userId: user.uid,
         items: items.map((item) => ({
@@ -930,44 +956,41 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
           assignedTo: item.assignedTo,
         })),
         people: peopleOrder,
-        sede: sede,
-        status: "pendiente",
-        total: total,
-        deliveryFee: deliveryFee,
-        deliveryIncluded: deliveryIncluded,
-        paymentMethod: paymentMethod,
+        sede,
+        status: 'pendiente',
+        total,
+        deliveryFee,
+        deliveryIncluded,
+        paymentMethod,
         orderDate: Timestamp.now(),
-        orderId: orderId,
+        orderId,
         sharedItems: sharedOrderItems
           ? sharedOrderItems.map((si) => ({
               itemId: si.itemId,
-              quantity: si.quantity, // Quantity here represents how many of shared items are in total
+              quantity: si.quantity,
               personIds: si.personIds,
             }))
           : [],
-      };
+      }
 
-      await addDoc(collection(db, "pedidos"), orderData);
-      handlePaymentSuccess();
+      await addDoc(collection(db, 'pedidos'), orderData)
+      void handlePaymentSuccess()
     } catch (error) {
-      console.error("Error al agregar el pedido:", error);
+      console.error('Error al agregar el pedido:', error)
     }
-  };
+  }
 
   const handlePaymentSuccess = async () => {
-    await addPoints();
-    alert("Pedido realizado con éxito y puntos sumados.");
-    onClose();
-  };
+    await addPoints()
+    alert('Pedido realizado con éxito y puntos sumados.')
+    onClose()
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={void handleSubmit} className="space-y-6">
       <h2 className="text-xl font-bold text-gray-900">Realizar Pedido</h2>
       <div>
-        <label
-          htmlFor="sede"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="sede" className="block text-sm font-medium text-gray-700">
           Sede
         </label>
         <select
@@ -985,10 +1008,7 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
         </select>
       </div>
       <div>
-        <label
-          htmlFor="deliveryFee"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="deliveryFee" className="block text-sm font-medium text-gray-700">
           Costo de Envío
         </label>
         <input
@@ -1013,19 +1033,13 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
           />
         </div>
         <div className="ml-2 text-sm">
-          <label
-            htmlFor="deliveryIncluded"
-            className="font-medium text-gray-700"
-          >
+          <label htmlFor="deliveryIncluded" className="font-medium text-gray-700">
             ¿El domicilio está incluido?
           </label>
         </div>
       </div>
       <div>
-        <label
-          htmlFor="paymentMethod"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="paymentMethod" className="block text-sm font-medium text-gray-700">
           Método de Pago
         </label>
         <select
@@ -1041,16 +1055,17 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
       <div>
         <button
           type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200" // Added transition
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
         >
           Realizar Pedido
         </button>
       </div>
     </form>
-  );
-};
+  )
+}
 
-export default PedidoForm;
+export default PedidoForm
+
 /* Fin src\components\forms\PedidoForm.tsx */
 
 /* Inicio src\components\layout\MainLayout.tsx */
@@ -1301,561 +1316,497 @@ export default Sidebar;
 /* Fin src\components\layout\Sidebar.tsx */
 
 /* Inicio src\components\menu\GroupOrderPage.tsx */
-import React, { useEffect, useRef, useState } from "react";
-import { MenuItem as MenuItemType } from "../../context/AppContext";
-import { useMenu } from "../../hooks/useMenu";
+/* Inicio src\components\menu\GroupOrderPage.tsx */
+import React, { useEffect, useRef, useState } from 'react'
+import { MenuItem as MenuItemType } from '../../context/AppContext'
+import { useMenu } from '../../hooks/useMenu'
 
-import { doc, onSnapshot, updateDoc } from "firebase/firestore";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import { COLLECTIONS } from "../../utils/constants";
-import { db } from "../../utils/firebase";
-import NameModal from "./MenuModal"; // Renamed import to NameModal to avoid confusion
-import OrderReview from "./partials/OrderReview";
-import PeopleSelection from "./partials/PeopleSelection";
-import PersonOrder from "./partials/PersonOrder";
-import SharedOrder from "./partials/SharedOrder";
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useAuth } from '../../hooks/useAuth'
+import { COLLECTIONS } from '../../utils/constants'
+import { db } from '../../utils/firebase'
+import NameModal from './MenuModal' // Renamed import to NameModal to avoid confusion
+import OrderReview from './partials/OrderReview'
+import PeopleSelection from './partials/PeopleSelection'
+import PersonOrder from './partials/PersonOrder'
+import SharedOrder from './partials/SharedOrder'
 
 // Export the Person interface
 export interface Person {
-  personIndex: number;
-  userId: string | null;
-  name: string;
-  items: { id: string; quantity: number }[];
-  locked?: boolean;
-  finished?: boolean;
+  personIndex: number
+  userId: string | null
+  name: string
+  items: { id: string; quantity: number }[]
+  locked?: boolean
+  finished?: boolean
 }
 
 // Export the SharedOrderItem interface
 export interface SharedOrderItem {
-  itemId: string;
-  quantity: number;
-  personIds: string[];
+  itemId: string
+  quantity: number
+  personIds: string[]
 }
 
 export interface GroupOrderPageProps {
-  name: string;
+  name: string
 }
 
 const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
-  const { menu } = useMenu();
-  const { user } = useAuth();
-  const [numPeople, setNumPeople] = useState<number>(1);
-  const [people, setPeople] = useState<Person[]>([]);
-  const [showPeopleNames, setShowPeopleNames] = useState(false);
-  const [showPedidoForm, setShowPedidoForm] = useState(false);
-  const [sharedOrderItems, setSharedOrderItems] = useState<SharedOrderItem[]>(
-    []
-  );
-  const [activeTab, setActiveTab] = useState<string>("shared");
-  const [feedbackMessage] = useState<string>("");
-  const [groupOrderCode, setGroupOrderCode] = useState<string | null>(null);
-  const [groupOrderId, setGroupOrderId] = useState<string | null>(null);
-  const [isOwner, setIsOwner] = useState(false);
-  const [allFinished, setAllFinished] = useState(false);
-  const [showNameModal, setShowNameModal] = useState(false); // Estado para el modal de nombre
-  const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(null); // Indice de la persona actual para el modal de nombre
-  const navigate = useNavigate();
+  const { menu } = useMenu()
+  const { user } = useAuth()
+  const [numPeople, setNumPeople] = useState<number>(1)
+  const [people, setPeople] = useState<Person[]>([])
+  const [showPeopleNames, setShowPeopleNames] = useState(false)
+  const [showPedidoForm, setShowPedidoForm] = useState(false)
+  const [sharedOrderItems, setSharedOrderItems] = useState<SharedOrderItem[]>([])
+  const [activeTab, setActiveTab] = useState<string>('shared')
+  const [feedbackMessage] = useState<string>('')
+  const [groupOrderCode, setGroupOrderCode] = useState<string | null>(null)
+  const [groupOrderId, setGroupOrderId] = useState<string | null>(null)
+  const [isOwner, setIsOwner] = useState(false)
+  const [allFinished, setAllFinished] = useState(false)
+  const [showNameModal, setShowNameModal] = useState(false) // Estado para el modal de nombre
+  const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(null) // Indice de la persona actual para el modal de nombre
+  const navigate = useNavigate()
+  const [orderPlaced, setOrderPlaced] = useState(false) // New state to track if order is placed
 
-  const sharedOrderSummaryRef = useRef<HTMLDivElement>(null);
-  const personOrderSummaryRef = useRef<HTMLDivElement>(null);
-  const [, setIsMobile] = useState(false);
-  const [, setIsSummaryVisible] = useState(true);
-  const { groupOrderId: routeGroupId } = useParams();
-  const [searchParams] = useSearchParams();
-  const codeFromURL = searchParams.get("code");
-  const joiningWithCode = !!codeFromURL; // Determina si se está uniendo con código
+  const sharedOrderSummaryRef = useRef<HTMLDivElement>(null)
+  const personOrderSummaryRef = useRef<HTMLDivElement>(null)
+  const [, setIsMobile] = useState(false)
+  const [, setIsSummaryVisible] = useState(true)
+  const { groupOrderId: routeGroupId } = useParams()
+  const [searchParams] = useSearchParams()
+  const codeFromURL = searchParams.get('code')
+  const joiningWithCode = !!codeFromURL // Determina si se está uniendo con código
 
-  const filteredMenu = menu.filter(
-    (item) => item.availabilityStatus !== "noDisponibleLargoPlazo"
-  );
+  const filteredMenu = menu.filter((item) => item.availabilityStatus !== 'noDisponibleLargoPlazo')
 
-  const menuCategories = filteredMenu.reduce((categories, item) => {
-    const category = item.recommendation || "General";
-    if (!categories[category]) {
-      categories[category] = [];
-    }
-    categories[category].push(item);
-    return categories;
-  }, {} as { [category: string]: MenuItemType[] });
+  const menuCategories = filteredMenu.reduce(
+    (categories, item) => {
+      const category = item.recommendation || 'General'
+      if (!categories[category]) {
+        categories[category] = []
+      }
+      categories[category].push(item)
+      return categories
+    },
+    {} as { [category: string]: MenuItemType[] },
+  )
 
   useEffect(() => {
     if (routeGroupId) {
-      setGroupOrderId(routeGroupId);
-      setGroupOrderCode(codeFromURL);
-      subscribeToGroupOrder(routeGroupId);
+      setGroupOrderId(routeGroupId)
+      setGroupOrderCode(codeFromURL)
+      subscribeToGroupOrder(routeGroupId)
     } else {
-      console.log(
-        "GroupOrderPage - No routeGroupId, not subscribing to group order."
-      );
+      console.log('GroupOrderPage - No routeGroupId, not subscribing to group order.')
     }
-  }, [routeGroupId, codeFromURL]);
+  }, [routeGroupId, codeFromURL])
 
   useEffect(() => {
-    const checkMobile = () => window.innerWidth < 768;
-    setIsMobile(checkMobile());
-    const handleResize = () => setIsMobile(checkMobile());
-    window.addEventListener("resize", handleResize);
-    setIsSummaryVisible(!checkMobile());
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    const checkMobile = () => window.innerWidth < 768
+    setIsMobile(checkMobile())
+    const handleResize = () => setIsMobile(checkMobile())
+    window.addEventListener('resize', handleResize)
+    setIsSummaryVisible(!checkMobile())
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const subscribeToGroupOrder = (groupId: string) => {
-    if (!groupId) return; // Avoid subscribing with empty groupId
-    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupId);
-    console.log(
-      "GroupOrderPage - Subscribing to group order with ID:",
-      groupId
-    );
+    if (!groupId) return // Avoid subscribing with empty groupId
+    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupId)
 
     return onSnapshot(
       groupOrderDocRef,
       (docSnapshot) => {
         if (docSnapshot.exists()) {
-          const groupOrderData = docSnapshot.data();
-          console.log("GroupOrderPage - Snapshot data:", groupOrderData);
+          const groupOrderData = docSnapshot.data()
           if (groupOrderData) {
-            setGroupOrderCode(groupOrderData.code as string);
-            setPeople(groupOrderData.participants as Person[]);
-            setSharedOrderItems(
-              groupOrderData.sharedItems as SharedOrderItem[]
-            );
-            setIsOwner(user?.uid === groupOrderData.ownerId);
-            const finishedCheck = (
-              groupOrderData.participants as Person[]
-            )?.every((p) => p.finished);
-            setAllFinished(finishedCheck);
+            setGroupOrderCode(groupOrderData.code as string)
+            setPeople(groupOrderData.participants as Person[])
+            setSharedOrderItems(groupOrderData.sharedItems as SharedOrderItem[])
+            setIsOwner(user?.uid === groupOrderData.ownerId)
+            const finishedCheck = (groupOrderData.participants as Person[])?.every(
+              (p) => p.finished,
+            )
+            setAllFinished(finishedCheck)
+            setOrderPlaced((groupOrderData.orderPlaced as boolean) || false) // Get orderPlaced status
 
+            const participantsList = groupOrderData.participants as Array<[]>
             if (
-              groupOrderData.participants &&
-              groupOrderData.participants.length !== numPeople
+              participantsList &&
+              participantsList.length &&
+              participantsList?.length !== numPeople
             ) {
-              setNumPeople(groupOrderData.participants.length);
+              setNumPeople(participantsList.length)
+            }
+
+            if (groupOrderData.orderPlaced) {
+              // If order is placed, show summary
+              setShowPedidoForm(true)
+            } else {
+              setShowPedidoForm(false) // Otherwise, ensure PedidoForm is closed
             }
           }
         } else {
-          console.log(
-            "GroupOrderPage - No existe el documento del pedido grupal!"
-          );
-          // Si el documento no existe, podría ser un código inválido o pedido cancelado.
-          // Redirigir al usuario a una página de error o a la página principal del menú.
-          navigate("/menu"); // Redirige a la página del menú. Considera una página de error.
+          void navigate('/menu')
         }
       },
-      (error) => {
-        console.error(
-          "GroupOrderPage - Error al suscribirse al pedido grupal:",
-          error
-        );
-        // Similar al caso de documento no encontrado, redirigir en caso de error de suscripción.
-        navigate("/menu"); // Redirige a la página del menú en caso de error.
-      }
-    );
-  };
+      () => {
+        void navigate('/menu')
+      },
+    )
+  }
 
-  const handleNumPeopleChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const num = Number(event.target.value);
-    setNumPeople(num);
+  const handleNumPeopleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const num = Number(event.target.value)
+    setNumPeople(num)
 
     setPeople((prevPeople) => {
-      const currentPeopleCount = prevPeople.length;
+      const currentPeopleCount = prevPeople.length
       if (num > currentPeopleCount) {
-        const newPeople = Array.from(
-          { length: num - currentPeopleCount },
-          (_, index) => ({
-            personIndex: currentPeopleCount + index,
-            userId: null,
-            name: `Persona ${currentPeopleCount + index + 1}`,
-            items: [],
-            locked: false,
-            finished: false,
-          })
-        );
-        return [...prevPeople, ...newPeople];
+        const newPeople = Array.from({ length: num - currentPeopleCount }, (_, index) => ({
+          personIndex: currentPeopleCount + index,
+          userId: null,
+          name: `Persona ${currentPeopleCount + index + 1}`,
+          items: [],
+          locked: false,
+          finished: false,
+        }))
+        return [...prevPeople, ...newPeople]
       } else if (num < currentPeopleCount) {
-        return prevPeople.slice(0, num);
+        return prevPeople.slice(0, num)
       } else {
-        return prevPeople;
+        return prevPeople
       }
-    });
-  };
+    })
+  }
 
   const handlePersonNameChange = (index: number, name: string) => {
-    const updatedPeople = [...people];
+    const updatedPeople = [...people]
     if (updatedPeople[index]) {
-      updatedPeople[index].name = name;
-      setPeople(updatedPeople);
+      updatedPeople[index].name = name
+      setPeople(updatedPeople)
     } else {
-      console.error(`Index ${index} out of bounds for people array.`);
+      console.error(`Index ${index} out of bounds for people array.`)
     }
-  };
+  }
 
   const handleStartOrder = () => {
-    if (people.every((person) => person.name.trim() !== "")) {
-      setShowPeopleNames(true);
-      setActiveTab("shared");
+    if (people.every((person) => person.name.trim() !== '')) {
+      setShowPeopleNames(true)
+      setActiveTab('shared')
     } else {
-      alert("Por favor, ingresa el nombre de cada persona.");
+      alert('Por favor, ingresa el nombre de cada persona.')
     }
-  };
+  }
 
   const handleReviewOrder = () => {
-    distributeSharedOrderItems();
-    setShowPedidoForm(true);
-  };
+    distributeSharedOrderItems()
+    setShowPedidoForm(true)
+  }
 
-  const calculateSubtotal = (
-    personItems: { id: string; quantity: number }[]
-  ) => {
-    let total = 0;
+  const calculateSubtotal = (personItems: { id: string; quantity: number }[]) => {
+    let total = 0
     personItems.forEach((item) => {
-      const menuItem = menu.find((m) => m.id === item.id);
+      const menuItem = menu.find((m) => m.id === item.id)
       if (menuItem) {
-        total += menuItem.price * item.quantity;
+        total += menuItem.price * item.quantity
       }
-    });
-    return total;
-  };
+    })
+    return total
+  }
 
   const calculateSharedSubtotal = () => {
-    let total = 0;
+    let total = 0
     sharedOrderItems.forEach((sharedItem) => {
-      const menuItem = menu.find((m) => m.id === sharedItem.itemId);
+      const menuItem = menu.find((m) => m.id === sharedItem.itemId)
       if (menuItem) {
-        total += menuItem.price * sharedItem.quantity;
+        total += menuItem.price * sharedItem.quantity
       }
-    });
-    return total;
-  };
+    })
+    return total
+  }
 
   const handleAddToSharedOrder = async (item: MenuItemType) => {
-    if (item.availabilityStatus !== "disponible") {
-      return;
+    if (showPedidoForm || orderPlaced) return // Prevent adding if PedidoForm is open or order is placed
+    if (item.availabilityStatus !== 'disponible') {
+      return
     }
     const existingItemIndex = sharedOrderItems.findIndex(
-      (sharedItem) => sharedItem.itemId === item.id
-    );
-    let updatedSharedOrderItems;
+      (sharedItem) => sharedItem.itemId === item.id,
+    )
+    let updatedSharedOrderItems: SharedOrderItem[]
     if (existingItemIndex > -1) {
       updatedSharedOrderItems = sharedOrderItems.map((si, index) =>
-        index === existingItemIndex ? { ...si, quantity: si.quantity + 1 } : si
-      );
+        index === existingItemIndex ? { ...si, quantity: si.quantity + 1 } : si,
+      )
     } else {
       updatedSharedOrderItems = [
         ...sharedOrderItems,
         { itemId: item.id, quantity: 1, personIds: [] },
-      ];
+      ]
     }
-    setSharedOrderItems(updatedSharedOrderItems);
+    setSharedOrderItems(updatedSharedOrderItems)
     if (groupOrderId) {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
       await updateDoc(groupOrderDocRef, {
         sharedItems: updatedSharedOrderItems,
-      });
+      })
     }
-  };
+  }
 
-  const handleSharedOrderItemQuantityChange = async (
-    itemId: string,
-    quantity: number
-  ) => {
-    if (quantity < 0) return;
+  const handleSharedOrderItemQuantityChange = async (itemId: string, quantity: number) => {
+    if (showPedidoForm || orderPlaced) return // Prevent quantity change if PedidoForm is open or order is placed
+    if (quantity < 0) return
     const updatedSharedOrderItems = sharedOrderItems.map((sharedItem) =>
-      sharedItem.itemId === itemId ? { ...sharedItem, quantity } : sharedItem
-    );
-    setSharedOrderItems(updatedSharedOrderItems);
+      sharedItem.itemId === itemId ? { ...sharedItem, quantity } : sharedItem,
+    )
+    setSharedOrderItems(updatedSharedOrderItems)
     if (groupOrderId) {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
       await updateDoc(groupOrderDocRef, {
         sharedItems: updatedSharedOrderItems,
-      });
+      })
     }
-  };
+  }
 
   const handleRemoveSharedOrderItem = async (itemId: string) => {
-    const updatedSharedOrderItems = sharedOrderItems.filter(
-      (item) => item.itemId !== itemId
-    );
-    setSharedOrderItems(updatedSharedOrderItems);
+    if (showPedidoForm || orderPlaced) return // Prevent removal if PedidoForm is open or order is placed
+    const updatedSharedOrderItems = sharedOrderItems.filter((item) => item.itemId !== itemId)
+    setSharedOrderItems(updatedSharedOrderItems)
     if (groupOrderId) {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
       await updateDoc(groupOrderDocRef, {
         sharedItems: updatedSharedOrderItems,
-      });
+      })
     }
-  };
+  }
 
   const distributeSharedOrderItems = () => {
-    const itemsToDistribute = [...sharedOrderItems];
+    const itemsToDistribute = [...sharedOrderItems]
     if (!people || people.length === 0) {
-      console.error(
-        "Error: People array is empty when distributing shared items."
-      );
-      return;
+      console.error('Error: People array is empty when distributing shared items.')
+      return
     }
 
     const updatedPeople = people.map((person) => ({
       ...person,
       items: [...person.items],
-    }));
+    }))
 
     itemsToDistribute.forEach((sharedItem) => {
-      const menuItem = menu.find((m) => m.id === sharedItem.itemId);
+      const menuItem = menu.find((m) => m.id === sharedItem.itemId)
       if (menuItem) {
         for (let i = 0; i < sharedItem.quantity; i++) {
           if (updatedPeople.length === 0) {
-            console.error(
-              "Error: updatedPeople array is empty during item distribution."
-            );
-            return;
+            console.error('Error: updatedPeople array is empty during item distribution.')
+            return
           }
-          const personToAssign = updatedPeople.reduce(
-            (bestPerson, currentPerson) => {
-              if (
-                !bestPerson ||
-                !bestPerson.items ||
-                !currentPerson ||
-                !currentPerson.items
-              ) {
-                console.error(
-                  "Error: Undefined person object encountered in reduce function.",
-                  { bestPerson, currentPerson }
-                );
-                return bestPerson;
-              }
+          const personToAssign = updatedPeople.reduce((bestPerson, currentPerson) => {
+            if (!bestPerson || !bestPerson.items || !currentPerson || !currentPerson.items) {
+              console.error('Error: Undefined person object encountered in reduce function.', {
+                bestPerson,
+                currentPerson,
+              })
+              return bestPerson
+            }
 
-              const bestPersonItemsCount = bestPerson.items.reduce(
-                (sum, item) => sum + item.quantity,
-                0
-              );
-              const currentPersonItemsCount = currentPerson.items.reduce(
-                (sum, item) => sum + item.quantity,
-                0
-              );
-              return currentPersonItemsCount < bestPersonItemsCount
-                ? currentPerson
-                : bestPerson;
-            },
-            updatedPeople[0]
-          );
+            const bestPersonItemsCount = bestPerson.items.reduce(
+              (sum, item) => sum + item.quantity,
+              0,
+            )
+            const currentPersonItemsCount = currentPerson.items.reduce(
+              (sum, item) => sum + item.quantity,
+              0,
+            )
+            return currentPersonItemsCount < bestPersonItemsCount ? currentPerson : bestPerson
+          }, updatedPeople[0])
           if (personToAssign && personToAssign.items) {
-            personToAssign.items.push({ id: sharedItem.itemId, quantity: 1 });
+            personToAssign.items.push({ id: sharedItem.itemId, quantity: 1 })
           }
         }
       }
-    });
-    setPeople(updatedPeople);
-    setSharedOrderItems([]);
-  };
+    })
+    setPeople(updatedPeople)
+    setSharedOrderItems([])
+  }
 
   const handleAddItemToPerson = async (
     personIndex: number,
-    menuItemToAdd: MenuItemType // More descriptive parameter name
+    menuItemToAdd: MenuItemType, // More descriptive parameter name
   ) => {
-    console.log(
-      "GroupOrderPage - handleAddItemToPerson CALLED",
-      personIndex,
-      menuItemToAdd
-    ); // Log: function call
-    console.log(
-      "GroupOrderPage - handleAddItemToPerson - Item:",
-      menuItemToAdd
-    ); // Log: item details
-    console.log(
-      "GroupOrderPage - handleAddItemToPerson - Typeof menuItemToAdd:",
-      typeof menuItemToAdd
-    ); // Log: type of menuItemToAdd
+    if (showPedidoForm || orderPlaced) return // Prevent adding items if PedidoForm is open or order is placed
 
-    if (
-      !menuItemToAdd ||
-      typeof menuItemToAdd !== "object" ||
-      !menuItemToAdd.id
-    ) {
+    if (!menuItemToAdd || typeof menuItemToAdd !== 'object' || !menuItemToAdd.id) {
       console.error(
-        "GroupOrderPage - handleAddItemToPerson - Invalid menuItemToAdd object received:",
-        menuItemToAdd
-      );
-      return;
+        'GroupOrderPage - handleAddItemToPerson - Invalid menuItemToAdd object received:',
+        menuItemToAdd,
+      )
+      return
     }
 
-    if (menuItemToAdd.availabilityStatus !== "disponible") {
-      return;
+    if (menuItemToAdd.availabilityStatus !== 'disponible') {
+      return
     }
 
     const updatedParticipants = people.map((p, index) => {
       if (index === personIndex) {
-        const itemExists = p.items.some(
-          (orderItem) => orderItem.id === menuItemToAdd.id
-        );
+        const itemExists = p.items.some((orderItem) => orderItem.id === menuItemToAdd.id)
         if (itemExists) {
-          console.log(
-            "GroupOrderPage - handleAddItemToPerson - Item exists, updating quantity"
-          ); // Log: item exists
           return {
             ...p,
             items: p.items.map((orderItem) =>
               orderItem.id === menuItemToAdd.id
                 ? { ...orderItem, quantity: orderItem.quantity + 1 }
-                : orderItem
+                : orderItem,
             ),
-          };
+          }
         } else {
-          console.log(
-            "GroupOrderPage - handleAddItemToPerson - Item does not exist, adding new item"
-          ); // Log: new item
           return {
             ...p,
             items: [...p.items, { id: menuItemToAdd.id, quantity: 1 }],
-          };
+          }
         }
       }
-      return p;
-    });
-    setPeople(updatedParticipants);
-    console.log(
-      "GroupOrderPage - handleAddItemToPerson - Updated Participants:",
-      updatedParticipants
-    ); // Log: updated state
+      return p
+    })
+    setPeople(updatedParticipants)
 
     if (groupOrderId) {
-      console.log(
-        "GroupOrderPage - handleAddItemToPerson - Updating Firestore..."
-      ); // Log: Firestore update start
       try {
-        const groupOrderDocRef = doc(
-          db,
-          COLLECTIONS.GROUP_ORDERS,
-          groupOrderId
-        );
+        const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
         await updateDoc(groupOrderDocRef, {
           participants: updatedParticipants,
-        });
-        console.log(
-          "GroupOrderPage - handleAddItemToPerson - Firestore update SUCCESS"
-        ); // Log: Firestore update success
+        })
       } catch (error) {
-        console.error(
-          "GroupOrderPage - handleAddItemToPerson - Firestore update FAILED",
-          error
-        ); // Log: Firestore update fail
+        console.error('GroupOrderPage - handleAddItemToPerson - Firestore update FAILED', error) // Log: Firestore update fail
       }
-    } else {
-      console.log(
-        "GroupOrderPage - handleAddItemToPerson - No groupOrderId, Firestore update skipped"
-      ); // Log: Firestore skip
     }
-  };
+  }
 
   const handlePersonOrderItemQuantityChange = async (
     personIndex: number,
     itemId: string,
-    quantity: number
+    quantity: number,
   ) => {
-    if (quantity < 0) return;
+    if (showPedidoForm || orderPlaced) return // Prevent quantity changes if PedidoForm is open or order is placed
+    if (quantity < 0) return
     const updatedParticipants = people.map((person, index) => {
       if (index === personIndex) {
         return {
           ...person,
-          items: person.items.map((it) =>
-            it.id === itemId ? { ...it, quantity } : it
-          ),
-        };
+          items: person.items.map((it) => (it.id === itemId ? { ...it, quantity } : it)),
+        }
       }
-      return person;
-    });
-    setPeople(updatedParticipants);
+      return person
+    })
+    setPeople(updatedParticipants)
 
     if (groupOrderId) {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
-      await updateDoc(groupOrderDocRef, { participants: updatedParticipants });
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
+      await updateDoc(groupOrderDocRef, { participants: updatedParticipants })
     }
-  };
+  }
 
-  const handleRemoveItemFromPerson = async (
-    personIndex: number,
-    itemId: string
-  ) => {
+  const handleRemoveItemFromPerson = async (personIndex: number, itemId: string) => {
+    if (showPedidoForm || orderPlaced) return // Prevent item removal if PedidoForm is open or order is placed
     const updatedParticipants = people.map((person, index) => {
       if (index === personIndex) {
         return {
           ...person,
           items: person.items.filter((item) => item.id !== itemId),
-        };
+        }
       }
-      return person;
-    });
-    setPeople(updatedParticipants);
+      return person
+    })
+    setPeople(updatedParticipants)
 
     if (groupOrderId) {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
-      await updateDoc(groupOrderDocRef, { participants: updatedParticipants });
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
+      await updateDoc(groupOrderDocRef, { participants: updatedParticipants })
     }
-  };
+  }
 
   const handleClaimPersonTab = async (personIndex: number) => {
-    if (!groupOrderId || !user) return;
+    if (showPedidoForm || orderPlaced) return // Prevent claiming tab if PedidoForm is open or order is placed
+    if (!groupOrderId || !user) return
 
-    const currentPerson = people[personIndex];
-    if (currentPerson && currentPerson.name.startsWith("Persona ")) {
-      setCurrentPersonIndex(personIndex);
-      setShowNameModal(true);
-      return; // Show name modal and exit
+    const currentPerson = people[personIndex]
+    if (currentPerson && currentPerson.name.startsWith('Persona ')) {
+      setCurrentPersonIndex(personIndex)
+      setShowNameModal(true)
+      return // Show name modal and exit
     }
 
     const updatedParticipants = people.map((person, index) => {
       if (index === personIndex && !person.locked) {
-        return { ...person, userId: user.uid, locked: true };
+        return { ...person, userId: user.uid, locked: true }
       }
-      return person;
-    });
-    setPeople(updatedParticipants);
+      return person
+    })
+    setPeople(updatedParticipants)
 
-    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
-    await updateDoc(groupOrderDocRef, { participants: updatedParticipants });
-  };
+    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
+    await updateDoc(groupOrderDocRef, { participants: updatedParticipants })
+  }
 
   const handlePersonFinishedOrder = async (personIndex: number) => {
-    if (!groupOrderId) return;
+    if (showPedidoForm || orderPlaced) return // Prevent finishing order if PedidoForm is open or order is placed
+    if (!groupOrderId || !user) return
+
+    const currentUserPersonIndex = people.findIndex((p) => p.userId === user.uid)
+    if (currentUserPersonIndex !== personIndex) {
+      alert('No puedes terminar el pedido de otra persona.')
+      return
+    }
 
     const updatedParticipants = people.map((person, index) => {
       if (index === personIndex) {
-        return { ...person, finished: true };
+        return { ...person, finished: true }
       }
-      return person;
-    });
-    setPeople(updatedParticipants);
-    const allAreFinished = updatedParticipants.every((p) => p.finished);
-    setAllFinished(allAreFinished);
+      return person
+    })
+    setPeople(updatedParticipants)
+    const allAreFinished = updatedParticipants.every((p) => p.finished)
+    setAllFinished(allAreFinished)
 
-    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
     await updateDoc(groupOrderDocRef, {
       participants: updatedParticipants,
       allFinished: allAreFinished,
-    });
-  };
+    })
+  }
 
   const handleNameModalClose = () => {
-    setShowNameModal(false);
-    setCurrentPersonIndex(null);
-  };
+    setShowNameModal(false)
+    setCurrentPersonIndex(null)
+  }
 
   const handleNameSubmit = async (name: string) => {
-    console.log("GroupOrderPage - handleNameSubmit - Name received:", name); // Debug log
+    if (showPedidoForm || orderPlaced) return // Prevent name submission if PedidoForm is open or order is placed
     if (currentPersonIndex !== null && groupOrderId) {
       const updatedParticipants = people.map((person, index) =>
         index === currentPersonIndex
           ? { ...person, name, userId: user?.uid, locked: true }
-          : person
-      );
-      setPeople(updatedParticipants);
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
-      await updateDoc(groupOrderDocRef, { participants: updatedParticipants });
-      setShowNameModal(false);
-      setCurrentPersonIndex(null);
+          : person,
+      )
+      setPeople(updatedParticipants)
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
+      await updateDoc(groupOrderDocRef, { participants: updatedParticipants })
+      setShowNameModal(false)
+      setCurrentPersonIndex(null)
     }
-  };
+  }
+
+  const handleOrderPlacement = async () => {
+    if (!groupOrderId) return
+    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
+    await updateDoc(groupOrderDocRef, { orderPlaced: true }) // Set orderPlaced to true in Firestore
+    setShowPedidoForm(true) // Show OrderReview for everyone in realtime
+  }
 
   return (
     <div className="container mx-auto my-8 p-6 bg-white rounded-xl shadow-md relative">
@@ -1866,7 +1817,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
       {groupOrderCode && (
         <div className="text-center mb-4">
           <h3 className="text-xl font-semibold text-gray-800">
-            Código de Pedido Compartido:{" "}
+            Código de Pedido Compartido:{' '}
             <span className="font-bold text-indigo-600">{groupOrderCode}</span>
           </h3>
           <p className="text-sm text-gray-500">
@@ -1891,11 +1842,11 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
               aria-label="Tabs"
             >
               <button
-                onClick={() => setActiveTab("shared")}
+                onClick={() => setActiveTab('shared')}
                 className={`${
-                  activeTab === "shared"
-                    ? "border-indigo-500 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  activeTab === 'shared'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300`}
               >
                 🍕 Para Compartir
@@ -1905,8 +1856,8 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                   key={person.personIndex}
                   className={`${
                     activeTab === `person-${index}`
-                      ? "border-indigo-500 text-indigo-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300 cursor-pointer`}
                   onClick={() => setActiveTab(`person-${index}`)}
                 >
@@ -1914,17 +1865,15 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                   {!person.locked && !person.finished && user?.uid && (
                     <button
                       onClick={(e) => {
-                        e.stopPropagation();
-                        handleClaimPersonTab(index);
+                        e.stopPropagation()
+                        void handleClaimPersonTab(index)
                       }}
                       className="ml-2 px-2 py-1 bg-indigo-200 text-indigo-700 rounded-full text-xs hover:bg-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
                       Soy yo
                     </button>
                   )}
-                  {person.finished && (
-                    <span className="ml-2 text-green-500">✅ Terminado</span>
-                  )}
+                  {person.finished && <span className="ml-2 text-green-500">✅ Terminado</span>}
                   {person.locked && person.userId !== user?.uid && (
                     <span className="ml-2 text-red-500">🔒 Viendo</span>
                   )}
@@ -1933,19 +1882,18 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
             </nav>
           </div>
 
-          {activeTab === "shared" && (
+          {activeTab === 'shared' && (
             <SharedOrder
               menuCategories={menuCategories}
               sharedOrderItems={sharedOrderItems}
-              onAddToSharedOrder={handleAddToSharedOrder}
-              onSharedOrderItemQuantityChange={
-                handleSharedOrderItemQuantityChange
-              }
-              onRemoveSharedOrderItem={handleRemoveSharedOrderItem}
-              calculateSharedSubtotal={calculateSharedSubtotal}
+              onAddToSharedOrder={void handleAddToSharedOrder}
+              onSharedOrderItemQuantityChange={void handleSharedOrderItemQuantityChange}
+              onRemoveSharedOrderItem={void handleRemoveSharedOrderItem}
+              calculateSharedSubtotal={void calculateSharedSubtotal}
               sharedOrderSummaryRef={sharedOrderSummaryRef}
               activeTab={activeTab}
               menu={menu}
+              disabled={showPedidoForm || orderPlaced}
             />
           )}
 
@@ -1959,34 +1907,40 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                   menuCategories={menuCategories}
                   menu={menu}
                   onAddItemToPerson={(index, menuItem) =>
-                    handleAddItemToPerson(index, menuItem)
+                    void handleAddItemToPerson(index, menuItem)
                   }
                   onPersonOrderItemQuantityChange={(index, itemId, quantity) =>
-                    handlePersonOrderItemQuantityChange(index, itemId, quantity)
+                    void handlePersonOrderItemQuantityChange(index, itemId, quantity)
                   }
                   onRemoveItemFromPerson={(index, itemId) =>
-                    handleRemoveItemFromPerson(index, itemId)
+                    void handleRemoveItemFromPerson(index, itemId)
                   }
                   calculateSubtotal={calculateSubtotal}
                   personOrderSummaryRef={personOrderSummaryRef}
                   activeTab={activeTab}
-                  onPersonFinishedOrder={handlePersonFinishedOrder}
+                  onPersonFinishedOrder={void handlePersonFinishedOrder}
                   isFinished={person.finished || false}
                   personLocked={person.locked || false} // Pass locked status
                   isCurrentUserTab={person.userId === user?.uid} // Check if is current user's tab
                   personIndex={index} // Pass personIndex as prop
+                  disabled={showPedidoForm || orderPlaced}
                 />
-              )
+              ),
           )}
 
           <div className="flex justify-center mt-8">
-            {isOwner && allFinished ? (
+            {isOwner && allFinished && !orderPlaced ? ( // Conditionally render button based on orderPlaced state
               <button
                 className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl focus:outline-none focus:shadow-outline disabled:opacity-50 transition-colors duration-300 animate-pulse hover:animate-none"
                 onClick={handleReviewOrder}
+                disabled={showPedidoForm || orderPlaced}
               >
                 ¡Revisar Pedido Grupal! ✅
               </button>
+            ) : isOwner && orderPlaced ? (
+              <p className="text-center text-green-600 font-semibold">
+                Pedido realizado. Revisando resumen...
+              </p>
             ) : !isOwner ? (
               <p className="text-center text-gray-600">
                 Espera a que el dueño del pedido revise y confirme.
@@ -2007,6 +1961,8 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           calculateSharedSubtotal={calculateSharedSubtotal}
           calculateSubtotal={calculateSubtotal}
           isOrderOwner={isOwner} // Pass isOwner prop here
+          onOrderPlaced={void handleOrderPlacement} // Callback when order is placed
+          orderPlaced={orderPlaced} // Pass orderPlaced state to OrderReview
         />
       )}
 
@@ -2019,13 +1975,15 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         open={showNameModal}
         onClose={handleNameModalClose}
         onSubmit={handleNameSubmit}
-        initialValues={{ name: "" }}
+        initialName=""
       />
     </div>
-  );
-};
+  )
+}
 
-export default GroupOrderPage;
+export default GroupOrderPage
+/* Fin src\components\menu\GroupOrderPage.tsx */
+
 /* Fin src\components\menu\GroupOrderPage.tsx */
 
 /* Inicio src\components\menu\JoinOrderModal.tsx */
@@ -2445,122 +2403,172 @@ export default MenuList;
 /* Fin src\components\menu\MenuList.tsx */
 
 /* Inicio src\components\menu\MenuModal.tsx */
-/* src\components\menu\MenuModal.tsx */
+// src/components/menu/NameModal.tsx
+import React, { useState } from 'react'
 
-import React, { useState } from "react";
-import { MenuItem } from "../../context/AppContext";
-
-interface MenuModalProps {
-  open: boolean;
-  onClose: () => void;
-  initialValues?: Partial<MenuItem>;
-  onSubmit: (name: string) => void; // Change onSubmit prop type to accept name string
+interface NameModalProps {
+  open: boolean
+  onClose: () => void
+  onSubmit: (name: string) => void | Promise<void>
+  initialName?: string
 }
 
-const MenuModal: React.FC<MenuModalProps> = ({
-  open,
-  onClose,
-  initialValues,
-  onSubmit,
-}) => {
-  const [name, setName] = useState(initialValues?.name || "");
+const NameModal: React.FC<NameModalProps> = ({ open, onClose, onSubmit, initialName = '' }) => {
+  const [name, setName] = useState(initialName)
 
   const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    console.log("NameModal - handleSubmit - Name being submitted:", name); // Debug log
-    onSubmit(name); // Submit only the name string
-    onClose();
-  };
+    event.preventDefault()
+    void onSubmit(name)
+    onClose()
+  }
 
-  if (!open) return null;
+  if (!open) return null
 
   return (
-    <div className="fixed z-50 inset-0 overflow-y-auto">
-      {/* Overlay y contenedor modal */}
-      {/* Overlay */}
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+      }}
+      onClick={onClose}
+    >
       <div
-        className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-        onClick={onClose}
-        aria-hidden="true"
-      ></div>
-      {/* Modal container */}
-      <div className="flex items-center justify-center min-h-screen px-4 py-8">
-        {/* Centrado vertical y horizontal */}
-        {/* Modal panel */}
-        <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden transform transition-all sm:w-full sm:mx-auto">
-          {/* Panel modal */}
-          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            {/* Header modal */}
-            <h3
-              className="text-lg font-semibold text-gray-900"
-              id="modal-headline"
-            >
-              Ingresa tu Nombre
-            </h3>
-          </div>
-          <div className="p-6">
-            {/* Body modal */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Nombre:
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <button
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  onClick={onClose}
-                  type="button"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  Guardar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        style={{
+          backgroundColor: '#fff',
+          maxWidth: 400,
+          margin: '100px auto',
+          padding: 20,
+          position: 'relative',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3>Ingresa tu nombre</h3>
+        <form onSubmit={handleSubmit} style={{ marginTop: '1rem' }}>
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={{ width: '100%', marginBottom: '1rem', padding: '0.5rem' }}
+          />
+          <button type="button" onClick={onClose}>
+            Cancelar
+          </button>
+          <button type="submit" style={{ marginLeft: 8 }}>
+            Guardar
+          </button>
+        </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MenuModal;
+export default NameModal
 
 /* Fin src\components\menu\MenuModal.tsx */
 
+/* Inicio src\components\menu\NameModal.tsx */
+// src/components/menu/MenuModal.tsx
+
+import React, { useState } from 'react'
+import { MenuItem } from '../../context/AppContext'
+
+interface MenuModalProps {
+  open: boolean
+  onClose: () => void
+  initialValues?: Partial<MenuItem>
+  onSubmit: (values: Partial<MenuItem>) => void | Promise<void>
+}
+
+const MenuModal: React.FC<MenuModalProps> = ({ open, onClose, initialValues, onSubmit }) => {
+  const [localValues, setLocalValues] = useState<Partial<MenuItem>>(initialValues ?? {})
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setLocalValues((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      await onSubmit(localValues) // Espera a que se resuelva la promesa
+    } catch (error) {
+      console.error('Error al enviar:', error) // Manejo de errores
+    }
+    onClose()
+  }
+
+  if (!open) return null
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          backgroundColor: '#fff',
+          maxWidth: 500,
+          margin: '50px auto',
+          padding: 20,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3>Editar / Agregar ítem al Menú</h3>
+        <form onSubmit={void handleSubmit}>
+          <div style={{ marginBottom: '1rem' }}>
+            <label>Nombre:</label>
+            <input name="name" type="text" value={localValues.name ?? ''} onChange={handleChange} />
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <label>Descripción:</label>
+            <textarea
+              name="description"
+              value={localValues.description ?? ''}
+              onChange={handleChange}
+            />
+          </div>
+          {/* ... otros campos price, imageUrl, etc. */}
+          <div style={{ marginTop: '1rem' }}>
+            <button type="button" onClick={onClose}>
+              Cancelar
+            </button>
+            <button type="submit" style={{ marginLeft: 8 }}>
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+export default MenuModal
+
+/* Fin src\components\menu\NameModal.tsx */
+
 /* Inicio src\components\menu\partials\OrderReview.tsx */
-import { Typography } from "@mui/material";
-import React from "react";
-import { MenuItem as MenuItemType } from "../../../context/AppContext";
-import PedidoForm from "../../forms/PedidoForm";
-import { Person, SharedOrderItem } from "../GroupOrderPage"; // Import Person and SharedOrderItem interfaces
+/* Inicio src\components\menu\partials\OrderReview.tsx */
+import { Typography } from '@mui/material'
+import React from 'react'
+import { MenuItem as MenuItemType } from '../../../context/AppContext'
+import PedidoForm from '../../forms/PedidoForm'
+import { Person, SharedOrderItem } from '../GroupOrderPage' // Import Person and SharedOrderItem interfaces
 
 interface OrderReviewProps {
-  people: Person[]; // Use the imported Person interface
-  sharedOrderItems: SharedOrderItem[]; // Use the imported SharedOrderItem interface
-  menu: MenuItemType[];
-  onClosePedidoForm: () => void;
-  calculateSharedSubtotal: () => number;
-  calculateSubtotal: (
-    personItems: { id: string; quantity: number }[]
-  ) => number;
-  isOrderOwner: boolean; // New prop to indicate if the viewer is the order owner
+  people: Person[] // Use the imported Person interface
+  sharedOrderItems: SharedOrderItem[] // Use the imported SharedOrderItem interface
+  menu: MenuItemType[]
+  onClosePedidoForm: () => void
+  calculateSharedSubtotal: () => number
+  calculateSubtotal: (personItems: { id: string; quantity: number }[]) => number
+  isOrderOwner: boolean // New prop to indicate if the viewer is the order owner
+  onOrderPlaced: () => void // Add callback for order placement
+  orderPlaced: boolean // Prop to determine if the order is already placed
 }
 
 const OrderReview: React.FC<OrderReviewProps> = ({
@@ -2570,22 +2578,29 @@ const OrderReview: React.FC<OrderReviewProps> = ({
   onClosePedidoForm,
   calculateSharedSubtotal,
   calculateSubtotal,
-  isOrderOwner, // Destructure the new prop
+  isOrderOwner,
+  onOrderPlaced,
+  orderPlaced, // Destructure the new prop
 }) => {
   // Calculate total order amount
   const totalOrderAmount =
     calculateSharedSubtotal() +
-    people.reduce((sum, person) => sum + calculateSubtotal(person.items), 0);
+    people.reduce((sum, person) => sum + calculateSubtotal(person.items), 0)
 
   // Function to format price to Colombian Pesos
   const formatPriceCOP = (price: number) => {
-    return price.toLocaleString("es-CO", {
-      style: "currency",
-      currency: "COP",
+    return price.toLocaleString('es-CO', {
+      style: 'currency',
+      currency: 'COP',
       minimumFractionDigits: 0, // Remove cents if whole number
       maximumFractionDigits: 0,
-    });
-  };
+    })
+  }
+
+  const handlePedidoFormClose = () => {
+    onClosePedidoForm()
+    onOrderPlaced() // Call the callback when PedidoForm is closed after submit
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-md animate-fade-in">
@@ -2601,31 +2616,27 @@ const OrderReview: React.FC<OrderReviewProps> = ({
           </h3>
           <ul>
             {sharedOrderItems.map((sharedItem) => {
-              const menuItem = menu.find((m) => m.id === sharedItem.itemId);
+              const menuItem = menu.find((m) => m.id === sharedItem.itemId)
               if (menuItem) {
-                const itemTotalPrice = menuItem.price * sharedItem.quantity;
+                const itemTotalPrice = menuItem.price * sharedItem.quantity
                 return (
                   <li
                     key={sharedItem.itemId}
                     className="py-2 flex items-center justify-between" // Align items vertically and justify content
                   >
                     <div className="flex items-center">
-                      {" "}
+                      {' '}
                       {/* Container for item name and quantity */}
                       <span className="mr-2">{menuItem.name}</span>
-                      <span className="text-sm text-gray-500">
-                        x {sharedItem.quantity}
-                      </span>
+                      <span className="text-sm text-gray-500">x {sharedItem.quantity}</span>
                     </div>
                     {isOrderOwner && ( // Conditionally render price for owner
-                      <span className="w-12 text-right">
-                        {formatPriceCOP(itemTotalPrice)}
-                      </span>
+                      <span className="w-12 text-right">{formatPriceCOP(itemTotalPrice)}</span>
                     )}
                   </li>
-                );
+                )
               } else {
-                return null; // Handle case where menuItem is not found
+                return null // Handle case where menuItem is not found
               }
             })}
           </ul>
@@ -2643,40 +2654,33 @@ const OrderReview: React.FC<OrderReviewProps> = ({
       {/* Individual Orders Section */}
       {people &&
         people.map((person) => (
-          <div
-            key={person.personIndex}
-            className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-50"
-          >
+          <div key={person.personIndex} className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-50">
             <h3 className="text-lg font-semibold text-gray-900 mb-3 text-indigo-600">
               Detalle del Pedido Individual - {person.name} 👤
             </h3>
             <ul>
               {person.items.map((it) => {
-                const menuItem = menu.find((m) => m.id === it.id);
+                const menuItem = menu.find((m) => m.id === it.id)
                 if (menuItem) {
-                  const itemTotalPrice = menuItem.price * it.quantity;
+                  const itemTotalPrice = menuItem.price * it.quantity
                   return (
                     <li
                       key={it.id}
                       className="py-2 flex items-center justify-between" // Align items vertically and justify content
                     >
                       <div className="flex items-center">
-                        {" "}
+                        {' '}
                         {/* Container for item name and quantity */}
                         <span className="mr-2">{menuItem.name}</span>
-                        <span className="text-sm text-gray-500">
-                          x {it.quantity}
-                        </span>
+                        <span className="text-sm text-gray-500">x {it.quantity}</span>
                       </div>
                       {isOrderOwner && ( // Conditionally render price for owner
-                        <span className="w-12 text-right">
-                          {formatPriceCOP(itemTotalPrice)}
-                        </span>
+                        <span className="w-12 text-right">{formatPriceCOP(itemTotalPrice)}</span>
                       )}
                     </li>
-                  );
+                  )
                 } else {
-                  return null; // Handle menu item not found case
+                  return null // Handle menu item not found case
                 }
               })}
             </ul>
@@ -2692,62 +2696,60 @@ const OrderReview: React.FC<OrderReviewProps> = ({
         ))}
 
       {/* Total Order Section */}
-      <div className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-100">
-        <h3 className="text-xl font-semibold text-gray-900 mb-3 text-indigo-600 text-center">
-          Resumen del Pedido Grupal Completo 💰
-        </h3>
-        <div className="flex justify-between items-center">
-          {" "}
-          {/* Flex container for labels and total */}
-          <div className="font-semibold text-gray-700">
-            {" "}
-            {/* Left side labels container */}
-            <Typography>Subtotal Compartido:</Typography>
-            {people.map((person) => (
-              <Typography key={person.personIndex}>
-                Subtotal {person.name}:
-              </Typography>
-            ))}
-            {isOrderOwner && ( // Conditionally render "Total del Pedido" label for owner
-              <Typography className="font-bold mt-2">
-                Total del Pedido:
-              </Typography>
-            )}
-          </div>
-          <div className="text-right font-semibold text-xl text-indigo-700">
-            {" "}
-            {/* Right side amounts container */}
-            {isOrderOwner && ( // Conditionally render shared subtotal for owner
-              <Typography>
-                {formatPriceCOP(calculateSharedSubtotal())}
-              </Typography>
-            )}
-            {people.map((person) => (
-              <Typography key={person.personIndex}>
-                {isOrderOwner
-                  ? formatPriceCOP(calculateSubtotal(person.items)) // Conditionally render individual subtotal for owner
-                  : ""}
-              </Typography>
-            ))}
-            {isOrderOwner && ( // Conditionally render total order amount for owner
-              <Typography className="font-bold mt-2">
-                {formatPriceCOP(totalOrderAmount)}
-              </Typography>
-            )}
+      {isOrderOwner && (
+        <div className="mb-6 p-4 border rounded-lg shadow-sm bg-gray-100">
+          <h3 className="text-xl font-semibold text-gray-900 mb-3 text-indigo-600 text-center">
+            Resumen del Pedido Grupal Completo 💰
+          </h3>
+          <div className="flex justify-between items-center">
+            {' '}
+            {/* Flex container for labels and total */}
+            <div className="font-semibold text-gray-700">
+              {' '}
+              {/* Left side labels container */}
+              <Typography>Subtotal Compartido:</Typography>
+              {people.map((person) => (
+                <Typography key={person.personIndex}>Subtotal {person.name}:</Typography>
+              ))}
+              <Typography className="font-bold mt-2">Total del Pedido:</Typography>
+            </div>
+            <div className="text-right font-semibold text-xl text-indigo-700">
+              {' '}
+              {/* Right side amounts container */}
+              <Typography>{formatPriceCOP(calculateSharedSubtotal())}</Typography>
+              {people.map((person) => (
+                <Typography key={person.personIndex}>
+                  {formatPriceCOP(calculateSubtotal(person.items))}
+                </Typography>
+              ))}
+              <Typography className="font-bold mt-2">{formatPriceCOP(totalOrderAmount)}</Typography>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <PedidoForm
-        onClose={onClosePedidoForm}
-        people={people}
-        sharedOrderItems={sharedOrderItems}
-      />
+      {!orderPlaced && ( // Conditionally render PedidoForm and button if order is not placed yet
+        <PedidoForm
+          onClose={handlePedidoFormClose} // Use the modified close handler
+          people={people}
+          sharedOrderItems={sharedOrderItems}
+        />
+      )}
+      {orderPlaced && (
+        <div className="text-center mt-6">
+          <Typography variant="h6" className="text-green-600">
+            ¡Pedido realizado con éxito!
+          </Typography>
+          {/* Opcional: Mostrar un mensaje adicional o botón para volver al menú */}
+        </div>
+      )}
     </div>
-  );
-};
+  )
+}
 
-export default OrderReview;
+export default OrderReview
+
+/* Fin src\components\menu\partials\OrderReview.tsx */
 
 /* Fin src\components\menu\partials\OrderReview.tsx */
 
@@ -2818,6 +2820,7 @@ export default PeopleSelection;
 /* Fin src\components\menu\partials\PeopleSelection.tsx */
 
 /* Inicio src\components\menu\partials\PersonOrder.tsx */
+/* Inicio src\components\menu\partials\PersonOrder.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
 import { Person } from "../GroupOrderPage"; // Import the Person interface from GroupOrderPage
@@ -2844,6 +2847,7 @@ interface PersonOrderProps {
   personLocked: boolean; // Prop to indicate if the tab is locked
   isCurrentUserTab: boolean; // Prop to check if it's the current user's tab
   personIndex: number;
+  disabled?: boolean; // Prop to disable interactions
 }
 
 const PersonOrder: React.FC<PersonOrderProps> = ({
@@ -2861,6 +2865,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
   personLocked,
   isCurrentUserTab,
   personIndex,
+  disabled = false, // Default to false
 }) => {
   // Function to format price to Colombian Pesos
   const formatPriceCOP = (price: number) => {
@@ -2872,7 +2877,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
     });
   };
 
-  const isControlEnabled = !personLocked || isCurrentUserTab;
+  const isControlEnabled = (!personLocked || isCurrentUserTab) && !disabled; // Add disabled prop check
 
   return (
     <div key={person.personIndex} className="mb-8" ref={personOrderSummaryRef}>
@@ -2965,7 +2970,7 @@ const PersonOrder: React.FC<PersonOrderProps> = ({
             <button
               onClick={() => onPersonFinishedOrder(personIndex)}
               className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              disabled={!isControlEnabled}
+              disabled={!isControlEnabled || isFinished} // Disable if PedidoForm is open or already finished
             >
               He Terminado!
             </button>
@@ -3040,6 +3045,9 @@ export default PersonOrder;
 
 /* Fin src\components\menu\partials\PersonOrder.tsx */
 
+/* Fin src\components\menu\partials\PersonOrder.tsx */
+
+/* Inicio src\components\menu\partials\SharedOrder.tsx */
 /* Inicio src\components\menu\partials\SharedOrder.tsx */
 import React from "react";
 import { MenuItem as MenuItemType } from "../../../context/AppContext";
@@ -3054,6 +3062,7 @@ interface SharedOrderProps {
   sharedOrderSummaryRef: React.RefObject<HTMLDivElement>;
   activeTab: string;
   menu: MenuItemType[];
+  disabled?: boolean; // Prop to disable interactions
 }
 
 const SharedOrder: React.FC<SharedOrderProps> = ({
@@ -3064,8 +3073,8 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
   onRemoveSharedOrderItem,
   calculateSharedSubtotal,
   sharedOrderSummaryRef,
-
   menu,
+  disabled = false, // Default to false
 }) => {
   // Function to format price to Colombian Pesos
   const formatPriceCOP = (price: number) => {
@@ -3104,6 +3113,7 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
                       )
                     }
                     className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                    disabled={disabled} // Disable button if prop disabled is true
                   >
                     -
                   </button>
@@ -3116,12 +3126,14 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
                       )
                     }
                     className="p-1 rounded-full hover:bg-gray-200 transition-colors duration-200"
+                    disabled={disabled} // Disable button if prop disabled is true
                   >
                     +
                   </button>
                   <button
                     onClick={() => onRemoveSharedOrderItem(sharedItem.itemId)}
                     className="text-red-500 hover:text-red-700 transition-colors duration-200"
+                    disabled={disabled} // Disable button if prop disabled is true
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -3171,14 +3183,16 @@ const SharedOrder: React.FC<SharedOrderProps> = ({
               {items.map((item) => (
                 <button
                   key={item.id}
-                  disabled={item.availabilityStatus !== "disponible"}
+                  disabled={
+                    item.availabilityStatus !== "disponible" || disabled
+                  } // Disable button if prop disabled is true or item not available
                   className={`bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-left transition-colors duration-300 ${
                     item.availabilityStatus !== "disponible"
                       ? "opacity-50 cursor-not-allowed line-through pointer-events-none"
                       : ""
                   }`}
                   onClick={
-                    item.availabilityStatus === "disponible"
+                    item.availabilityStatus === "disponible" && !disabled // Only allow click if available and not disabled
                       ? () => onAddToSharedOrder(item)
                       : undefined
                   }
@@ -3208,100 +3222,92 @@ export default SharedOrder;
 
 /* Fin src\components\menu\partials\SharedOrder.tsx */
 
+/* Fin src\components\menu\partials\SharedOrder.tsx */
+
 /* Inicio src\components\menu\PersonMenuModal.tsx */
 // src/components/forms/PedidoForm.tsx
-import { Timestamp, addDoc, collection } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { useAuth } from "../../hooks/useAuth";
-import { useMenu } from "../../hooks/useMenu";
-import { db } from "../../utils/firebase";
+import { Timestamp, addDoc, collection } from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
+import { useAuth } from '../../hooks/useAuth'
+import { useMenu } from '../../hooks/useMenu'
+import { db } from '../../utils/firebase'
 
 interface PedidoFormProps {
-  onClose: () => void;
+  onClose: () => void
   people?: {
-    id: string;
-    name: string;
-    items: { id: string; quantity: number }[];
-  }[];
+    id: string
+    name: string
+    items: { id: string; quantity: number }[]
+  }[]
   sharedOrderItems?: {
-    itemId: string;
-    quantity: number;
-    personIds: string[];
-  }[]; // Prop para items compartidos
+    itemId: string
+    quantity: number
+    personIds: string[]
+  }[] // Prop para items compartidos
 }
 
-const PedidoForm: React.FC<PedidoFormProps> = ({
-  onClose,
-  people,
-  sharedOrderItems,
-}) => {
-  const { menu } = useMenu();
-  const { user, addPoints } = useAuth();
+const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderItems }) => {
+  const { menu } = useMenu()
+  const { user, addPoints } = useAuth()
 
-  const [items, setItems] = useState<
-    { id: string; quantity: number; assignedTo: string }[]
-  >([]);
-  const [peopleOrder, setPeopleOrder] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [sede, setSede] = useState("");
-  const [deliveryFee, setDeliveryFee] = useState(0);
-  const [deliveryIncluded, setDeliveryIncluded] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState("contraentrega");
+  const [items, setItems] = useState<{ id: string; quantity: number; assignedTo: string }[]>([])
+  const [peopleOrder, setPeopleOrder] = useState<{ id: string; name: string }[]>([])
+  const [sede, setSede] = useState('')
+  const [deliveryFee, setDeliveryFee] = useState(0)
+  const [deliveryIncluded, setDeliveryIncluded] = useState(true)
+  const [paymentMethod, setPaymentMethod] = useState('contraentrega')
 
   useEffect(() => {
     if (people) {
-      setPeopleOrder(
-        people.map((person) => ({ id: person.id, name: person.name }))
-      );
+      setPeopleOrder(people.map((person) => ({ id: person.id, name: person.name })))
       const newItems = people.flatMap((person) =>
         person.items.map((item) => ({
           id: item.id,
           quantity: item.quantity,
           assignedTo: person.name,
-        }))
-      );
-      setItems(newItems);
+        })),
+      )
+      setItems(newItems)
     }
-  }, [people]);
+  }, [people])
 
   // Simulación de sedes disponibles (puedes obtenerlas de Firestore)
-  const sedesDisponibles = ["Sede Norte", "Sede Sur", "Sede Centro"];
+  const sedesDisponibles = ['Sede Norte', 'Sede Sur', 'Sede Centro']
 
   useEffect(() => {
     if (sedesDisponibles.length === 1) {
-      setSede(sedesDisponibles[0]);
+      setSede(sedesDisponibles[0])
     }
-  }, [sedesDisponibles]);
+  }, [sedesDisponibles])
 
   const calculateTotal = () => {
-    let total = 0;
+    let total = 0
     items.forEach((item) => {
-      const menuItem = menu.find((m) => m.id === item.id);
+      const menuItem = menu.find((m) => m.id === item.id)
       if (menuItem) {
-        total += menuItem.price * item.quantity;
+        total += menuItem.price * item.quantity
       }
-    });
+    })
     if (sharedOrderItems) {
       // Sumar el costo de items compartidos
       sharedOrderItems.forEach((sharedItem) => {
-        const menuItem = menu.find((m) => m.id === sharedItem.itemId);
+        const menuItem = menu.find((m) => m.id === sharedItem.itemId)
         if (menuItem) {
-          total += menuItem.price * sharedItem.personIds.length; // Precio por cada persona que lo pide
+          total += menuItem.price * sharedItem.personIds.length // Precio por cada persona que lo pide
         }
-      });
+      })
     }
-    return total + deliveryFee;
-  };
+    return total + deliveryFee
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!user) return;
+    event.preventDefault()
+    if (!user) return
 
     try {
-      const total = calculateTotal();
-      const orderId = uuidv4();
+      const total = calculateTotal()
+      const orderId = uuidv4()
       const orderData = {
         userId: user.uid,
         items: items.map((item) => ({
@@ -3311,7 +3317,7 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
         })),
         people: peopleOrder,
         sede: sede,
-        status: "pendiente",
+        status: 'pendiente',
         total: total,
         deliveryFee: deliveryFee,
         deliveryIncluded: deliveryIncluded,
@@ -3325,29 +3331,26 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
               personIds: si.personIds,
             }))
           : [],
-      };
+      }
 
-      await addDoc(collection(db, "pedidos"), orderData);
-      handlePaymentSuccess();
+      await addDoc(collection(db, 'pedidos'), orderData)
+      handlePaymentSuccess()
     } catch (error) {
-      console.error("Error al agregar el pedido:", error);
+      console.error('Error al agregar el pedido:', error)
     }
-  };
+  }
 
   const handlePaymentSuccess = async () => {
-    await addPoints();
-    alert("Pedido realizado con éxito y puntos sumados.");
-    onClose();
-  };
+    await addPoints()
+    alert('Pedido realizado con éxito y puntos sumados.')
+    onClose()
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <h2 className="text-xl font-bold text-gray-900">Realizar Pedido</h2>
       <div>
-        <label
-          htmlFor="sede"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="sede" className="block text-sm font-medium text-gray-700">
           Sede
         </label>
         <select
@@ -3365,10 +3368,7 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
         </select>
       </div>
       <div>
-        <label
-          htmlFor="deliveryFee"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="deliveryFee" className="block text-sm font-medium text-gray-700">
           Costo de Envío
         </label>
         <input
@@ -3393,19 +3393,13 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
           />
         </div>
         <div className="ml-2 text-sm">
-          <label
-            htmlFor="deliveryIncluded"
-            className="font-medium text-gray-700"
-          >
+          <label htmlFor="deliveryIncluded" className="font-medium text-gray-700">
             ¿El domicilio está incluido?
           </label>
         </div>
       </div>
       <div>
-        <label
-          htmlFor="paymentMethod"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="paymentMethod" className="block text-sm font-medium text-gray-700">
           Método de Pago
         </label>
         <select
@@ -3427,10 +3421,10 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
         </button>
       </div>
     </form>
-  );
-};
+  )
+}
 
-export default PedidoForm;
+export default PedidoForm
 
 /* Fin src\components\menu\PersonMenuModal.tsx */
 
@@ -3518,109 +3512,116 @@ export default PaymentForm;
 /* Fin src\components\payment\PaymentForm.tsx */
 
 /* Inicio src\components\pedidos\PedidoForm.tsx */
-/* Directorio: src\components\forms\PedidoForm.tsx */
-// src/components/forms/PedidoForm.tsx
-import { Timestamp, addDoc, collection } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { useAuth } from "../../hooks/useAuth";
-import { useMenu } from "../../hooks/useMenu";
-import { db } from "../../utils/firebase";
+// src/components/pedidos/PedidoForm.tsx
+import { Timestamp, addDoc, collection } from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
+import { useAuth } from '../../hooks/useAuth'
+import { useMenu } from '../../hooks/useMenu'
+import { db } from '../../utils/firebase'
 
-interface PedidoFormProps {
-  onClose: () => void;
-  people?: {
-    id: string;
-    name: string;
-    items: { id: string; quantity: number }[];
-  }[];
-  sharedOrderItems?: {
-    itemId: string;
-    quantity: number;
-    personIds: string[];
-  }[];
+/** Mismo tipo que uses en GroupOrderPage */
+interface Person {
+  personIndex: number
+  userId: string | null
+  name: string
+  items: { id: string; quantity: number }[]
+  locked?: boolean
+  finished?: boolean
 }
 
-const PedidoForm: React.FC<PedidoFormProps> = ({
-  onClose,
-  people,
-  sharedOrderItems,
-}) => {
-  const { menu } = useMenu();
-  const { user, addPoints } = useAuth();
+interface SharedOrderItem {
+  itemId: string
+  quantity: number
+  personIds: string[]
+}
 
+interface PedidoFormProps {
+  onClose: () => void
+  people?: Person[] // Aquí usamos la interface Person
+  sharedOrderItems?: SharedOrderItem[]
+}
+
+const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderItems }) => {
+  const { menu } = useMenu()
+  const { user, addPoints } = useAuth()
   const [items, setItems] = useState<
-    { id: string; quantity: number; assignedTo: string }[]
-  >([]);
-  const [peopleOrder, setPeopleOrder] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [sede, setSede] = useState("");
-  const [deliveryFee, setDeliveryFee] = useState(0);
-  const [deliveryIncluded, setDeliveryIncluded] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState("contraentrega");
+    {
+      id: string
+      quantity: number
+      assignedTo: string
+    }[]
+  >([])
+
+  const [peopleOrder, setPeopleOrder] = useState<{ userId: string | null; name: string }[]>([])
+  const [sede, setSede] = useState('')
+  const [deliveryFee, setDeliveryFee] = useState(0)
+  const [deliveryIncluded, setDeliveryIncluded] = useState(true)
+  const [paymentMethod, setPaymentMethod] = useState('contraentrega')
 
   useEffect(() => {
+    // Convertimos people en un estado con 'peopleOrder'
     if (people) {
-      setPeopleOrder(
-        people.map((person) => ({ id: person.id, name: person.name }))
-      );
-      // Flatten person items and assign person name
-      const personItems = people.flatMap(person =>
-        person.items.map(item => ({
+      const mapped = people.map((p) => ({
+        userId: p.userId,
+        name: p.name,
+      }))
+      setPeopleOrder(mapped)
+
+      // Flatten person items
+      const personItems = people.flatMap((person) =>
+        person.items.map((item) => ({
           id: item.id,
           quantity: item.quantity,
           assignedTo: person.name,
-        }))
-      );
-      setItems(personItems);
+        })),
+      )
+      setItems(personItems)
     }
-  }, [people]);
-
+  }, [people])
 
   useEffect(() => {
     if (sharedOrderItems) {
-      // Flatten shared items and assign 'Compartido' as assignedTo
-      const sharedItemsForDisplay = sharedOrderItems.flatMap(sharedItem =>
-        Array(sharedItem.quantity).fill(null).map(() => ({
-          id: sharedItem.itemId,
-          quantity: 1,
-          assignedTo: 'Compartido'
-        }))
-      );
-      setItems(prevItems => [...prevItems, ...sharedItemsForDisplay]);
+      // Flatten shared items -> assignedTo: 'Compartido'
+      const sharedItemsForDisplay = sharedOrderItems.flatMap((sharedItem) =>
+        Array(sharedItem.quantity)
+          .fill(null)
+          .map(() => ({
+            id: sharedItem.itemId,
+            quantity: 1,
+            assignedTo: 'Compartido',
+          })),
+      )
+      setItems((prev) => [...prev, ...sharedItemsForDisplay])
     }
-  }, [sharedOrderItems]);
+  }, [sharedOrderItems])
 
-
-  // Simulación de sedes disponibles (puedes obtenerlas de Firestore)
-  const sedesDisponibles = ["Sede Norte", "Sede Sur", "Sede Centro"];
-
+  // Simulación sedes
+  const sedesDisponibles = ['Sede Norte', 'Sede Sur', 'Sede Centro']
   useEffect(() => {
     if (sedesDisponibles.length === 1) {
-      setSede(sedesDisponibles[0]);
+      setSede(sedesDisponibles[0])
     }
-  }, [sedesDisponibles]);
+  }, [sedesDisponibles])
 
   const calculateTotal = () => {
-    let total = 0;
+    let total = 0
     items.forEach((item) => {
-      const menuItem = menu.find((m) => m.id === item.id);
+      const menuItem = menu.find((m) => m.id === item.id)
       if (menuItem) {
-        total += menuItem.price * item.quantity;
+        total += menuItem.price * item.quantity
       }
-    });
-    return total + deliveryFee;
-  };
-
+    })
+    return total + deliveryFee
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!user) return;
+    event.preventDefault()
+    if (!user) return
 
     try {
-      const total = calculateTotal();
-      const orderId = uuidv4();
+      const total = calculateTotal()
+      const orderId = uuidv4()
       const orderData = {
         userId: user.uid,
         items: items.map((item) => ({
@@ -3629,44 +3630,41 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
           assignedTo: item.assignedTo,
         })),
         people: peopleOrder,
-        sede: sede,
-        status: "pendiente",
-        total: total,
-        deliveryFee: deliveryFee,
-        deliveryIncluded: deliveryIncluded,
-        paymentMethod: paymentMethod,
+        sede,
+        status: 'pendiente',
+        total,
+        deliveryFee,
+        deliveryIncluded,
+        paymentMethod,
         orderDate: Timestamp.now(),
-        orderId: orderId,
+        orderId,
         sharedItems: sharedOrderItems
           ? sharedOrderItems.map((si) => ({
               itemId: si.itemId,
-              quantity: si.quantity, // Quantity here represents how many of shared items are in total
+              quantity: si.quantity,
               personIds: si.personIds,
             }))
           : [],
-      };
+      }
 
-      await addDoc(collection(db, "pedidos"), orderData);
-      handlePaymentSuccess();
+      await addDoc(collection(db, 'pedidos'), orderData)
+      void handlePaymentSuccess()
     } catch (error) {
-      console.error("Error al agregar el pedido:", error);
+      console.error('Error al agregar el pedido:', error)
     }
-  };
+  }
 
   const handlePaymentSuccess = async () => {
-    await addPoints();
-    alert("Pedido realizado con éxito y puntos sumados.");
-    onClose();
-  };
+    await addPoints()
+    alert('Pedido realizado con éxito y puntos sumados.')
+    onClose()
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={void handleSubmit} className="space-y-6">
       <h2 className="text-xl font-bold text-gray-900">Realizar Pedido</h2>
       <div>
-        <label
-          htmlFor="sede"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="sede" className="block text-sm font-medium text-gray-700">
           Sede
         </label>
         <select
@@ -3684,10 +3682,7 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
         </select>
       </div>
       <div>
-        <label
-          htmlFor="deliveryFee"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="deliveryFee" className="block text-sm font-medium text-gray-700">
           Costo de Envío
         </label>
         <input
@@ -3712,19 +3707,13 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
           />
         </div>
         <div className="ml-2 text-sm">
-          <label
-            htmlFor="deliveryIncluded"
-            className="font-medium text-gray-700"
-          >
+          <label htmlFor="deliveryIncluded" className="font-medium text-gray-700">
             ¿El domicilio está incluido?
           </label>
         </div>
       </div>
       <div>
-        <label
-          htmlFor="paymentMethod"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="paymentMethod" className="block text-sm font-medium text-gray-700">
           Método de Pago
         </label>
         <select
@@ -3740,16 +3729,17 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
       <div>
         <button
           type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200" // Added transition
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
         >
           Realizar Pedido
         </button>
       </div>
     </form>
-  );
-};
+  )
+}
 
-export default PedidoForm;
+export default PedidoForm
+
 /* Fin src\components\pedidos\PedidoForm.tsx */
 
 /* Inicio src\components\pedidos\PedidoItem.tsx */
@@ -4693,9 +4683,9 @@ export const useMenu = (): AppContextProps => {
 /* Inicio src\main.tsx */
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
+import App from './App'
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
   </StrictMode>,
@@ -5461,368 +5451,343 @@ export default Dashboard;
 /* Fin src\pages\Dashboard.tsx */
 
 /* Inicio src\pages\GestionMenu.tsx */
-import { Alert, Snackbar } from "@mui/material";
-import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
-import React, { useState } from "react";
-import MenuList from "../components/menu/MenuList";
-import MenuModal from "../components/menu/MenuModal";
-import Button from "../components/ui/Button"; // Importa el Button de Tailwind
-import Container from "../components/ui/Container"; // Importa Container de Tailwind si lo creaste, sino usa un div normal
-import { MenuItem } from "../context/AppContext";
-import { useAuth } from "../hooks/useAuth"; // Importa useAuth
-import { useMenu } from "../hooks/useMenu";
-import { COLLECTIONS } from "../utils/constants";
-import { db } from "../utils/firebase";
+import { Alert, Snackbar } from '@mui/material'
+import { addDoc, collection, doc, updateDoc } from 'firebase/firestore'
+import React, { useState } from 'react'
+import MenuList from '../components/menu/MenuList'
+import MenuModal from '../components/menu/MenuModal'
+import Button from '../components/ui/Button' // Importa el Button de Tailwind
+import Container from '../components/ui/Container' // Importa Container de Tailwind si lo creaste, sino usa un div normal
+import { MenuItem } from '../context/AppContext'
+import { useAuth } from '../hooks/useAuth' // Importa useAuth
+import { useMenu } from '../hooks/useMenu'
+import { COLLECTIONS } from '../utils/constants'
+import { db } from '../utils/firebase'
 
 const GestionMenu: React.FC = () => {
-  const { menu, loading } = useMenu();
-  const [openModal, setOpenModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const { menu, loading } = useMenu()
+  const [openModal, setOpenModal] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
   const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity: "success" | "error";
-  }>({ open: false, message: "", severity: "success" });
-  const { userRole } = useAuth(); // Obtiene el rol del usuario
-  const [loadingSampleData, setLoadingSampleData] = useState(false); // Estado de carga para el botón de datos de ejemplo
+    open: boolean
+    message: string
+    severity: 'success' | 'error'
+  }>({ open: false, message: '', severity: 'success' })
+  const { userRole } = useAuth() // Obtiene el rol del usuario
+  const [loadingSampleData, setLoadingSampleData] = useState(false) // Estado de carga para el botón de datos de ejemplo
 
   if (loading) {
-    return <div>Cargando...</div>;
+    return <div>Cargando...</div>
   }
 
   const handleOpenModal = () => {
-    setOpenModal(true);
-    setSelectedItem(null);
-  };
+    setOpenModal(true)
+    setSelectedItem(null)
+  }
 
   const handleCloseModal = () => {
-    setOpenModal(false);
-    setSelectedItem(null);
-  };
+    setOpenModal(false)
+    setSelectedItem(null)
+  }
 
   const handleEdit = (item: MenuItem) => {
-    setSelectedItem(item);
-    setOpenModal(true);
-  };
+    setSelectedItem(item)
+    setOpenModal(true)
+  }
 
   const handleDelete = async (item: MenuItem) => {
     if (
       !window.confirm(
-        `¿Estás seguro de marcar como no disponible a largo plazo el item "${item.name}"?`
+        `¿Estás seguro de marcar como no disponible a largo plazo el item "${item.name}"?`,
       )
     )
-      return;
+      return
     try {
       // Al "eliminar" un item, se actualiza su estado a "noDisponibleLargoPlazo" y available a false
       await updateDoc(doc(db, COLLECTIONS.MENU, item.id), {
-        availabilityStatus: "noDisponibleLargoPlazo", // Se marca como no disponible a largo plazo
+        availabilityStatus: 'noDisponibleLargoPlazo', // Se marca como no disponible a largo plazo
         available: false, // Se marca como no disponible para que no aparezca en el menu para clientes
-      });
+      })
       setSnackbar({
         open: true,
-        message: "Item marcado como no disponible a largo plazo.",
-        severity: "success",
-      });
+        message: 'Item marcado como no disponible a largo plazo.',
+        severity: 'success',
+      })
     } catch (error) {
-      console.error(error);
+      console.error(error)
       setSnackbar({
         open: true,
-        message: "Error al actualizar el item.",
-        severity: "error",
-      });
+        message: 'Error al actualizar el item.',
+        severity: 'error',
+      })
     }
-  };
+  }
 
   const handleSubmit = async (values: Partial<MenuItem>) => {
     try {
       if (selectedItem) {
-        await updateDoc(doc(db, COLLECTIONS.MENU, selectedItem.id), values);
+        await updateDoc(doc(db, COLLECTIONS.MENU, selectedItem.id), values)
         setSnackbar({
           open: true,
-          message: "Item actualizado exitosamente.",
-          severity: "success",
-        });
+          message: 'Item actualizado exitosamente.',
+          severity: 'success',
+        })
       } else {
-        await addDoc(collection(db, COLLECTIONS.MENU), values);
+        await addDoc(collection(db, COLLECTIONS.MENU), values)
         setSnackbar({
           open: true,
-          message: "Item agregado exitosamente.",
-          severity: "success",
-        });
+          message: 'Item agregado exitosamente.',
+          severity: 'success',
+        })
       }
-      handleCloseModal();
+      handleCloseModal()
     } catch (error) {
-      console.error(error);
+      console.error(error)
       setSnackbar({
         open: true,
-        message: "Error al guardar el item.",
-        severity: "error",
-      });
+        message: 'Error al guardar el item.',
+        severity: 'error',
+      })
     }
-  };
+  }
 
   const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
+    setSnackbar({ ...snackbar, open: false })
+  }
 
   // Función para agregar datos de ejemplo
   const handleAddSampleData = async () => {
-    setLoadingSampleData(true);
+    setLoadingSampleData(true)
     setSnackbar({
       open: true,
-      message: "Agregando datos de ejemplo...",
-      severity: "success",
-    });
+      message: 'Agregando datos de ejemplo...',
+      severity: 'success',
+    })
     try {
-      const sampleMenuItems = generateSampleMenuItems();
-      const menuCollectionRef = collection(db, COLLECTIONS.MENU);
+      const sampleMenuItems = generateSampleMenuItems()
+      const menuCollectionRef = collection(db, COLLECTIONS.MENU)
       for (const item of sampleMenuItems) {
-        await addDoc(menuCollectionRef, item);
+        await addDoc(menuCollectionRef, item)
       }
       setSnackbar({
         open: true,
-        message: "Datos de ejemplo agregados exitosamente!",
-        severity: "success",
-      });
+        message: 'Datos de ejemplo agregados exitosamente!',
+        severity: 'success',
+      })
     } catch (error) {
-      console.error("Error al agregar datos de ejemplo:", error);
+      console.error('Error al agregar datos de ejemplo:', error)
       setSnackbar({
         open: true,
-        message: "Error al agregar datos de ejemplo.",
-        severity: "error",
-      });
+        message: 'Error al agregar datos de ejemplo.',
+        severity: 'error',
+      })
     } finally {
-      setLoadingSampleData(false);
+      setLoadingSampleData(false)
     }
-  };
+  }
 
   const generateSampleMenuItems = () => {
     return [
       {
-        name: "Hamburguesa Clásica",
-        description: "Carne de res, queso cheddar, lechuga, tomate y cebolla.",
+        name: 'Hamburguesa Clásica',
+        description: 'Carne de res, queso cheddar, lechuga, tomate y cebolla.',
         price: 28000, // COP Approx. $8.99 USD
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Hamburguesas",
-        observations: "Se puede pedir sin cebolla.",
-        availabilityStatus: "disponible",
+        recommendation: 'Hamburguesas',
+        observations: 'Se puede pedir sin cebolla.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Pizza Margarita Personal",
-        description: "Salsa de tomate, mozzarella fresca y albahaca.",
+        name: 'Pizza Margarita Personal',
+        description: 'Salsa de tomate, mozzarella fresca y albahaca.',
         price: 35000, // COP Approx. $12.5 USD (Adjusted for personal size)
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Pizzas",
-        observations: "Opción vegana disponible con queso de almendras.",
-        availabilityStatus: "disponible",
+        recommendation: 'Pizzas',
+        observations: 'Opción vegana disponible con queso de almendras.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Pizza Margarita Familiar",
-        description: "Salsa de tomate, mozzarella fresca y albahaca.",
+        name: 'Pizza Margarita Familiar',
+        description: 'Salsa de tomate, mozzarella fresca y albahaca.',
         price: 65000, // COP Approx. $12.5 USD (Adjusted for family size)
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Pizzas",
-        observations: "Opción vegana disponible con queso de almendras.",
-        availabilityStatus: "disponible",
+        recommendation: 'Pizzas',
+        observations: 'Opción vegana disponible con queso de almendras.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Ensalada César",
-        description: "Lechuga romana, crutones, parmesano y aderezo César.",
+        name: 'Ensalada César',
+        description: 'Lechuga romana, crutones, parmesano y aderezo César.',
         price: 22000, // COP Approx. $6.75 USD
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Ensaladas",
-        observations: "Se puede añadir pollo a la parrilla.",
-        availabilityStatus: "disponible",
+        recommendation: 'Ensaladas',
+        observations: 'Se puede añadir pollo a la parrilla.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Pasta Carbonara",
-        description:
-          "Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.",
+        name: 'Pasta Carbonara',
+        description: 'Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.',
         price: 32000, // COP Approx. $10.2 USD
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Pastas",
-        observations: "Sin gluten disponible con pasta de arroz.",
-        availabilityStatus: "disponible",
+        recommendation: 'Pastas',
+        observations: 'Sin gluten disponible con pasta de arroz.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Tacos al Pastor (3 unidades)",
+        name: 'Tacos al Pastor (3 unidades)',
         description:
-          "Carne de cerdo adobada, piña, cebolla y cilantro, en tortilla de maíz. Orden de 3 tacos.",
+          'Carne de cerdo adobada, piña, cebolla y cilantro, en tortilla de maíz. Orden de 3 tacos.',
         price: 30000, // COP Approx. $9.5 USD (for 3 tacos)
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Tacos",
-        observations: "Picante medio.",
-        availabilityStatus: "disponible",
+        recommendation: 'Tacos',
+        observations: 'Picante medio.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Sushi Variado (12 piezas)",
-        description: "Selección de nigiris y makis variados. 12 piezas.",
+        name: 'Sushi Variado (12 piezas)',
+        description: 'Selección de nigiris y makis variados. 12 piezas.',
         price: 50000, // COP Approx. $15.99 USD
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Sushi",
-        observations: "Incluye salsa de soya, wasabi y jengibre.",
-        availabilityStatus: "disponible",
+        recommendation: 'Sushi',
+        observations: 'Incluye salsa de soya, wasabi y jengibre.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Pollo Frito Individual",
-        description: "1 presa grande de pollo frito, crujiente y jugoso.",
+        name: 'Pollo Frito Individual',
+        description: '1 presa grande de pollo frito, crujiente y jugoso.',
         price: 15000, // COP - Individual piece
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Pollos",
-        observations: "Opción extra crujiente disponible.",
-        availabilityStatus: "disponible",
+        recommendation: 'Pollos',
+        observations: 'Opción extra crujiente disponible.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Combo Pollo Frito Personal",
-        description:
-          "2 presas de pollo frito, papas fritas pequeñas y gaseosa personal.",
+        name: 'Combo Pollo Frito Personal',
+        description: '2 presas de pollo frito, papas fritas pequeñas y gaseosa personal.',
         price: 30000, // COP - Personal combo
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Combos de Pollo",
-        observations: "Incluye gaseosa personal a elección.",
-        availabilityStatus: "disponible",
+        recommendation: 'Combos de Pollo',
+        observations: 'Incluye gaseosa personal a elección.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Combo Pollo Frito Familiar",
+        name: 'Combo Pollo Frito Familiar',
         description:
-          "6 presas de pollo frito, papas fritas familiares, ensalada coleslaw familiar y gaseosa 1.5L.",
+          '6 presas de pollo frito, papas fritas familiares, ensalada coleslaw familiar y gaseosa 1.5L.',
         price: 85000, // COP - Family combo
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Combos de Pollo",
-        observations: "Ideal para compartir en familia.",
-        availabilityStatus: "disponible",
+        recommendation: 'Combos de Pollo',
+        observations: 'Ideal para compartir en familia.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Pollo Asado Entero",
-        description: "Pollo entero asado al carbón, jugoso y lleno de sabor.",
+        name: 'Pollo Asado Entero',
+        description: 'Pollo entero asado al carbón, jugoso y lleno de sabor.',
         price: 55000, // COP - Whole roasted chicken
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Pollos",
-        observations: "Perfecto para compartir.",
-        availabilityStatus: "disponible",
+        recommendation: 'Pollos',
+        observations: 'Perfecto para compartir.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Sopa de Tomate",
-        description: "Sopa cremosa de tomate, hecha en casa.",
+        name: 'Sopa de Tomate',
+        description: 'Sopa cremosa de tomate, hecha en casa.',
         price: 18000, // COP Approx. $5.5 USD
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Sopas",
-        observations: "Servida con pan tostado.",
-        availabilityStatus: "disponible",
+        recommendation: 'Sopas',
+        observations: 'Servida con pan tostado.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Brownie con Helado",
-        description: "Brownie de chocolate caliente con helado de vainilla.",
+        name: 'Brownie con Helado',
+        description: 'Brownie de chocolate caliente con helado de vainilla.',
         price: 20000, // COP Approx. $6.25 USD
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Postres",
-        observations: "Se puede pedir sin nueces.",
-        availabilityStatus: "disponible",
+        recommendation: 'Postres',
+        observations: 'Se puede pedir sin nueces.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Jugo de Naranja",
-        description: "Jugo de naranja natural, recién exprimido.",
+        name: 'Jugo de Naranja',
+        description: 'Jugo de naranja natural, recién exprimido.',
         price: 8000, // COP
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Bebidas",
-        observations: "Sin azúcar añadida.",
-        availabilityStatus: "disponible",
+        recommendation: 'Bebidas',
+        observations: 'Sin azúcar añadida.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Limonada Natural",
-        description: "Limonada refrescante, preparada al momento.",
+        name: 'Limonada Natural',
+        description: 'Limonada refrescante, preparada al momento.',
         price: 7000, // COP
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Bebidas",
-        observations: "Puedes pedirla endulzada o sin azúcar.",
-        availabilityStatus: "disponible",
+        recommendation: 'Bebidas',
+        observations: 'Puedes pedirla endulzada o sin azúcar.',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Coca-Cola Personal",
-        description: "Gaseosa Coca-Cola en presentación personal.",
+        name: 'Coca-Cola Personal',
+        description: 'Gaseosa Coca-Cola en presentación personal.',
         price: 5000, // COP
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Gaseosas",
-        observations: "",
-        availabilityStatus: "disponible",
+        recommendation: 'Gaseosas',
+        observations: '',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Sprite Personal",
-        description: "Gaseosa Sprite en presentación personal.",
+        name: 'Sprite Personal',
+        description: 'Gaseosa Sprite en presentación personal.',
         price: 5000, // COP
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Gaseosas",
-        observations: "",
-        availabilityStatus: "disponible",
+        recommendation: 'Gaseosas',
+        observations: '',
+        availabilityStatus: 'disponible',
       },
       {
-        name: "Agua con gas Personal",
-        description: "Agua con gas en presentación personal.",
+        name: 'Agua con gas Personal',
+        description: 'Agua con gas en presentación personal.',
         price: 4000, // COP
-        imageUrl:
-          "https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp",
+        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
         available: true,
-        recommendation: "Bebidas",
-        observations: "",
-        availabilityStatus: "disponible",
+        recommendation: 'Bebidas',
+        observations: '',
+        availabilityStatus: 'disponible',
       },
-    ];
-  };
+    ]
+  }
 
   return (
     <Container className="my-3">
       <div className="flex justify-between items-center mb-4">
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleOpenModal}
-          className=""
-        >
+        <Button variant="contained" color="primary" onClick={handleOpenModal} className="">
           Agregar Item
         </Button>
         {/* Botón "Agregar datos de ejemplo" condicional */}
-        {(userRole === "admin" || userRole === "encargado") && (
+        {(userRole === 'admin' || userRole === 'encargado') && (
           <Button
             variant="contained"
             color="success"
             onClick={handleAddSampleData}
             disabled={loadingSampleData}
           >
-            {loadingSampleData ? "Cargando Menú..." : "Cargar Menú Ejemplo"}
+            {loadingSampleData ? 'Cargando Menú...' : 'Cargar Menú Ejemplo'}
           </Button>
         )}
       </div>
@@ -5834,24 +5799,16 @@ const GestionMenu: React.FC = () => {
         initialValues={selectedItem || undefined}
         onSubmit={handleSubmit}
       />
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          sx={{ width: "100%" }}
-        >
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
           {snackbar.message}
         </Alert>
       </Snackbar>
     </Container>
-  );
-};
+  )
+}
 
-export default GestionMenu;
+export default GestionMenu
 
 /* Fin src\pages\GestionMenu.tsx */
 
@@ -6000,14 +5957,15 @@ export default Login;
 /* Fin src\pages\Login.tsx */
 
 /* Inicio src\pages\MenuPage.tsx */
+/* Inicio src\pages\MenuPage.tsx */
 /* src\pages\MenuPage.tsx */
 /* src\pages\MenuPage.tsx */
 import { Typography } from "@mui/material";
 import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { v4 as uuidv4 } from "uuid";
-import { GroupOrder, Person } from "../components/menu/GroupOrderPage"; // Importa interfaces
+
+import { Person } from "../components/menu/GroupOrderPage"; // Importa interfaces
 import JoinOrderModal from "../components/menu/JoinOrderModal";
 import PedidoForm from "../components/pedidos/PedidoForm";
 import Button from "../components/ui/Button";
@@ -6022,10 +5980,19 @@ import { db } from "../utils/firebase";
 const MenuPage: React.FC = () => {
   const { menu } = useMenu();
   const [numPeople, setNumPeople] = useState<number>(1);
-  const [people, setPeople] = useState<Person[]>([]);
+  const [people, setPeople] = useState<Person[]>(() => {
+    // Initialize people here
+    return Array.from({ length: 1 }, (_, index) => ({
+      personIndex: index,
+      userId: null,
+      name: `Persona ${index + 1}`, // Default name for initial render
+      items: [],
+      locked: false,
+      finished: false,
+    }));
+  });
   const [showMenu, setShowMenu] = useState(false);
   const [, setOpenPedidoModal] = useState(false);
-  const [loadingAddSampleData, setLoadingAddSampleData] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isCreatingSharedOrder, setIsCreatingSharedOrder] = useState(false);
   const [isJoiningOrder, setIsJoiningOrder] = useState(false);
@@ -6036,26 +6003,32 @@ const MenuPage: React.FC = () => {
   const handleNumPeopleChange = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    setNumPeople(Number(event.target.value));
-  };
+    const num = Number(event.target.value);
+    setNumPeople(num);
 
-  const handleNameChange = (index: number, value: string) => {
-    const updatedPeople = [...people];
-    updatedPeople[index].name = value;
-    setPeople(updatedPeople);
-  };
-
-  const handleStartOrder = async () => {
-    setIsCreatingSharedOrder(true);
-    const initialPeople = Array.from({ length: numPeople }, (_, index) => ({
-      personIndex: index, // Añade personIndex aquí
+    // Initialize people array here based on numPeople
+    const initialPeople = Array.from({ length: num }, (_, index) => ({
+      personIndex: index,
       userId: null,
-      name: `Persona ${index + 1}`,
+      name: `Persona ${index + 1}`, // Default name
       items: [],
       locked: false,
       finished: false,
     }));
     setPeople(initialPeople);
+  };
+
+  const handleNameChange = (index: number, value: string) => {
+    const updatedPeople = [...people];
+    if (updatedPeople[index]) {
+      // Check if updatedPeople[index] is defined
+      updatedPeople[index].name = value;
+      setPeople(updatedPeople);
+    }
+  };
+
+  const handleStartOrder = async () => {
+    setIsCreatingSharedOrder(true);
     setShowMenu(true);
 
     const code = generateCode();
@@ -6074,9 +6047,9 @@ const MenuPage: React.FC = () => {
           status: "open",
           maxPeople: numPeople,
           createdAt: new Date(),
-          participants: initialPeople,
+          participants: people, // Use the 'people' state which is now initialized
           sharedItems: [],
-        } as GroupOrder // Asegura el tipado aquí
+        }
       );
       navigate(`/menu/${groupOrderRef.id}?code=${code}`);
     } catch (error) {
@@ -6088,15 +6061,16 @@ const MenuPage: React.FC = () => {
   };
 
   const handleAddItemToPerson = (personIndex: number, item: MenuItemType) => {
-    setPeople((prevPeople) =>
-      prevPeople.map((person, index) =>
-        index === personIndex
-          ? {
-              ...person,
-              items: [...person.items, { itemId: item.id, quantity: 1 }], // Usa itemId en lugar de id
-            }
-          : person
-      )
+    setPeople(
+      (prevPeople) =>
+        prevPeople.map((person, index) =>
+          index === personIndex
+            ? {
+                ...person,
+                items: [...person.items, { itemId: item.id, quantity: 1 }], // Usa itemId en lugar de id
+              }
+            : person
+        ) as Person[]
     );
   };
 
@@ -6116,7 +6090,7 @@ const MenuPage: React.FC = () => {
           ? {
               ...person,
               items: person.items.map((item) =>
-                item.itemId === itemId // Usa itemId para comparar
+                item.id === itemId // Usa itemId para comparar
                   ? { ...item, quantity: quantityNumber }
                   : item
               ),
@@ -6132,7 +6106,7 @@ const MenuPage: React.FC = () => {
         index === personIndex
           ? {
               ...person,
-              items: person.items.filter((item) => item.itemId !== itemId), // Usa itemId para filtrar
+              items: person.items.filter((item) => item.id !== itemId), // Usa itemId para filtrar
             }
           : person
       )
@@ -6145,141 +6119,6 @@ const MenuPage: React.FC = () => {
 
   const handleClosePedidoModal = () => {
     setOpenPedidoModal(false);
-  };
-
-  const generateSampleMenuItems = () => {
-    return [
-      {
-        name: "Hamburguesa Clásica",
-        description: "Carne de res, queso cheddar, lechuga, tomate y cebolla.",
-        price: 28000,
-        imageUrl: "https://ejemplo.com/hamburguesa.jpg",
-        available: true,
-        recommendation: "Ideal con papas fritas.",
-        observations: "Se puede pedir sin cebolla.",
-        availabilityStatus: "disponible",
-        id: "sample_item_1", // Añade IDs únicos
-      },
-      {
-        name: "Pizza Margarita",
-        description: "Salsa de tomate, mozzarella fresca y albahaca.",
-        price: 35000,
-        imageUrl: "https://ejemplo.com/pizza.jpg",
-        available: true,
-        recommendation: "Perfecta para compartir.",
-        observations: "Opción vegana disponible con queso de almendras.",
-        availabilityStatus: "disponible",
-        id: "sample_item_2",
-      },
-      {
-        name: "Ensalada César",
-        description: "Lechuga romana, crutones, parmesano y aderezo César.",
-        price: 22000,
-        imageUrl: "https://ejemplo.com/ensalada.jpg",
-        available: true,
-        recommendation: "Ligera y refrescante.",
-        observations: "Se puede añadir pollo a la parrilla.",
-        availabilityStatus: "disponible",
-        id: "sample_item_3",
-      },
-      {
-        name: "Pasta Carbonara",
-        description:
-          "Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.",
-        price: 32000,
-        imageUrl: "https://ejemplo.com/pasta_carbonara.jpg",
-        available: true,
-        recommendation: "Un clásico italiano.",
-        observations: "Sin gluten disponible con pasta de arroz.",
-        availabilityStatus: "disponible",
-        id: "sample_item_4",
-      },
-      {
-        name: "Tacos al Pastor",
-        description: "Carne de cerdo adobada, piña, cebolla y cilantro.",
-        price: 30000,
-        imageUrl: "https://ejemplo.com/tacos_pastor.jpg",
-        available: true,
-        recommendation: "Sabor auténtico mexicano.",
-        observations: "Picante medio.",
-        availabilityStatus: "disponible",
-        id: "sample_item_5",
-      },
-      {
-        name: "Sushi Variado (12 piezas)",
-        description: "Selección de nigiris y makis variados.",
-        price: 50000,
-        imageUrl: "https://ejemplo.com/sushi.jpg",
-        available: true,
-        recommendation: "Para amantes del sushi.",
-        observations: "Incluye salsa de soya, wasabi y jengibre.",
-        availabilityStatus: "disponible",
-        id: "sample_item_6",
-      },
-      {
-        name: "Pollo Frito",
-        description: "Crujientes piezas de pollo frito, receta secreta.",
-        price: 15000,
-        imageUrl: "https://ejemplo.com/pollo_frito.jpg",
-        available: true,
-        recommendation: "Ideal para niños y adultos.",
-        observations: "Opción extra crujiente disponible.",
-        availabilityStatus: "disponible",
-        id: "sample_item_7",
-      },
-      {
-        name: "Sopa de Tomate",
-        description: "Sopa cremosa de tomate, hecha en casa.",
-        price: 18000,
-        imageUrl: "https://ejemplo.com/sopa_tomate.jpg",
-        available: true,
-        recommendation: "Caliente y reconfortante.",
-        observations: "Servida con pan tostado.",
-        availabilityStatus: "disponible",
-        id: "sample_item_8",
-      },
-      {
-        name: "Brownie con Helado",
-        description: "Brownie de chocolate caliente con helado de vainilla.",
-        price: 20000,
-        imageUrl: "https://ejemplo.com/brownie_helado.jpg",
-        available: true,
-        recommendation: "Postre perfecto.",
-        observations: "Se puede pedir sin nueces.",
-        availabilityStatus: "disponible",
-        id: "sample_item_9",
-      },
-      {
-        name: "Jugo de Naranja Natural",
-        description: "Jugo de naranja recién exprimido.",
-        price: 8000,
-        imageUrl: "https://ejemplo.com/jugo_naranja.jpg",
-        available: true,
-        recommendation: "Bebida refrescante.",
-        observations: "Sin azúcar añadida.",
-        availabilityStatus: "disponible",
-        id: "sample_item_10",
-      },
-    ];
-  };
-
-  const handleAddSampleData = async () => {
-    setLoadingAddSampleData(true);
-    setMessage("Agregando datos de ejemplo...");
-    try {
-      const sampleMenuItems = generateSampleMenuItems();
-      const menuCollectionRef = collection(db, COLLECTIONS.MENU);
-      for (const item of sampleMenuItems) {
-        await addDoc(menuCollectionRef, item);
-      }
-      setMessage("Datos de ejemplo agregados exitosamente!");
-    } catch (error) {
-      console.error("Error al agregar datos de ejemplo:", error);
-      setMessage("Error al agregar datos de ejemplo.");
-    } finally {
-      setLoadingAddSampleData(false);
-      setTimeout(() => setMessage(null), 5000);
-    }
   };
 
   const generateCode = () => {
@@ -6327,47 +6166,53 @@ const MenuPage: React.FC = () => {
 
   return (
     <Container className="my-8">
-      <div className="mb-4 flex justify-between items-center">
+      <div className="text-center mb-8">
         <Typography
           variant="h4"
           component="h1"
-          className="text-3xl font-bold text-gray-900"
+          className="text-3xl font-bold text-gray-900 mb-2"
         >
-          Menú
+          ¡Descubre nuestro Menú y Pide Fácil!
         </Typography>
-        <Button
-          onClick={handleAddSampleData}
-          disabled={loadingAddSampleData}
-          variant="contained"
-          color="success"
-        >
-          {loadingAddSampleData ? "Cargando..." : "Cargar Menú Ejemplo"}
-        </Button>
+        <Typography className="text-gray-600">
+          Crea un pedido compartido con amigos o únete a uno existente.
+        </Typography>
       </div>
 
-      <div className="mb-6 flex space-x-4">
+      <div className="mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-lg mx-auto">
         <Button
           variant="contained"
           color="primary"
           onClick={() => setIsCreatingSharedOrder(true)}
+          className="py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300"
         >
-          Crear Pedido Compartido
+          🎉 Crear Pedido Compartido
         </Button>
-        <Button variant="outlined" color="primary" onClick={handleJoinOrder}>
-          Unirme a Pedido Existente
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={handleJoinOrder}
+          className="py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300"
+        >
+          🤝 Unirme a Pedido Existente
         </Button>
       </div>
 
-      {message && <div className="mb-4 text-red-500">{message}</div>}
+      {message && (
+        <div className="mb-4 text-center text-red-500">{message}</div>
+      )}
 
       {isCreatingSharedOrder && !showMenu && (
-        <div className="grid gap-4 mb-4 md:grid-cols-2">
+        <div className="max-w-md mx-auto p-6 rounded-xl shadow-lg bg-white animate-slide-down overflow-hidden">
+          <Typography variant="h6" className="text-gray-800 mb-4 text-center">
+            Configura tu Pedido Compartido
+          </Typography>
           <div className="mb-4">
             <label
               htmlFor="numPeople"
               className="block text-gray-700 text-sm font-bold mb-2"
             >
-              Número de personas:
+              ¿Cuántas personas?
             </label>
             <TextField
               type="number"
@@ -6395,86 +6240,95 @@ const MenuPage: React.FC = () => {
               />
             </div>
           ))}
-          <div>
+          <div className="mt-6 text-center">
             <Button
               variant="contained"
               color="primary"
               onClick={handleStartOrder}
+              className="py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300"
             >
-              Empezar Pedido Compartido
+              Comenzar a Pedir
             </Button>
           </div>
         </div>
       )}
 
       {showMenu && (
-        <>
-          <div className="grid gap-6 md:grid-cols-3">
+        <div className="mt-10">
+          <Typography
+            variant="h5"
+            className="font-bold text-gray-900 mb-6 text-center"
+          >
+            Nuestro Menú para Hoy
+          </Typography>
+          <div className="grid gap-8 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {people.map((person, personIndex) => (
               <div
                 key={person.personIndex} // Usa personIndex como key
-                className="p-4 border rounded-lg shadow-md"
+                className="p-6 border rounded-xl shadow-md bg-white hover:shadow-lg transition-shadow duration-300"
               >
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
                   {person.name || `Persona ${personIndex + 1}`}
                 </h2>
-                <p className="text-gray-700 mb-2">Items:</p>
-                {person.items.length > 0 ? (
-                  <ul className="list-none pl-0 mb-4">
-                    {person.items.map((item) => {
+                <p className="text-gray-700 mb-3">
+                  Selecciona tus items del menú:
+                </p>
+                <ul className="mb-4 space-y-3">
+                  {person.items.length > 0 ? (
+                    person.items.map((item) => {
                       const menuItem = menu.find(
-                        (menuItem) => menuItem.id === item.itemId // Usa itemId para buscar
+                        (menuItem) => menuItem.id === item.id // Usa itemId para buscar
                       );
                       return menuItem ? (
-                        <li key={item.itemId} className="mb-2">
-                          <div className="flex items-center justify-between">
-                            <p className="text-gray-700">{menuItem.name} x </p>
-                            <div className="flex items-center space-x-2">
-                              <TextField
-                                type="number"
-                                value={item.quantity}
-                                onChange={(e) =>
-                                  handlePersonOrderItemQuantityChange(
-                                    personIndex,
-                                    item.itemId,
-                                    e.target.value
-                                  )
-                                }
-                                min="1"
-                                className="shadow appearance-none border rounded w-16 py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-center"
-                              />
-                              <Button
-                                variant="contained"
-                                color="error"
-                                onClick={() =>
-                                  handleRemoveItemFromPerson(
-                                    personIndex,
-                                    item.itemId
-                                  )
-                                }
-                                sx={{ py: 1, px: 2, fontSize: "0.8rem" }}
-                              >
-                                Eliminar
-                              </Button>
-                            </div>
+                        <li
+                          key={item.id}
+                          className="py-2 px-4 rounded-md bg-gray-100 flex items-center justify-between"
+                        >
+                          <Typography className="text-gray-800">
+                            {menuItem.name} x {item.quantity}
+                          </Typography>
+                          <div className="flex items-center space-x-2">
+                            <TextField
+                              type="number"
+                              value={item.quantity}
+                              onChange={(e) =>
+                                handlePersonOrderItemQuantityChange(
+                                  personIndex,
+                                  item.id,
+                                  e.target.value
+                                )
+                              }
+                              min="1"
+                              className="shadow appearance-none border rounded w-16 py-1 px-2 text-gray-700 leading-tight focus:outline-none focus:shadow-outline text-center"
+                            />
+                            <Button
+                              variant="contained"
+                              color="error"
+                              onClick={() =>
+                                handleRemoveItemFromPerson(personIndex, item.id)
+                              }
+                              className="py-1 px-3 text-sm rounded-md"
+                            >
+                              Eliminar
+                            </Button>
                           </div>
                         </li>
                       ) : null;
-                    })}
-                  </ul>
-                ) : (
-                  <p className="text-gray-500 mb-4">
-                    Esta persona aún no tiene items.
-                  </p>
-                )}
-                <p className="text-gray-700 font-semibold mb-2">Menú:</p>
-                <div className="grid gap-2 md:grid-cols-2">
+                    })
+                  ) : (
+                    <Typography className="text-gray-500">
+                      Aún no has seleccionado items.
+                    </Typography>
+                  )}
+                </ul>
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                   {menu.map((item) => (
                     <Button
                       key={item.id}
-                      variant="contained"
+                      variant="outlined"
                       color="primary"
                       onClick={() => handleAddItemToPerson(personIndex, item)}
+                      className="py-2 px-4 rounded-md transition-colors duration-300 border-blue-500 text-blue-500 hover:bg-blue-50"
                     >
                       {item.name} - {formatPriceCOP(item.price)}
                     </Button>
@@ -6483,17 +6337,18 @@ const MenuPage: React.FC = () => {
               </div>
             ))}
           </div>
-          <div className="mt-6">
+          <div className="mt-12 text-center">
             <Button
               variant="contained"
               color="success"
               onClick={handleOpenPedidoModal}
+              className="py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 text-xl"
             >
-              Realizar Pedido
+              ¡Realizar Pedido Grupal!
             </Button>
           </div>
           <PedidoForm onClose={handleClosePedidoModal} people={people} />
-        </>
+        </div>
       )}
 
       <JoinOrderModal
@@ -6506,6 +6361,7 @@ const MenuPage: React.FC = () => {
 };
 
 export default MenuPage;
+/* Fin src\pages\MenuPage.tsx */
 
 /* Fin src\pages\MenuPage.tsx */
 
@@ -6834,29 +6690,32 @@ code {
 /* Fin src\styles\global.css */
 
 /* Inicio src\types\css.d.ts */
-declare module '*.css';
+declare module '*.css'
+
 /* Fin src\types\css.d.ts */
 
 /* Inicio src\types\global.d.ts */
 // src/types/global.d.ts
-import { MenuItem } from "../context/AppContext";
+import { MenuItem } from '../context/AppContext'
 
 declare global {
   interface Window {
-    MercadoPago?: MercadoPago;
-    Stripe: (publicKey: string) => void;
+    MercadoPago?: MercadoPago
+    Stripe: (publicKey: string) => void
   }
-  export type MenuItemType = MenuItem; // Exporta MenuItemType
+  export type MenuItemType = MenuItem // Exporta MenuItemType
 }
 
 interface MercadoPago {
-  new(publicKey: string, options?): {
-    checkout: (params) => void;
+  new (
+    publicKey: string,
+    options?,
+  ): {
+    checkout: (params) => void
   }
 }
 
-
-export { }; // Exporta un objeto vacío para evitar error de módulo
+export {} // Exporta un objeto vacío para evitar error de módulo
 
 /* Fin src\types\global.d.ts */
 
@@ -6937,15 +6796,13 @@ export default theme;
 /* Inicio tailwind.config.js */
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {},
   },
   plugins: [],
 }
+
 /* Fin tailwind.config.js */
 
 /* Inicio tsconfig.app.json */
@@ -6954,11 +6811,7 @@ export default {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": [
-      "ES2020",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
     "noImplicitAny": false,
@@ -6976,32 +6829,43 @@ export default {
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }
+
 /* Fin tsconfig.app.json */
 
 /* Inicio tsconfig.json */
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.app.json"
-    },
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ],
   "compilerOptions": {
     "typeRoots": [
-      "src/types"
+      "src/types",
+      "./node_modules/@types"
     ],
+    "outDir": "dist",
+    "rootDir": "src",
     "strict": false,
     "noImplicitAny": false,
     "allowJs": true,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": false,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+  },
+  "include": [
+    "src"
+  ], //  <-  Incluye solo la carpeta 'src' (archivos fuente)
+  "exclude": [
+    "node_modules",
+    "dist",
+    "eslint.config.js"
+  ]
 }
 /* Fin tsconfig.json */
 
@@ -7045,31 +6909,31 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        "name": "SrPol",
-        "short_name": "SrPol",
-        "description": "Aplicación para restaurantes",
-        "theme_color": "#ffffff",
-        "icons": [
+        name: 'SrPol',
+        short_name: 'SrPol',
+        description: 'Aplicación para restaurantes',
+        theme_color: '#ffffff',
+        icons: [
           {
-            "src": "/logo192.png",
-            "sizes": "192x192",
-            "type": "image/png"
+            src: '/logo192.png',
+            sizes: '192x192',
+            type: 'image/png',
           },
           {
-            "src": "/logo512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-          }
+            src: '/logo512.png',
+            sizes: '512x512',
+            type: 'image/png',
+          },
         ],
-        "start_url": ".",
-        "display": "standalone",
-        "background_color": "#ffffff"
+        start_url: '.',
+        display: 'standalone',
+        background_color: '#ffffff',
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
       },
-    })
-    
+    }),
   ],
 })
+
 /* Fin vite.config.ts */
