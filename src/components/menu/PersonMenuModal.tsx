@@ -1,96 +1,86 @@
 // src/components/forms/PedidoForm.tsx
-import { Timestamp, addDoc, collection } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { useAuth } from "../../hooks/useAuth";
-import { useMenu } from "../../hooks/useMenu";
-import { db } from "../../utils/firebase";
+import { Timestamp, addDoc, collection } from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
+import { useAuth } from '../../hooks/useAuth'
+import { useMenu } from '../../hooks/useMenu'
+import { db } from '../../utils/firebase'
 
 interface PedidoFormProps {
-  onClose: () => void;
+  onClose: () => void
   people?: {
-    id: string;
-    name: string;
-    items: { id: string; quantity: number }[];
-  }[];
+    id: string
+    name: string
+    items: { id: string; quantity: number }[]
+  }[]
   sharedOrderItems?: {
-    itemId: string;
-    quantity: number;
-    personIds: string[];
-  }[]; // Prop para items compartidos
+    itemId: string
+    quantity: number
+    personIds: string[]
+  }[] // Prop para items compartidos
 }
 
-const PedidoForm: React.FC<PedidoFormProps> = ({
-  onClose,
-  people,
-  sharedOrderItems,
-}) => {
-  const { menu } = useMenu();
-  const { user, addPoints } = useAuth();
+const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderItems }) => {
+  const { menu } = useMenu()
+  const { user, addPoints } = useAuth()
 
-  const [items, setItems] = useState<
-    { id: string; quantity: number; assignedTo: string }[]
-  >([]);
-  const [peopleOrder, setPeopleOrder] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [sede, setSede] = useState("");
-  const [deliveryFee, setDeliveryFee] = useState(0);
-  const [deliveryIncluded, setDeliveryIncluded] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState("contraentrega");
+  const [items, setItems] = useState<{ id: string; quantity: number; assignedTo: string }[]>([])
+  const [peopleOrder, setPeopleOrder] = useState<{ id: string; name: string }[]>([])
+  const [sede, setSede] = useState('')
+  const [deliveryFee, setDeliveryFee] = useState(0)
+  const [deliveryIncluded, setDeliveryIncluded] = useState(true)
+  const [paymentMethod, setPaymentMethod] = useState('contraentrega')
 
   useEffect(() => {
     if (people) {
-      setPeopleOrder(
-        people.map((person) => ({ id: person.id, name: person.name }))
-      );
+      setPeopleOrder(people.map((person) => ({ id: person.id, name: person.name })))
       const newItems = people.flatMap((person) =>
         person.items.map((item) => ({
           id: item.id,
           quantity: item.quantity,
           assignedTo: person.name,
-        }))
-      );
-      setItems(newItems);
+        })),
+      )
+      setItems(newItems)
     }
-  }, [people]);
+  }, [people])
 
   // Simulación de sedes disponibles (puedes obtenerlas de Firestore)
-  const sedesDisponibles = ["Sede Norte", "Sede Sur", "Sede Centro"];
+  const sedesDisponibles = ['Sede Norte', 'Sede Sur', 'Sede Centro']
 
   useEffect(() => {
     if (sedesDisponibles.length === 1) {
-      setSede(sedesDisponibles[0]);
+      setSede(sedesDisponibles[0])
     }
-  }, [sedesDisponibles]);
+  }, [sedesDisponibles])
 
   const calculateTotal = () => {
-    let total = 0;
+    let total = 0
     items.forEach((item) => {
-      const menuItem = menu.find((m) => m.id === item.id);
+      const menuItem = menu.find((m) => m.id === item.id)
       if (menuItem) {
-        total += menuItem.price * item.quantity;
+        total += menuItem.price * item.quantity
       }
-    });
+    })
     if (sharedOrderItems) {
       // Sumar el costo de items compartidos
       sharedOrderItems.forEach((sharedItem) => {
-        const menuItem = menu.find((m) => m.id === sharedItem.itemId);
+        const menuItem = menu.find((m) => m.id === sharedItem.itemId)
         if (menuItem) {
-          total += menuItem.price * sharedItem.personIds.length; // Precio por cada persona que lo pide
+          total += menuItem.price * sharedItem.personIds.length // Precio por cada persona que lo pide
         }
-      });
+      })
     }
-    return total + deliveryFee;
-  };
+    return total + deliveryFee
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!user) return;
+    event.preventDefault()
+    if (!user) return
 
     try {
-      const total = calculateTotal();
-      const orderId = uuidv4();
+      const total = calculateTotal()
+      const orderId = uuidv4()
       const orderData = {
         userId: user.uid,
         items: items.map((item) => ({
@@ -100,7 +90,7 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
         })),
         people: peopleOrder,
         sede: sede,
-        status: "pendiente",
+        status: 'pendiente',
         total: total,
         deliveryFee: deliveryFee,
         deliveryIncluded: deliveryIncluded,
@@ -114,29 +104,26 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
               personIds: si.personIds,
             }))
           : [],
-      };
+      }
 
-      await addDoc(collection(db, "pedidos"), orderData);
-      handlePaymentSuccess();
+      await addDoc(collection(db, 'pedidos'), orderData)
+      handlePaymentSuccess()
     } catch (error) {
-      console.error("Error al agregar el pedido:", error);
+      console.error('Error al agregar el pedido:', error)
     }
-  };
+  }
 
   const handlePaymentSuccess = async () => {
-    await addPoints();
-    alert("Pedido realizado con éxito y puntos sumados.");
-    onClose();
-  };
+    await addPoints()
+    alert('Pedido realizado con éxito y puntos sumados.')
+    onClose()
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <h2 className="text-xl font-bold text-gray-900">Realizar Pedido</h2>
       <div>
-        <label
-          htmlFor="sede"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="sede" className="block text-sm font-medium text-gray-700">
           Sede
         </label>
         <select
@@ -154,10 +141,7 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
         </select>
       </div>
       <div>
-        <label
-          htmlFor="deliveryFee"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="deliveryFee" className="block text-sm font-medium text-gray-700">
           Costo de Envío
         </label>
         <input
@@ -182,19 +166,13 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
           />
         </div>
         <div className="ml-2 text-sm">
-          <label
-            htmlFor="deliveryIncluded"
-            className="font-medium text-gray-700"
-          >
+          <label htmlFor="deliveryIncluded" className="font-medium text-gray-700">
             ¿El domicilio está incluido?
           </label>
         </div>
       </div>
       <div>
-        <label
-          htmlFor="paymentMethod"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="paymentMethod" className="block text-sm font-medium text-gray-700">
           Método de Pago
         </label>
         <select
@@ -212,11 +190,11 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
           type="submit"
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
-          Realizar Pedido
+          Realizar Pedido2
         </button>
       </div>
     </form>
-  );
-};
+  )
+}
 
-export default PedidoForm;
+export default PedidoForm

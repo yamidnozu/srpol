@@ -1,545 +1,507 @@
-/* Inicio src\components\menu\GroupOrderPage.tsx */
-import React, { useEffect, useRef, useState } from "react";
-import { MenuItem as MenuItemType } from "../../context/AppContext";
-import { useMenu } from "../../hooks/useMenu";
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* src/components/menu/GroupOrderPage.tsx */
+import { doc, onSnapshot, updateDoc } from 'firebase/firestore'
+import React, { useEffect, useRef, useState } from 'react'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { MenuItem as MenuItemType } from '../../context/AppContext'
+import { useAuth } from '../../hooks/useAuth'
+import { useMenu } from '../../hooks/useMenu'
+import { COLLECTIONS } from '../../utils/constants'
+import { db } from '../../utils/firebase'
+import NameModal from './NameModal'
+import OrderReview from './partials/OrderReview'
+import PeopleSelection from './partials/PeopleSelection'
+import PersonOrder from './partials/PersonOrder'
+import SharedOrder from './partials/SharedOrder'
 
-import { doc, onSnapshot, updateDoc } from "firebase/firestore";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import { COLLECTIONS } from "../../utils/constants";
-import { db } from "../../utils/firebase";
-import NameModal from "./MenuModal"; // Renamed import to NameModal to avoid confusion
-import OrderReview from "./partials/OrderReview";
-import PeopleSelection from "./partials/PeopleSelection";
-import PersonOrder from "./partials/PersonOrder";
-import SharedOrder from "./partials/SharedOrder";
-
-// Export the Person interface
 export interface Person {
-  personIndex: number;
-  userId: string | null;
-  name: string;
-  items: { id: string; quantity: number }[];
-  locked?: boolean;
-  finished?: boolean;
+  personIndex: number
+  userId: string | null
+  name: string
+  items: { id: string; quantity: number }[]
+  locked?: boolean
+  finished?: boolean
 }
 
-// Export the SharedOrderItem interface
 export interface SharedOrderItem {
-  itemId: string;
-  quantity: number;
-  personIds: string[];
+  itemId: string
+  quantity: number
+  personIds: string[]
 }
 
 export interface GroupOrderPageProps {
-  name: string;
+  name: string
+}
+
+/** Estructura (aprox) en Firestore de groupOrders */
+interface GroupOrderData {
+  code: string
+  ownerId: string
+  status: string
+  participants: Person[]
+  sharedItems: SharedOrderItem[]
+  orderPlaced?: boolean
+  allFinished?: boolean
+  showPricesToAll?: boolean
 }
 
 const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
-  const { menu } = useMenu();
-  const { user } = useAuth();
-  const [numPeople, setNumPeople] = useState<number>(1);
-  const [people, setPeople] = useState<Person[]>([]);
-  const [showPeopleNames, setShowPeopleNames] = useState(false);
-  const [showPedidoForm, setShowPedidoForm] = useState(false);
-  const [sharedOrderItems, setSharedOrderItems] = useState<SharedOrderItem[]>(
-    []
-  );
-  const [activeTab, setActiveTab] = useState<string>("shared");
-  const [feedbackMessage] = useState<string>("");
-  const [groupOrderCode, setGroupOrderCode] = useState<string | null>(null);
-  const [groupOrderId, setGroupOrderId] = useState<string | null>(null);
-  const [isOwner, setIsOwner] = useState(false);
-  const [allFinished, setAllFinished] = useState(false);
-  const [showNameModal, setShowNameModal] = useState(false); // Estado para el modal de nombre
-  const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(
-    null
-  ); // Indice de la persona actual para el modal de nombre
-  const navigate = useNavigate();
-  const [orderPlaced, setOrderPlaced] = useState(false); // New state to track if order is placed
+  const { menu } = useMenu()
+  const { user } = useAuth()
+  const [numPeople, setNumPeople] = useState<number>(1)
+  const [people, setPeople] = useState<Person[]>([])
+  const [showPeopleNames, setShowPeopleNames] = useState(false)
+  const [showPedidoForm, setShowPedidoForm] = useState(false)
+  const [sharedOrderItems, setSharedOrderItems] = useState<SharedOrderItem[]>([])
+  const [activeTab, setActiveTab] = useState<string>('shared')
+  const [feedbackMessage] = useState<string>('')
 
-  const sharedOrderSummaryRef = useRef<HTMLDivElement>(null);
-  const personOrderSummaryRef = useRef<HTMLDivElement>(null);
-  const [, setIsMobile] = useState(false);
-  const [, setIsSummaryVisible] = useState(true);
-  const { groupOrderId: routeGroupId } = useParams();
-  const [searchParams] = useSearchParams();
-  const codeFromURL = searchParams.get("code");
-  const joiningWithCode = !!codeFromURL; // Determina si se está uniendo con código
+  const [groupOrderCode, setGroupOrderCode] = useState<string | null>(null)
+  const [groupOrderId, setGroupOrderId] = useState<string | null>(null)
+  const [isOwner, setIsOwner] = useState(false)
+  const [allFinished, setAllFinished] = useState(false)
+  const [showNameModal, setShowNameModal] = useState(false)
+  const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(null)
+  const [orderPlaced, setOrderPlaced] = useState(false)
 
-  const filteredMenu = menu.filter(
-    (item) => item.availabilityStatus !== "noDisponibleLargoPlazo"
-  );
+  // Para visibilidad de precios
+  const [showPricesToAll, setShowPricesToAll] = useState(false)
 
-  const menuCategories = filteredMenu.reduce((categories, item) => {
-    const category = item.recommendation || "General";
-    if (!categories[category]) {
-      categories[category] = [];
-    }
-    categories[category].push(item);
-    return categories;
-  }, {} as { [category: string]: MenuItemType[] });
+  const [tempPersonName, setTempPersonName] = useState<string>('')
+
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const codeFromURL = searchParams.get('code')
+  const joiningWithCode = !!codeFromURL
+
+  const sharedOrderSummaryRef = useRef<HTMLDivElement>(null)
+  const personOrderSummaryRef = useRef<HTMLDivElement>(null)
+  const [, setIsMobile] = useState(false)
+  const [, setIsSummaryVisible] = useState(true)
+
+  const { groupOrderId: routeGroupId } = useParams()
 
   useEffect(() => {
     if (routeGroupId) {
-      setGroupOrderId(routeGroupId);
-      setGroupOrderCode(codeFromURL);
-      subscribeToGroupOrder(routeGroupId);
+      setGroupOrderId(routeGroupId)
+      setGroupOrderCode(codeFromURL)
+      subscribeToGroupOrder(routeGroupId)
     } else {
-      console.log(
-        "GroupOrderPage - No routeGroupId, not subscribing to group order."
-      );
+      console.log('GroupOrderPage - No routeGroupId, not subscribing to group order.')
     }
-  }, [routeGroupId, codeFromURL]);
+  }, [routeGroupId, codeFromURL])
 
   useEffect(() => {
-    const checkMobile = () => window.innerWidth < 768;
-    setIsMobile(checkMobile());
-    const handleResize = () => setIsMobile(checkMobile());
-    window.addEventListener("resize", handleResize);
-    setIsSummaryVisible(!checkMobile());
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    const checkMobile = () => window.innerWidth < 768
+    setIsMobile(checkMobile())
+    const handleResize = () => setIsMobile(checkMobile())
+    window.addEventListener('resize', handleResize)
+    setIsSummaryVisible(!checkMobile())
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const subscribeToGroupOrder = (groupId: string) => {
-    if (!groupId) return; // Avoid subscribing with empty groupId
-    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupId);
+    if (!groupId) return
+    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupId)
 
     return onSnapshot(
       groupOrderDocRef,
       (docSnapshot) => {
-        if (docSnapshot.exists()) {
-          const groupOrderData = docSnapshot.data();
-          if (groupOrderData) {
-            setGroupOrderCode(groupOrderData.code as string);
-            setPeople(groupOrderData.participants as Person[]);
-            setSharedOrderItems(
-              groupOrderData.sharedItems as SharedOrderItem[]
-            );
-            setIsOwner(user?.uid === groupOrderData.ownerId);
-            const finishedCheck = (
-              groupOrderData.participants as Person[]
-            )?.every((p) => p.finished);
-            setAllFinished(finishedCheck);
-            setOrderPlaced(groupOrderData.orderPlaced || false); // Get orderPlaced status
+        if (!docSnapshot.exists()) {
+          navigate('/menu')
+          return
+        }
+        const groupOrderData = docSnapshot.data() as GroupOrderData
 
-            if (
-              groupOrderData.participants &&
-              groupOrderData.participants.length !== numPeople
-            ) {
-              setNumPeople(groupOrderData.participants.length);
-            }
+        setGroupOrderCode(groupOrderData.code)
+        setPeople(groupOrderData.participants)
+        setSharedOrderItems(groupOrderData.sharedItems)
+        setIsOwner(user?.uid === groupOrderData.ownerId)
+        setAllFinished(groupOrderData.participants.every((p) => p.finished))
+        setOrderPlaced(!!groupOrderData.orderPlaced)
 
-            if (groupOrderData.orderPlaced) {
-              // If order is placed, show summary
-              setShowPedidoForm(true);
-            } else {
-              setShowPedidoForm(false); // Otherwise, ensure PedidoForm is closed
-            }
-          }
-        } else {
-          navigate("/menu");
+        // Sincronizamos showPricesToAll
+        setShowPricesToAll(!!groupOrderData.showPricesToAll)
+
+        // Ajustamos numPeople para que coincida
+        const participantsList = groupOrderData.participants
+        if (participantsList && participantsList.length && participantsList.length !== numPeople) {
+          setNumPeople(participantsList.length)
+        }
+
+        // Si ya se marcó que el pedido fue realizado, mostramos la revisión
+        if (groupOrderData.orderPlaced) {
+          setShowPedidoForm(true)
         }
       },
       () => {
-        navigate("/menu");
-      }
-    );
-  };
+        // On error => volver a /menu
+        navigate('/menu')
+      },
+    )
+  }
 
-  const handleNumPeopleChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const num = Number(event.target.value);
-    setNumPeople(num);
-
+  const handleNumPeopleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const num = Number(event.target.value)
+    setNumPeople(num)
     setPeople((prevPeople) => {
-      const currentPeopleCount = prevPeople.length;
+      const currentPeopleCount = prevPeople.length
       if (num > currentPeopleCount) {
-        const newPeople = Array.from(
-          { length: num - currentPeopleCount },
-          (_, index) => ({
-            personIndex: currentPeopleCount + index,
-            userId: null,
-            name: `Persona ${currentPeopleCount + index + 1}`,
-            items: [],
-            locked: false,
-            finished: false,
-          })
-        );
-        return [...prevPeople, ...newPeople];
+        const newPeople = Array.from({ length: num - currentPeopleCount }, (_, index) => ({
+          personIndex: currentPeopleCount + index,
+          userId: null,
+          name: `Persona ${currentPeopleCount + index + 1}`,
+          items: [],
+          locked: false,
+          finished: false,
+        }))
+        return [...prevPeople, ...newPeople]
       } else if (num < currentPeopleCount) {
-        return prevPeople.slice(0, num);
+        return prevPeople.slice(0, num)
       } else {
-        return prevPeople;
+        return prevPeople
       }
-    });
-  };
+    })
+  }
 
   const handlePersonNameChange = (index: number, name: string) => {
-    const updatedPeople = [...people];
+    const updatedPeople = [...people]
     if (updatedPeople[index]) {
-      updatedPeople[index].name = name;
-      setPeople(updatedPeople);
-    } else {
-      console.error(`Index ${index} out of bounds for people array.`);
+      updatedPeople[index].name = name
+      setPeople(updatedPeople)
     }
-  };
+  }
 
   const handleStartOrder = () => {
-    if (people.every((person) => person.name.trim() !== "")) {
-      setShowPeopleNames(true);
-      setActiveTab("shared");
+    if (people.every((person) => person.name.trim() !== '')) {
+      setShowPeopleNames(true)
+      setActiveTab('shared')
     } else {
-      alert("Por favor, ingresa el nombre de cada persona.");
+      alert('Por favor, ingresa el nombre de cada persona.')
     }
-  };
-
-  const handleReviewOrder = () => {
-    distributeSharedOrderItems();
-    setShowPedidoForm(true);
-  };
-
-  const calculateSubtotal = (
-    personItems: { id: string; quantity: number }[]
-  ) => {
-    let total = 0;
-    personItems.forEach((item) => {
-      const menuItem = menu.find((m) => m.id === item.id);
-      if (menuItem) {
-        total += menuItem.price * item.quantity;
-      }
-    });
-    return total;
-  };
-
-  const calculateSharedSubtotal = () => {
-    let total = 0;
-    sharedOrderItems.forEach((sharedItem) => {
-      const menuItem = menu.find((m) => m.id === sharedItem.itemId);
-      if (menuItem) {
-        total += menuItem.price * sharedItem.quantity;
-      }
-    });
-    return total;
-  };
+  }
 
   const handleAddToSharedOrder = async (item: MenuItemType) => {
-    if (showPedidoForm || orderPlaced) return; // Prevent adding if PedidoForm is open or order is placed
-    if (item.availabilityStatus !== "disponible") {
-      return;
-    }
+    if (orderPlaced || !groupOrderId) return
+    if (item.availabilityStatus !== 'disponible') return
+
     const existingItemIndex = sharedOrderItems.findIndex(
-      (sharedItem) => sharedItem.itemId === item.id
-    );
-    let updatedSharedOrderItems;
+      (sharedItem) => sharedItem.itemId === item.id,
+    )
+    let updatedSharedOrderItems: SharedOrderItem[]
     if (existingItemIndex > -1) {
       updatedSharedOrderItems = sharedOrderItems.map((si, index) =>
-        index === existingItemIndex ? { ...si, quantity: si.quantity + 1 } : si
-      );
+        index === existingItemIndex ? { ...si, quantity: si.quantity + 1 } : si,
+      )
     } else {
       updatedSharedOrderItems = [
         ...sharedOrderItems,
         { itemId: item.id, quantity: 1, personIds: [] },
-      ];
+      ]
     }
-    setSharedOrderItems(updatedSharedOrderItems);
-    if (groupOrderId) {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
-      await updateDoc(groupOrderDocRef, {
-        sharedItems: updatedSharedOrderItems,
-      });
-    }
-  };
+    setSharedOrderItems(updatedSharedOrderItems)
 
-  const handleSharedOrderItemQuantityChange = async (
-    itemId: string,
-    quantity: number
-  ) => {
-    if (showPedidoForm || orderPlaced) return; // Prevent quantity change if PedidoForm is open or order is placed
-    if (quantity < 0) return;
-    const updatedSharedOrderItems = sharedOrderItems.map((sharedItem) =>
-      sharedItem.itemId === itemId ? { ...sharedItem, quantity } : sharedItem
-    );
-    setSharedOrderItems(updatedSharedOrderItems);
-    if (groupOrderId) {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+    try {
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
       await updateDoc(groupOrderDocRef, {
         sharedItems: updatedSharedOrderItems,
-      });
+      })
+    } catch (error) {
+      console.error('Error al actualizar items compartidos:', error)
     }
-  };
+  }
+
+  const handleSharedOrderItemQuantityChange = async (itemId: string, quantity: number) => {
+    if (orderPlaced || !groupOrderId) return
+    if (quantity < 0) return
+
+    const updatedSharedOrderItems = sharedOrderItems.map((sharedItem) =>
+      sharedItem.itemId === itemId ? { ...sharedItem, quantity } : sharedItem,
+    )
+    setSharedOrderItems(updatedSharedOrderItems)
+
+    try {
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
+      await updateDoc(groupOrderDocRef, {
+        sharedItems: updatedSharedOrderItems,
+      })
+    } catch (error) {
+      console.error('Error actualizando sharedOrderItems:', error)
+    }
+  }
 
   const handleRemoveSharedOrderItem = async (itemId: string) => {
-    if (showPedidoForm || orderPlaced) return; // Prevent removal if PedidoForm is open or order is placed
-    const updatedSharedOrderItems = sharedOrderItems.filter(
-      (item) => item.itemId !== itemId
-    );
-    setSharedOrderItems(updatedSharedOrderItems);
-    if (groupOrderId) {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
+    if (orderPlaced || !groupOrderId) return
+
+    const updatedSharedOrderItems = sharedOrderItems.filter((item) => item.itemId !== itemId)
+    setSharedOrderItems(updatedSharedOrderItems)
+    try {
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
       await updateDoc(groupOrderDocRef, {
         sharedItems: updatedSharedOrderItems,
-      });
+      })
+    } catch (error) {
+      console.error('Error al remover item compartido:', error)
     }
-  };
+  }
 
-  const distributeSharedOrderItems = () => {
-    const itemsToDistribute = [...sharedOrderItems];
-    if (!people || people.length === 0) {
-      console.error(
-        "Error: People array is empty when distributing shared items."
-      );
-      return;
+  const handleAddItemToPerson = async (personIndex: number, menuItem: MenuItemType) => {
+    if (orderPlaced || !groupOrderId || !user) return
+
+    const currentPerson = people[personIndex]
+    // Chequeo de lock
+    if (currentPerson.locked && currentPerson.userId !== user.uid) {
+      alert('Esta pestaña está siendo usada por otra persona')
+      return
     }
 
-    const updatedPeople = people.map((person) => ({
-      ...person,
-      items: [...person.items],
-    }));
-
-    itemsToDistribute.forEach((sharedItem) => {
-      const menuItem = menu.find((m) => m.id === sharedItem.itemId);
-      if (menuItem) {
-        for (let i = 0; i < sharedItem.quantity; i++) {
-          if (updatedPeople.length === 0) {
-            console.error(
-              "Error: updatedPeople array is empty during item distribution."
-            );
-            return;
-          }
-          const personToAssign = updatedPeople.reduce(
-            (bestPerson, currentPerson) => {
-              if (
-                !bestPerson ||
-                !bestPerson.items ||
-                !currentPerson ||
-                !currentPerson.items
-              ) {
-                console.error(
-                  "Error: Undefined person object encountered in reduce function.",
-                  { bestPerson, currentPerson }
-                );
-                return bestPerson;
-              }
-
-              const bestPersonItemsCount = bestPerson.items.reduce(
-                (sum, item) => sum + item.quantity,
-                0
-              );
-              const currentPersonItemsCount = currentPerson.items.reduce(
-                (sum, item) => sum + item.quantity,
-                0
-              );
-              return currentPersonItemsCount < bestPersonItemsCount
-                ? currentPerson
-                : bestPerson;
-            },
-            updatedPeople[0]
-          );
-          if (personToAssign && personToAssign.items) {
-            personToAssign.items.push({ id: sharedItem.itemId, quantity: 1 });
-          }
-        }
+    let updatedParticipants = [...people]
+    // Si no está bloqueada, bloquear
+    if (!currentPerson.locked) {
+      if (currentPerson.name.startsWith('Persona')) {
+        setCurrentPersonIndex(personIndex)
+        setTempPersonName(currentPerson.name)
+        setShowNameModal(true)
       }
-    });
-    setPeople(updatedPeople);
-    setSharedOrderItems([]);
-  };
-
-  const handleAddItemToPerson = async (
-    personIndex: number,
-    menuItemToAdd: MenuItemType // More descriptive parameter name
-  ) => {
-    if (showPedidoForm || orderPlaced) return; // Prevent adding items if PedidoForm is open or order is placed
-
-    if (
-      !menuItemToAdd ||
-      typeof menuItemToAdd !== "object" ||
-      !menuItemToAdd.id
-    ) {
-      console.error(
-        "GroupOrderPage - handleAddItemToPerson - Invalid menuItemToAdd object received:",
-        menuItemToAdd
-      );
-      return;
+      updatedParticipants = updatedParticipants.map((p, idx) =>
+        idx === personIndex ? { ...p, userId: user.uid, locked: true } : p,
+      )
     }
 
-    if (menuItemToAdd.availabilityStatus !== "disponible") {
-      return;
+    // Insert item si está disponible
+    if (menuItem.availabilityStatus !== 'disponible') {
+      return
     }
-
-    const updatedParticipants = people.map((p, index) => {
-      if (index === personIndex) {
-        const itemExists = p.items.some(
-          (orderItem) => orderItem.id === menuItemToAdd.id
-        );
+    updatedParticipants = updatedParticipants.map((p, idx) => {
+      if (idx === personIndex) {
+        const itemExists = p.items.some((orderItem) => orderItem.id === menuItem.id)
         if (itemExists) {
           return {
             ...p,
             items: p.items.map((orderItem) =>
-              orderItem.id === menuItemToAdd.id
+              orderItem.id === menuItem.id
                 ? { ...orderItem, quantity: orderItem.quantity + 1 }
-                : orderItem
+                : orderItem,
             ),
-          };
+          }
         } else {
           return {
             ...p,
-            items: [...p.items, { id: menuItemToAdd.id, quantity: 1 }],
-          };
+            items: [...p.items, { id: menuItem.id, quantity: 1 }],
+          }
         }
       }
-      return p;
-    });
-    setPeople(updatedParticipants);
+      return p
+    })
 
-    if (groupOrderId) {
-      try {
-        const groupOrderDocRef = doc(
-          db,
-          COLLECTIONS.GROUP_ORDERS,
-          groupOrderId
-        );
-        await updateDoc(groupOrderDocRef, {
-          participants: updatedParticipants,
-        });
-      } catch (error) {
-        console.error(
-          "GroupOrderPage - handleAddItemToPerson - Firestore update FAILED",
-          error
-        ); // Log: Firestore update fail
-      }
+    setPeople(updatedParticipants)
+
+    try {
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
+      await updateDoc(groupOrderDocRef, {
+        participants: updatedParticipants,
+      })
+    } catch (error) {
+      console.error('Firestore update FAILED', error)
     }
-  };
+  }
 
   const handlePersonOrderItemQuantityChange = async (
     personIndex: number,
     itemId: string,
-    quantity: number
+    quantity: number,
   ) => {
-    if (showPedidoForm || orderPlaced) return; // Prevent quantity changes if PedidoForm is open or order is placed
-    if (quantity < 0) return;
+    if (orderPlaced || !groupOrderId) return
+    if (quantity < 0) return
+
     const updatedParticipants = people.map((person, index) => {
       if (index === personIndex) {
         return {
           ...person,
-          items: person.items.map((it) =>
-            it.id === itemId ? { ...it, quantity } : it
-          ),
-        };
+          items: person.items.map((it) => (it.id === itemId ? { ...it, quantity } : it)),
+        }
       }
-      return person;
-    });
-    setPeople(updatedParticipants);
+      return person
+    })
+    setPeople(updatedParticipants)
 
-    if (groupOrderId) {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
-      await updateDoc(groupOrderDocRef, { participants: updatedParticipants });
+    try {
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
+      await updateDoc(groupOrderDocRef, { participants: updatedParticipants })
+    } catch (error) {
+      console.error('Error actualizando cantidad de item de persona:', error)
     }
-  };
+  }
 
-  const handleRemoveItemFromPerson = async (
-    personIndex: number,
-    itemId: string
-  ) => {
-    if (showPedidoForm || orderPlaced) return; // Prevent item removal if PedidoForm is open or order is placed
+  const handleRemoveItemFromPerson = async (personIndex: number, itemId: string) => {
+    if (orderPlaced || !groupOrderId) return
+
     const updatedParticipants = people.map((person, index) => {
       if (index === personIndex) {
         return {
           ...person,
           items: person.items.filter((item) => item.id !== itemId),
-        };
+        }
       }
-      return person;
-    });
-    setPeople(updatedParticipants);
+      return person
+    })
+    setPeople(updatedParticipants)
 
-    if (groupOrderId) {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
-      await updateDoc(groupOrderDocRef, { participants: updatedParticipants });
+    try {
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
+      await updateDoc(groupOrderDocRef, { participants: updatedParticipants })
+    } catch (error) {
+      console.error('Error al remover item de persona:', error)
     }
-  };
+  }
 
   const handleClaimPersonTab = async (personIndex: number) => {
-    if (showPedidoForm || orderPlaced) return; // Prevent claiming tab if PedidoForm is open or order is placed
-    if (!groupOrderId || !user) return;
+    if (orderPlaced || !groupOrderId || !user) return
 
-    const currentPerson = people[personIndex];
-    if (currentPerson && currentPerson.name.startsWith("Persona ")) {
-      setCurrentPersonIndex(personIndex);
-      setShowNameModal(true);
-      return; // Show name modal and exit
+    const currentPerson = people[personIndex]
+    if (currentPerson.locked && currentPerson.userId !== user.uid) {
+      alert('Esta pestaña ya está siendo usada por otra persona')
+      return
     }
 
-    const updatedParticipants = people.map((person, index) => {
-      if (index === personIndex && !person.locked) {
-        return { ...person, userId: user.uid, locked: true };
-      }
-      return person;
-    });
-    setPeople(updatedParticipants);
+    if (currentPerson.name.startsWith('Persona ')) {
+      setCurrentPersonIndex(personIndex)
+      setTempPersonName(currentPerson.name)
+      setShowNameModal(true)
+      return
+    }
 
-    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
-    await updateDoc(groupOrderDocRef, { participants: updatedParticipants });
-  };
+    const updatedParticipants = people.map((p, idx) =>
+      idx === personIndex ? { ...p, userId: user.uid, locked: true } : p,
+    )
+    setPeople(updatedParticipants)
+
+    try {
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
+      await updateDoc(groupOrderDocRef, { participants: updatedParticipants })
+    } catch (error) {
+      console.error('Error al bloquear pestaña para el usuario:', error)
+    }
+  }
 
   const handlePersonFinishedOrder = async (personIndex: number) => {
-    if (showPedidoForm || orderPlaced) return; // Prevent finishing order if PedidoForm is open or order is placed
-    if (!groupOrderId || !user) return;
+    if (orderPlaced || !groupOrderId || !user) return
 
-    const currentUserPersonIndex = people.findIndex(
-      (p) => p.userId === user.uid
-    );
+    const currentUserPersonIndex = people.findIndex((p) => p.userId === user.uid)
     if (currentUserPersonIndex !== personIndex) {
-      alert("No puedes terminar el pedido de otra persona.");
-      return;
+      alert('No puedes terminar el pedido de otra persona.')
+      return
     }
 
     const updatedParticipants = people.map((person, index) => {
       if (index === personIndex) {
-        return { ...person, finished: true };
+        return { ...person, finished: true }
       }
-      return person;
-    });
-    setPeople(updatedParticipants);
-    const allAreFinished = updatedParticipants.every((p) => p.finished);
-    setAllFinished(allAreFinished);
+      return person
+    })
+    setPeople(updatedParticipants)
+    const allAreFinished = updatedParticipants.every((p) => p.finished)
+    setAllFinished(allAreFinished)
 
-    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
-    await updateDoc(groupOrderDocRef, {
-      participants: updatedParticipants,
-      allFinished: allAreFinished,
-    });
-  };
+    try {
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
+      await updateDoc(groupOrderDocRef, {
+        participants: updatedParticipants,
+        allFinished: allAreFinished,
+      })
+    } catch (error) {
+      console.error('Error al marcar persona como finished:', error)
+    }
+  }
 
   const handleNameModalClose = () => {
-    setShowNameModal(false);
-    setCurrentPersonIndex(null);
-  };
+    setShowNameModal(false)
+    setCurrentPersonIndex(null)
+  }
 
   const handleNameSubmit = async (name: string) => {
-    if (showPedidoForm || orderPlaced) return; // Prevent name submission if PedidoForm is open or order is placed
-    if (currentPersonIndex !== null && groupOrderId) {
-      const updatedParticipants = people.map((person, index) =>
-        index === currentPersonIndex
-          ? { ...person, name, userId: user?.uid, locked: true }
-          : person
-      );
-      setPeople(updatedParticipants);
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
-      await updateDoc(groupOrderDocRef, { participants: updatedParticipants });
-      setShowNameModal(false);
-      setCurrentPersonIndex(null);
+    if (!groupOrderId || currentPersonIndex === null || !user) return
+
+    const updatedParticipants = people.map((person, index) => {
+      if (index === currentPersonIndex) {
+        const finalName = name.trim() !== '' ? name : person.name
+        return {
+          ...person,
+          name: finalName,
+          userId: user.uid,
+          locked: true,
+        }
+      }
+      return person
+    })
+    setPeople(updatedParticipants)
+    setShowNameModal(false)
+    setCurrentPersonIndex(null)
+
+    try {
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
+      await updateDoc(groupOrderDocRef, { participants: updatedParticipants })
+    } catch (error) {
+      console.error('Error al actualizar con el nombre en Firestore:', error)
     }
-  };
+  }
+
+  const distributeSharedOrderItems = () => {
+    /* Lógica si se quiere implementar */
+  }
+
+  const handleReviewOrder = () => {
+    distributeSharedOrderItems()
+    setShowPedidoForm(true)
+  }
 
   const handleOrderPlacement = async () => {
-    if (!groupOrderId) return;
-    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId);
-    await updateDoc(groupOrderDocRef, { orderPlaced: true }); // Set orderPlaced to true in Firestore
-    setShowPedidoForm(true); // Show OrderReview for everyone in realtime
-  };
+    if (!groupOrderId) return
+    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
+    await updateDoc(groupOrderDocRef, { orderPlaced: true })
+    setShowPedidoForm(true)
+  }
+
+  const handleToggleShowPrices = async () => {
+    if (!groupOrderId) return
+    try {
+      const newValue = !showPricesToAll
+      setShowPricesToAll(newValue)
+      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
+      await updateDoc(groupOrderDocRef, {
+        showPricesToAll: newValue,
+      })
+    } catch (error) {
+      console.error('Error al togglear showPricesToAll:', error)
+    }
+  }
+
+  // =======================================================
+  // NUEVO: FUNCIONES DE CÁLCULO DE SUBTOTALES
+  // =======================================================
+  const calculateSubtotal = (personItems: { id: string; quantity: number }[]) => {
+    let total = 0
+    personItems.forEach((item) => {
+      const menuItem = menu.find((m) => m.id === item.id)
+      if (menuItem) {
+        total += menuItem.price * item.quantity
+      }
+    })
+    return total
+  }
+
+  const calculateSharedSubtotal = () => {
+    let total = 0
+    sharedOrderItems.forEach((sharedItem) => {
+      const menuItem = menu.find((m) => m.id === sharedItem.itemId)
+      if (menuItem) {
+        total += menuItem.price * sharedItem.quantity
+      }
+    })
+    return total
+  }
+  // =======================================================
 
   return (
     <div className="container mx-auto my-8 p-6 bg-white rounded-xl shadow-md relative">
@@ -550,12 +512,10 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
       {groupOrderCode && (
         <div className="text-center mb-4">
           <h3 className="text-xl font-semibold text-gray-800">
-            Código de Pedido Compartido:{" "}
+            Código de Pedido Compartido:{' '}
             <span className="font-bold text-indigo-600">{groupOrderCode}</span>
           </h3>
-          <p className="text-sm text-gray-500">
-            Comparte este código con tus amigos para que se unan al pedido.
-          </p>
+          <p className="text-sm text-gray-500">Compártelo con tus amigos.</p>
         </div>
       )}
 
@@ -570,16 +530,13 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
       ) : !showPedidoForm ? (
         <>
           <div className="border-b border-gray-200 mb-4">
-            <nav
-              className="-mb-px flex space-x-8 overflow-x-auto md:overflow-x-hidden"
-              aria-label="Tabs"
-            >
+            <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
               <button
-                onClick={() => setActiveTab("shared")}
+                onClick={() => setActiveTab('shared')}
                 className={`${
-                  activeTab === "shared"
-                    ? "border-indigo-500 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                  activeTab === 'shared'
+                    ? 'border-indigo-500 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300`}
               >
                 🍕 Para Compartir
@@ -589,8 +546,8 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                   key={person.personIndex}
                   className={`${
                     activeTab === `person-${index}`
-                      ? "border-indigo-500 text-indigo-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                      ? 'border-indigo-500 text-indigo-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300 cursor-pointer`}
                   onClick={() => setActiveTab(`person-${index}`)}
                 >
@@ -598,79 +555,90 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                   {!person.locked && !person.finished && user?.uid && (
                     <button
                       onClick={(e) => {
-                        e.stopPropagation();
-                        handleClaimPersonTab(index);
+                        e.stopPropagation()
+                        void handleClaimPersonTab(index)
                       }}
-                      className="ml-2 px-2 py-1 bg-indigo-200 text-indigo-700 rounded-full text-xs hover:bg-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="ml-2 px-2 py-1 bg-indigo-200 text-indigo-700 rounded-full text-xs hover:bg-indigo-300 focus:outline-none"
                     >
                       Soy yo
                     </button>
                   )}
-                  {person.finished && (
-                    <span className="ml-2 text-green-500">✅ Terminado</span>
-                  )}
+                  {person.finished && <span className="ml-2 text-green-500">✅ Terminado</span>}
                   {person.locked && person.userId !== user?.uid && (
-                    <span className="ml-2 text-red-500">🔒 Viendo</span>
+                    <span className="ml-2 text-red-500">🔒</span>
                   )}
                 </div>
               ))}
             </nav>
           </div>
 
-          {activeTab === "shared" && (
+          {activeTab === 'shared' && (
             <SharedOrder
-              menuCategories={menuCategories}
+              menuCategories={menu
+                .filter((i) => i.availabilityStatus !== 'noDisponibleLargoPlazo')
+                .reduce(
+                  (acc, item) => {
+                    const cat = item.recommendation || 'General'
+                    acc[cat] = acc[cat] || []
+                    acc[cat].push(item)
+                    return acc
+                  },
+                  {} as Record<string, MenuItemType[]>,
+                )}
               sharedOrderItems={sharedOrderItems}
               onAddToSharedOrder={handleAddToSharedOrder}
-              onSharedOrderItemQuantityChange={
-                handleSharedOrderItemQuantityChange
-              }
+              onSharedOrderItemQuantityChange={handleSharedOrderItemQuantityChange}
               onRemoveSharedOrderItem={handleRemoveSharedOrderItem}
+              // Corrección: ahora sí pasamos la función real
               calculateSharedSubtotal={calculateSharedSubtotal}
               sharedOrderSummaryRef={sharedOrderSummaryRef}
               activeTab={activeTab}
               menu={menu}
-              disabled={showPedidoForm || orderPlaced}
+              disabled={orderPlaced}
             />
           )}
 
-          {people.map(
-            (person, index) =>
-              activeTab === `person-${index}` && (
-                <PersonOrder
-                  key={person.personIndex}
-                  person={person}
-                  index={index}
-                  menuCategories={menuCategories}
-                  menu={menu}
-                  onAddItemToPerson={(index, menuItem) =>
-                    handleAddItemToPerson(index, menuItem)
-                  }
-                  onPersonOrderItemQuantityChange={(index, itemId, quantity) =>
-                    handlePersonOrderItemQuantityChange(index, itemId, quantity)
-                  }
-                  onRemoveItemFromPerson={(index, itemId) =>
-                    handleRemoveItemFromPerson(index, itemId)
-                  }
-                  calculateSubtotal={calculateSubtotal}
-                  personOrderSummaryRef={personOrderSummaryRef}
-                  activeTab={activeTab}
-                  onPersonFinishedOrder={handlePersonFinishedOrder}
-                  isFinished={person.finished || false}
-                  personLocked={person.locked || false} // Pass locked status
-                  isCurrentUserTab={person.userId === user?.uid} // Check if is current user's tab
-                  personIndex={index} // Pass personIndex as prop
-                  disabled={showPedidoForm || orderPlaced}
-                />
-              )
+          {people.map((person, index) =>
+            activeTab === `person-${index}` ? (
+              <PersonOrder
+                key={person.personIndex}
+                person={person}
+                index={index}
+                menuCategories={menu
+                  .filter((i) => i.availabilityStatus !== 'noDisponibleLargoPlazo')
+                  .reduce(
+                    (acc, item) => {
+                      const cat = item.recommendation || 'General'
+                      acc[cat] = acc[cat] || []
+                      acc[cat].push(item)
+                      return acc
+                    },
+                    {} as Record<string, MenuItemType[]>,
+                  )}
+                menu={menu}
+                onAddItemToPerson={handleAddItemToPerson}
+                onPersonOrderItemQuantityChange={handlePersonOrderItemQuantityChange}
+                onRemoveItemFromPerson={handleRemoveItemFromPerson}
+                // Corrección: la función real
+                calculateSubtotal={calculateSubtotal}
+                personOrderSummaryRef={personOrderSummaryRef}
+                activeTab={activeTab}
+                onPersonFinishedOrder={handlePersonFinishedOrder}
+                isFinished={person.finished || false}
+                personLocked={person.locked || false}
+                isCurrentUserTab={person.userId === user?.uid}
+                personIndex={index}
+                disabled={orderPlaced}
+              />
+            ) : null,
           )}
 
           <div className="flex justify-center mt-8">
-            {isOwner && allFinished && !orderPlaced ? ( // Conditionally render button based on orderPlaced state
+            {isOwner && allFinished && !orderPlaced ? (
               <button
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl focus:outline-none focus:shadow-outline disabled:opacity-50 transition-colors duration-300 animate-pulse hover:animate-none"
+                className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl focus:outline-none transition-colors duration-300"
                 onClick={handleReviewOrder}
-                disabled={showPedidoForm || orderPlaced}
+                disabled={orderPlaced}
               >
                 ¡Revisar Pedido Grupal! ✅
               </button>
@@ -695,11 +663,14 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           sharedOrderItems={sharedOrderItems}
           menu={menu}
           onClosePedidoForm={() => setShowPedidoForm(false)}
+          // Cambios: pasamos nuestras funciones de cálculo
           calculateSharedSubtotal={calculateSharedSubtotal}
           calculateSubtotal={calculateSubtotal}
-          isOrderOwner={isOwner} // Pass isOwner prop here
-          onOrderPlaced={handleOrderPlacement} // Callback when order is placed
-          orderPlaced={orderPlaced} // Pass orderPlaced state to OrderReview
+          isOrderOwner={isOwner}
+          onOrderPlaced={handleOrderPlacement}
+          orderPlaced={orderPlaced}
+          showPricesToAll={showPricesToAll}
+          onToggleShowPrices={handleToggleShowPrices}
         />
       )}
 
@@ -708,15 +679,16 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           {feedbackMessage}
         </div>
       )}
-      <NameModal // Use NameModal here, not MenuModal
+
+      {/* MODAL para el nombre */}
+      <NameModal
         open={showNameModal}
         onClose={handleNameModalClose}
+        currentName={tempPersonName}
         onSubmit={handleNameSubmit}
-        initialValues={{ name: "" }}
       />
     </div>
-  );
-};
+  )
+}
 
-export default GroupOrderPage;
-/* Fin src\components\menu\GroupOrderPage.tsx */
+export default GroupOrderPage

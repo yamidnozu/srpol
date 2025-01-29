@@ -1,98 +1,76 @@
-/* Inicio src\components\menu\MenuModal.tsx */
-/* src\components\menu\MenuModal.tsx */
-
-import React, { useState } from "react";
-import { MenuItem } from "../../context/AppContext";
+// src/components/menu/MenuModal.tsx
+import React, { useState } from 'react'
+import { MenuItem } from '../../context/AppContext'
 
 interface MenuModalProps {
-  open: boolean;
-  onClose: () => void;
-  initialValues?: Partial<MenuItem>;
-  onSubmit: (name: string) => void; // Change onSubmit prop type to accept name string
+  open: boolean
+  onClose: () => void
+  initialValues?: Partial<MenuItem>
+  onSubmit: (values: Partial<MenuItem>) => void | Promise<void>
 }
 
-const MenuModal: React.FC<MenuModalProps> = ({
-  open,
-  onClose,
-  initialValues,
-  onSubmit,
-}) => {
-  const [name, setName] = useState(initialValues?.name || "");
+const MenuModal: React.FC<MenuModalProps> = ({ open, onClose, initialValues, onSubmit }) => {
+  const [localValues, setLocalValues] = useState<Partial<MenuItem>>(initialValues ?? {})
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    console.log("NameModal - handleSubmit - Name being submitted:", name); // Debug log
-    onSubmit(name); // Submit only the name string
-    onClose();
-  };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setLocalValues((prev) => ({ ...prev, [name]: value }))
+  }
 
-  if (!open) return null;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    await onSubmit(localValues)
+    onClose()
+  }
+
+  if (!open) return null
 
   return (
-    <div className="fixed z-50 inset-0 overflow-y-auto">
-      {/* Overlay y contenedor modal */}
-      {/* Overlay */}
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+      }}
+      onClick={onClose}
+    >
       <div
-        className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-        onClick={onClose}
-        aria-hidden="true"
-      ></div>
-      {/* Modal container */}
-      <div className="flex items-center justify-center min-h-screen px-4 py-8">
-        {/* Centrado vertical y horizontal */}
-        {/* Modal panel */}
-        <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden transform transition-all sm:w-full sm:mx-auto">
-          {/* Panel modal */}
-          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
-            {/* Header modal */}
-            <h3
-              className="text-lg font-semibold text-gray-900"
-              id="modal-headline"
-            >
-              Ingresa tu Nombre (Opcional)
-            </h3>
+        style={{
+          backgroundColor: '#fff',
+          maxWidth: 500,
+          margin: '50px auto',
+          padding: 20,
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3>Editar / Agregar ítem al Menú</h3>
+        <form onSubmit={void handleSubmit}>
+          <div style={{ marginBottom: '1rem' }}>
+            <label>Nombre:</label>
+            <input name="name" type="text" value={localValues.name ?? ''} onChange={handleChange} />
           </div>
-          <div className="p-6">
-            {/* Body modal */}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label
-                  htmlFor="name"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Nombre:
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
-              </div>
-              <div className="flex justify-end space-x-2">
-                <button
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                  onClick={onClose}
-                  type="button"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                >
-                  Guardar
-                </button>
-              </div>
-            </form>
+          <div style={{ marginBottom: '1rem' }}>
+            <label>Descripción:</label>
+            <textarea
+              name="description"
+              value={localValues.description ?? ''}
+              onChange={handleChange}
+            />
           </div>
-        </div>
+          {/* ... otros campos price, imageUrl, etc. */}
+
+          <div style={{ marginTop: '1rem' }}>
+            <button type="button" onClick={onClose}>
+              Cancelar
+            </button>
+            <button type="submit" style={{ marginLeft: 8 }}>
+              Guardar
+            </button>
+          </div>
+        </form>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MenuModal;
-
-/* Fin src\components\menu\MenuModal.tsx */
+export default MenuModal

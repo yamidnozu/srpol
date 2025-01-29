@@ -1,106 +1,113 @@
-/* Directorio: src\components\forms\PedidoForm.tsx */
-// src/components/forms/PedidoForm.tsx
-import { Timestamp, addDoc, collection } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { useAuth } from "../../hooks/useAuth";
-import { useMenu } from "../../hooks/useMenu";
-import { db } from "../../utils/firebase";
+// src/components/pedidos/PedidoForm.tsx
+import { Timestamp, addDoc, collection } from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
+import { useAuth } from '../../hooks/useAuth'
+import { useMenu } from '../../hooks/useMenu'
+import { db } from '../../utils/firebase'
 
-interface PedidoFormProps {
-  onClose: () => void;
-  people?: {
-    id: string;
-    name: string;
-    items: { id: string; quantity: number }[];
-  }[];
-  sharedOrderItems?: {
-    itemId: string;
-    quantity: number;
-    personIds: string[];
-  }[];
+/** Mismo tipo que uses en GroupOrderPage */
+interface Person {
+  personIndex: number
+  userId: string | null
+  name: string
+  items: { id: string; quantity: number }[]
+  locked?: boolean
+  finished?: boolean
 }
 
-const PedidoForm: React.FC<PedidoFormProps> = ({
-  onClose,
-  people,
-  sharedOrderItems,
-}) => {
-  const { menu } = useMenu();
-  const { user, addPoints } = useAuth();
+interface SharedOrderItem {
+  itemId: string
+  quantity: number
+  personIds: string[]
+}
 
+interface PedidoFormProps {
+  onClose: () => void
+  people?: Person[] // Aquí usamos la interface Person
+  sharedOrderItems?: SharedOrderItem[]
+}
+
+const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderItems }) => {
+  const { menu } = useMenu()
+  const { user, addPoints } = useAuth()
   const [items, setItems] = useState<
-    { id: string; quantity: number; assignedTo: string }[]
-  >([]);
-  const [peopleOrder, setPeopleOrder] = useState<
-    { id: string; name: string }[]
-  >([]);
-  const [sede, setSede] = useState("");
-  const [deliveryFee, setDeliveryFee] = useState(0);
-  const [deliveryIncluded, setDeliveryIncluded] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState("contraentrega");
+    {
+      id: string
+      quantity: number
+      assignedTo: string
+    }[]
+  >([])
+
+  const [peopleOrder, setPeopleOrder] = useState<{ userId: string | null; name: string }[]>([])
+  const [sede, setSede] = useState('')
+  const [deliveryFee, setDeliveryFee] = useState(0)
+  const [deliveryIncluded, setDeliveryIncluded] = useState(true)
+  const [paymentMethod, setPaymentMethod] = useState('contraentrega')
 
   useEffect(() => {
+    // Convertimos people en un estado con 'peopleOrder'
     if (people) {
-      setPeopleOrder(
-        people.map((person) => ({ id: person.id, name: person.name }))
-      );
-      // Flatten person items and assign person name
-      const personItems = people.flatMap(person =>
-        person.items.map(item => ({
+      const mapped = people.map((p) => ({
+        userId: p.userId,
+        name: p.name,
+      }))
+      setPeopleOrder(mapped)
+
+      // Flatten person items
+      const personItems = people.flatMap((person) =>
+        person.items.map((item) => ({
           id: item.id,
           quantity: item.quantity,
           assignedTo: person.name,
-        }))
-      );
-      setItems(personItems);
+        })),
+      )
+      setItems(personItems)
     }
-  }, [people]);
-
+  }, [people])
 
   useEffect(() => {
     if (sharedOrderItems) {
-      // Flatten shared items and assign 'Compartido' as assignedTo
-      const sharedItemsForDisplay = sharedOrderItems.flatMap(sharedItem =>
-        Array(sharedItem.quantity).fill(null).map(() => ({
-          id: sharedItem.itemId,
-          quantity: 1,
-          assignedTo: 'Compartido'
-        }))
-      );
-      setItems(prevItems => [...prevItems, ...sharedItemsForDisplay]);
+      // Flatten shared items -> assignedTo: 'Compartido'
+      const sharedItemsForDisplay = sharedOrderItems.flatMap((sharedItem) =>
+        Array(sharedItem.quantity)
+          .fill(null)
+          .map(() => ({
+            id: sharedItem.itemId,
+            quantity: 1,
+            assignedTo: 'Compartido',
+          })),
+      )
+      setItems((prev) => [...prev, ...sharedItemsForDisplay])
     }
-  }, [sharedOrderItems]);
+  }, [sharedOrderItems])
 
-
-  // Simulación de sedes disponibles (puedes obtenerlas de Firestore)
-  const sedesDisponibles = ["Sede Norte", "Sede Sur", "Sede Centro"];
-
+  // Simulación sedes
+  const sedesDisponibles = ['Sede Norte', 'Sede Sur', 'Sede Centro']
   useEffect(() => {
     if (sedesDisponibles.length === 1) {
-      setSede(sedesDisponibles[0]);
+      setSede(sedesDisponibles[0])
     }
-  }, [sedesDisponibles]);
+  }, [sedesDisponibles])
 
   const calculateTotal = () => {
-    let total = 0;
+    let total = 0
     items.forEach((item) => {
-      const menuItem = menu.find((m) => m.id === item.id);
+      const menuItem = menu.find((m) => m.id === item.id)
       if (menuItem) {
-        total += menuItem.price * item.quantity;
+        total += menuItem.price * item.quantity
       }
-    });
-    return total + deliveryFee;
-  };
-
+    })
+    return total + deliveryFee
+  }
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!user) return;
+    event.preventDefault()
+    if (!user) return
 
     try {
-      const total = calculateTotal();
-      const orderId = uuidv4();
+      const total = calculateTotal()
+      const orderId = uuidv4()
       const orderData = {
         userId: user.uid,
         items: items.map((item) => ({
@@ -109,44 +116,41 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
           assignedTo: item.assignedTo,
         })),
         people: peopleOrder,
-        sede: sede,
-        status: "pendiente",
-        total: total,
-        deliveryFee: deliveryFee,
-        deliveryIncluded: deliveryIncluded,
-        paymentMethod: paymentMethod,
+        sede,
+        status: 'pendiente',
+        total,
+        deliveryFee,
+        deliveryIncluded,
+        paymentMethod,
         orderDate: Timestamp.now(),
-        orderId: orderId,
+        orderId,
         sharedItems: sharedOrderItems
           ? sharedOrderItems.map((si) => ({
               itemId: si.itemId,
-              quantity: si.quantity, // Quantity here represents how many of shared items are in total
+              quantity: si.quantity,
               personIds: si.personIds,
             }))
           : [],
-      };
+      }
 
-      await addDoc(collection(db, "pedidos"), orderData);
-      handlePaymentSuccess();
+      await addDoc(collection(db, 'pedidos'), orderData)
+      void handlePaymentSuccess()
     } catch (error) {
-      console.error("Error al agregar el pedido:", error);
+      console.error('Error al agregar el pedido:', error)
     }
-  };
+  }
 
   const handlePaymentSuccess = async () => {
-    await addPoints();
-    alert("Pedido realizado con éxito y puntos sumados.");
-    onClose();
-  };
+    await addPoints()
+    alert('Pedido realizado con éxito y puntos sumados.')
+    onClose()
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={void handleSubmit} className="space-y-6">
       <h2 className="text-xl font-bold text-gray-900">Realizar Pedido</h2>
       <div>
-        <label
-          htmlFor="sede"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="sede" className="block text-sm font-medium text-gray-700">
           Sede
         </label>
         <select
@@ -164,10 +168,7 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
         </select>
       </div>
       <div>
-        <label
-          htmlFor="deliveryFee"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="deliveryFee" className="block text-sm font-medium text-gray-700">
           Costo de Envío
         </label>
         <input
@@ -192,19 +193,13 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
           />
         </div>
         <div className="ml-2 text-sm">
-          <label
-            htmlFor="deliveryIncluded"
-            className="font-medium text-gray-700"
-          >
+          <label htmlFor="deliveryIncluded" className="font-medium text-gray-700">
             ¿El domicilio está incluido?
           </label>
         </div>
       </div>
       <div>
-        <label
-          htmlFor="paymentMethod"
-          className="block text-sm font-medium text-gray-700"
-        >
+        <label htmlFor="paymentMethod" className="block text-sm font-medium text-gray-700">
           Método de Pago
         </label>
         <select
@@ -220,13 +215,13 @@ const PedidoForm: React.FC<PedidoFormProps> = ({
       <div>
         <button
           type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200" // Added transition
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
         >
-          Realizar Pedido
+          Realizar Pedido3
         </button>
       </div>
     </form>
-  );
-};
+  )
+}
 
-export default PedidoForm;
+export default PedidoForm
