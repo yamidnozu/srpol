@@ -1,21 +1,21 @@
 // src/components/layout/Navbar.tsx
-import MenuIcon from "@mui/icons-material/Menu";
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
+import MenuIcon from '@mui/icons-material/Menu'
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../hooks/useAuth'
 
 interface NavbarProps {
-  toggleDrawer: () => void;
+  toggleDrawer: () => void
 }
 
 const Navbar: React.FC<NavbarProps> = ({ toggleDrawer }) => {
-  const { logout, user } = useAuth();
-  const navigate = useNavigate();
+  const { logout, user } = useAuth()
+  const navigate = useNavigate()
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/login");
-  };
+    await logout()
+    navigate('/login')
+  }
 
   return (
     <header className="bg-white shadow-md fixed w-full top-0 z-50">
@@ -26,17 +26,17 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDrawer }) => {
             aria-label="Abrir menú"
             onClick={toggleDrawer}
           >
-            <MenuIcon className="transition-transform duration-300 hover:scale-110" />{" "}
+            <MenuIcon className="transition-transform duration-300 hover:scale-110" />{' '}
             {/* Transición y escala en hover del icono */}
           </button>
           <img
-            src="/public/SrPolForYouSinTitle.svg"
+            src="SrPolForYouSinTitle.svg"
             alt="SrPol Logo"
             className="h-10 mr-2 transition-transform duration-300 hover:scale-105" // Transición en el logo
           />
           <span className="text-xl font-semibold text-gray-900 transition-colors duration-200 hover:text-indigo-700">
             SrPol
-          </span>{" "}
+          </span>{' '}
           {/* Transición en el título */}
         </div>
         {user && (
@@ -52,7 +52,7 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDrawer }) => {
         )}
       </div>
     </header>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar
