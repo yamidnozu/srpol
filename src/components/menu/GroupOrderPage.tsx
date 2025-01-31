@@ -1,11 +1,7 @@
-/* src/components/menu/GroupOrderPage.tsx */
-/* Versión con burbujas coloridas y posibilidad de ver el contenido aunque esté bloqueado */
-/* Se asume que si person.photoUrl existe, la mostramos; sino, mostramos la primera letra del nombre */
-
+// src/components/menu/GroupOrderPage.tsx
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore'
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { MenuItem as MenuItemType } from '../../context/AppContext'
 import { useAuth } from '../../hooks/useAuth'
 import { useMenu } from '../../hooks/useMenu'
 import { COLLECTIONS } from '../../utils/constants'
@@ -23,7 +19,7 @@ export interface Person {
   items: { id: string; quantity: number }[]
   locked?: boolean
   finished?: boolean
-  photoUrl?: string // Ejemplo: si la tienes en la BD
+  photoUrl?: string
 }
 
 export interface SharedOrderItem {
@@ -47,6 +43,15 @@ export interface GroupOrderPageProps {
   name: string
 }
 
+const bubbleColors = [
+  'bg-pink-100',
+  'bg-blue-100',
+  'bg-yellow-100',
+  'bg-green-100',
+  'bg-purple-100',
+  'bg-teal-100',
+]
+
 const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const { menu } = useMenu()
   const { user } = useAuth()
@@ -55,42 +60,24 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const [showPeopleNames, setShowPeopleNames] = useState(false)
   const [showPedidoForm, setShowPedidoForm] = useState(false)
   const [sharedOrderItems, setSharedOrderItems] = useState<SharedOrderItem[]>([])
-  const [selectedView, setSelectedView] = useState<string>('shared') // "shared" o "person-N"
-
+  const [selectedView, setSelectedView] = useState<string>('shared')
   const [groupOrderCode, setGroupOrderCode] = useState<string | null>(null)
   const [groupOrderId, setGroupOrderId] = useState<string | null>(null)
   const [isOwner, setIsOwner] = useState(false)
   const [allFinished, setAllFinished] = useState(false)
-  const [showNameModal, setShowNameModal] = useState(false)
-  const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(null)
   const [orderPlaced, setOrderPlaced] = useState(false)
   const [showPricesToAll, setShowPricesToAll] = useState(false)
-
+  const [showNameModal, setShowNameModal] = useState(false)
+  const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(null)
   const [tempPersonName, setTempPersonName] = useState<string>('')
 
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const codeFromURL = searchParams.get('code')
   const joiningWithCode = !!codeFromURL
-
-  // Refs para scrollear si deseas
-  const sharedOrderSummaryRef = useRef<HTMLDivElement>(null)
-  const personOrderSummaryRef = useRef<HTMLDivElement>(null)
-
-  // Obtenemos la ID de la ruta
   const { groupOrderId: routeGroupId } = useParams()
 
-  // Colores para las burbujas (así cada persona tiene un color distinto)
-  const bubbleColors = [
-    'bg-pink-100',
-    'bg-blue-100',
-    'bg-yellow-100',
-    'bg-green-100',
-    'bg-purple-100',
-    'bg-teal-100',
-  ]
-
-  // -------------------- EFECTOS --------------------
+  // Suscripción al pedido grupal según el id en la URL
   useEffect(() => {
     if (routeGroupId) {
       setGroupOrderId(routeGroupId)
@@ -118,7 +105,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         setAllFinished(data.participants.every((p) => p.finished))
         setOrderPlaced(!!data.orderPlaced)
         setShowPricesToAll(!!data.showPricesToAll)
-
         if (data.participants.length !== numPeople) {
           setNumPeople(data.participants.length)
         }
@@ -132,16 +118,13 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     )
   }
 
-  // -------------------- HANDLERS & LOGIC --------------------
   const handleNumPeopleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const num = Number(e.target.value)
     setNumPeople(num)
-
     setPeople((prev) => {
       const currentCount = prev.length
       if (num > currentCount) {
-        // Agregar personas
-        const newOnes = Array.from({ length: num - currentCount }, (_, i) => ({
+        const newPeople = Array.from({ length: num - currentCount }, (_, i) => ({
           personIndex: currentCount + i,
           userId: null,
           name: `Persona ${currentCount + i + 1}`,
@@ -149,13 +132,11 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           locked: false,
           finished: false,
         }))
-        return [...prev, ...newOnes]
+        return [...prev, ...newPeople]
       } else if (num < currentCount) {
-        // Eliminar
         return prev.slice(0, num)
-      } else {
-        return prev
       }
+      return prev
     })
   }
 
@@ -176,8 +157,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     }
   }
 
-  // --- Funciones para Items Compartidos ---
-  const handleAddToSharedOrder = async (item: MenuItemType) => {
+  const handleAddToSharedOrder = async (item: any) => {
     if (!groupOrderId || orderPlaced) return
     if (item.availabilityStatus !== 'disponible') return
 
@@ -191,7 +171,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
       updated = [...sharedOrderItems, { itemId: item.id, quantity: 1, personIds: [] }]
     }
     setSharedOrderItems(updated)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         sharedItems: updated,
@@ -207,13 +186,12 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
 
     const updated = sharedOrderItems.map((si) => (si.itemId === itemId ? { ...si, quantity } : si))
     setSharedOrderItems(updated)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         sharedItems: updated,
       })
     } catch (error) {
-      console.error('Error al cambiar qty en sharedItems:', error)
+      console.error('Error al cambiar cantidad en sharedItems:', error)
     }
   }
 
@@ -222,7 +200,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
 
     const updated = sharedOrderItems.filter((si) => si.itemId !== itemId)
     setSharedOrderItems(updated)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         sharedItems: updated,
@@ -232,22 +209,15 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     }
   }
 
-  // --- Funciones para Items de Persona ---
-  const handleAddItemToPerson = async (personIndex: number, menuItem: MenuItemType) => {
+  const handleAddItemToPerson = async (personIndex: number, menuItem: any) => {
     if (!groupOrderId || orderPlaced || !user) return
     if (menuItem.availabilityStatus !== 'disponible') return
 
     const personData = people[personIndex]
     const lockedByOther = personData.locked && personData.userId !== user.uid
-    if (lockedByOther) {
-      // Está bloqueada por otro, podemos ver, pero no agregar
-      return
-    }
+    if (lockedByOther) return
 
-    // Si no está bloqueada o es mía, puedo agregar
     let updatedPeople = [...people]
-
-    // Bloquear la persona si no lo está
     if (!personData.locked) {
       if (personData.name.startsWith('Persona')) {
         setCurrentPersonIndex(personIndex)
@@ -258,8 +228,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         idx === personIndex ? { ...p, userId: user.uid, locked: true } : p,
       )
     }
-
-    // Agregar el ítem
     updatedPeople = updatedPeople.map((p, idx) => {
       if (idx === personIndex) {
         const foundItem = p.items.find((it) => it.id === menuItem.id)
@@ -277,7 +245,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
       return p
     })
     setPeople(updatedPeople)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         participants: updatedPeople,
@@ -295,40 +262,28 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     if (!groupOrderId || orderPlaced) return
     if (quantity < 0) return
 
-    const updated = people.map((p, idx) => {
-      if (idx === personIndex) {
-        return {
-          ...p,
-          items: p.items.map((it) => (it.id === itemId ? { ...it, quantity } : it)),
-        }
-      }
-      return p
-    })
+    const updated = people.map((p, idx) =>
+      idx === personIndex
+        ? { ...p, items: p.items.map((it) => (it.id === itemId ? { ...it, quantity } : it)) }
+        : p,
+    )
     setPeople(updated)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         participants: updated,
       })
     } catch (error) {
-      console.error('Error al cambiar cantidad de item persona:', error)
+      console.error('Error al cambiar cantidad de item en persona:', error)
     }
   }
 
   const handleRemoveItemFromPerson = async (personIndex: number, itemId: string) => {
     if (!groupOrderId || orderPlaced) return
 
-    const updated = people.map((p, idx) => {
-      if (idx === personIndex) {
-        return {
-          ...p,
-          items: p.items.filter((it) => it.id !== itemId),
-        }
-      }
-      return p
-    })
+    const updated = people.map((p, idx) =>
+      idx === personIndex ? { ...p, items: p.items.filter((it) => it.id !== itemId) } : p,
+    )
     setPeople(updated)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         participants: updated,
@@ -338,30 +293,28 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     }
   }
 
+  // --- Modificación para que solo el creador pueda finalizar pedidos de otros ---
   const handlePersonFinishedOrder = async (personIndex: number) => {
     if (!groupOrderId || orderPlaced || !user) return
-    const myIndex = people.findIndex((p) => p.userId === user.uid)
-    if (myIndex !== personIndex) {
-      // No puedes terminar si no es tuya
-      return
+    // Si el usuario no es el creador, solo puede finalizar su propio pedido
+    if (!isOwner) {
+      const myIndex = people.findIndex((p) => p.userId === user.uid)
+      if (myIndex !== personIndex) return
     }
-
     const updated = people.map((p, idx) => (idx === personIndex ? { ...p, finished: true } : p))
     setPeople(updated)
     const everyoneDone = updated.every((p) => p.finished)
     setAllFinished(everyoneDone)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         participants: updated,
         allFinished: everyoneDone,
       })
     } catch (error) {
-      console.error('Error al terminar persona:', error)
+      console.error('Error al finalizar pedido de persona:', error)
     }
   }
 
-  // --- Modal para cambiar nombre ---
   const handleNameModalClose = () => {
     setShowNameModal(false)
     setCurrentPersonIndex(null)
@@ -369,35 +322,24 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
 
   const handleNameSubmit = async (name: string) => {
     if (!groupOrderId || currentPersonIndex === null || !user) return
-
-    const updated = people.map((p, idx) => {
-      if (idx === currentPersonIndex) {
-        const finalName = name.trim() !== '' ? name : p.name
-        return {
-          ...p,
-          name: finalName,
-          userId: user.uid,
-          locked: true,
-        }
-      }
-      return p
-    })
+    const updated = people.map((p, idx) =>
+      idx === currentPersonIndex
+        ? { ...p, name: name.trim() !== '' ? name : p.name, userId: user.uid, locked: true }
+        : p,
+    )
     setPeople(updated)
     setShowNameModal(false)
     setCurrentPersonIndex(null)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         participants: updated,
       })
     } catch (error) {
-      console.error('Error al actualizar con nombre:', error)
+      console.error('Error al actualizar nombre:', error)
     }
   }
 
-  // --- Revisión final ---
   const handleReviewOrder = () => {
-    // Si deseas hacer algo con los items compartidos
     setShowPedidoForm(true)
   }
 
@@ -417,57 +359,31 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         showPricesToAll: newVal,
       })
     } catch (error) {
-      console.error('Error toggling showPricesToAll:', error)
+      console.error('Error al alternar visualización de precios:', error)
     }
   }
 
-  // --- Cálculos ---
-  const calculateSubtotal = (personItems: { id: string; quantity: number }[]) => {
-    let total = 0
-    personItems.forEach((it) => {
-      const found = menu.find((m) => m.id === it.id)
-      if (found) total += found.price * it.quantity
-    })
-    return total
-  }
-
-  const calculateSharedSubtotal = () => {
-    return sharedOrderItems.reduce((sum, si) => {
-      const found = menu.find((m) => m.id === si.itemId)
-      return found ? sum + found.price * si.quantity : sum
-    }, 0)
-  }
-
-  // --- Helpers Avatares ---
   const getSharedItemCount = () => sharedOrderItems.reduce((acc, si) => acc + si.quantity, 0)
-
   const getPersonItemCount = (person: Person) =>
     person.items.reduce((acc, it) => acc + it.quantity, 0)
+  const getInitialLetter = (name: string) =>
+    !name || name.trim() === '' ? '?' : name.trim()[0].toUpperCase()
 
-  // Retorna la primera letra del nombre (o "?")
-  const getInitialLetter = (name: string) => {
-    if (!name || name.trim() === '') return '?'
-    return name.trim()[0].toUpperCase()
-  }
-
-  // --- Render ---
   return (
-    <div className="container mx-auto my-8 p-6 bg-white rounded-xl shadow-md relative">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center text-indigo-700">
-        ¡Pedido Grupal con Burbujas! 🎉
-      </h1>
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+      {/* Encabezado */}
+      <header className="mb-6 text-center">
+        {groupOrderCode && (
+          <div>
+            <h2 className="text-2xl font-bold text-indigo-600">
+              Código de Pedido: <span className="text-3xl">{groupOrderCode}</span>
+            </h2>
+            <p className="text-sm text-gray-500">Comparte este código con tus amigos</p>
+          </div>
+        )}
+      </header>
 
-      {/* Muestra código si existe */}
-      {groupOrderCode && (
-        <div className="text-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-800">
-            Código de Pedido: <span className="text-indigo-600 font-bold">{groupOrderCode}</span>
-          </h3>
-          <p className="text-sm text-gray-500">Compártelo con tus amigos</p>
-        </div>
-      )}
-
-      {/* Si no hemos inicializado los nombres y no venimos con un code */}
+      {/* Selección de número de personas y nombres */}
       {!showPeopleNames && !joiningWithCode ? (
         <PeopleSelection
           numPeople={numPeople}
@@ -478,52 +394,41 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         />
       ) : !showPedidoForm ? (
         <>
-          {/* ============ Burbujas/Avatares arriba ============ */}
-          <div className="flex flex-wrap gap-4 items-center justify-center mb-8">
-            {/* Compartido */}
+          {/* Burbujas para cambiar de vista */}
+          <div className="flex flex-wrap gap-4 justify-center mb-8">
             <div
-              className="flex flex-col items-center space-y-1 cursor-pointer"
               onClick={() => setSelectedView('shared')}
+              className="cursor-pointer flex flex-col items-center"
             >
               <div
-                className={`relative w-16 h-16 rounded-full ring-4 flex items-center justify-center 
-                  ${
-                    selectedView === 'shared' ? 'ring-indigo-500' : 'ring-gray-300'
-                  } bg-indigo-100 transition-transform hover:scale-105`}
+                className={`relative w-16 h-16 rounded-full ring-4 transition-transform duration-300 flex items-center justify-center ${
+                  selectedView === 'shared' ? 'ring-indigo-500 scale-110' : 'ring-gray-300'
+                } bg-indigo-100`}
               >
-                {/* Icono o inicial para 'compartido' */}
-                <span className="text-sm font-semibold text-gray-700">🤝</span>
-                {/* Badge con total de items si > 0 */}
+                <span className="text-2xl">🤝</span>
                 {getSharedItemCount() > 0 && (
                   <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5">
                     {getSharedItemCount()}
                   </span>
                 )}
               </div>
-              <span className="text-sm font-medium text-gray-700">Compartido</span>
+              <span className="mt-2 text-sm font-medium text-gray-700">Compartido</span>
             </div>
-
-            {/* Burbujas para cada persona */}
             {people.map((person, index) => {
               const lockedByOther = person.locked && person.userId !== user?.uid
               const active = selectedView === `person-${index}`
-              const itemCount = getPersonItemCount(person)
               const color = bubbleColors[index % bubbleColors.length]
-
               return (
                 <div
                   key={person.personIndex}
-                  className="flex flex-col items-center space-y-1 cursor-pointer"
                   onClick={() => setSelectedView(`person-${index}`)}
+                  className="cursor-pointer flex flex-col items-center"
                 >
-                  {/* Avatar circular */}
                   <div
-                    className={`relative w-16 h-16 rounded-full ring-4 flex items-center justify-center 
-                      ${
-                        active ? 'ring-indigo-500' : 'ring-gray-300'
-                      } ${color} transition-transform hover:scale-105`}
+                    className={`relative w-16 h-16 rounded-full transition-transform duration-300 flex items-center justify-center ${
+                      active ? 'ring-indigo-500 scale-110' : 'ring-gray-300'
+                    } ${color}`}
                   >
-                    {/* Si person.photoUrl existe, mostramos foto */}
                     {person.photoUrl ? (
                       <img
                         src={person.photoUrl}
@@ -535,26 +440,16 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                         {getInitialLetter(person.name)}
                       </span>
                     )}
-                    {/* Badge de items */}
-                    {itemCount > 0 && (
-                      <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5">
-                        {itemCount}
-                      </span>
-                    )}
-                    {/* Si locked by other => icono candado */}
                     {lockedByOther && (
                       <span className="absolute top-0 left-0 text-red-500 text-lg">🔒</span>
                     )}
-                    {/* Si finished => check en esquina inferior */}
                     {person.finished && (
                       <span className="absolute bottom-0 right-0 text-green-500 text-lg font-bold">
                         ✅
                       </span>
                     )}
                   </div>
-
-                  {/* Nombre debajo del avatar */}
-                  <span className="text-sm font-medium text-gray-700 text-center max-w-[4rem] truncate">
+                  <span className="mt-2 text-sm font-medium text-gray-700 max-w-[4rem] truncate">
                     {person.name}
                   </span>
                 </div>
@@ -562,8 +457,8 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
             })}
           </div>
 
-          {/* ============ Sección "Compartido" o "PersonOrder" ============ */}
-          {selectedView === 'shared' && (
+          {/* Sección de vista según selección */}
+          {selectedView === 'shared' ? (
             <SharedOrder
               menuCategories={menu
                 .filter((i) => i.availabilityStatus !== 'noDisponibleLargoPlazo')
@@ -574,66 +469,76 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                     acc[cat].push(item)
                     return acc
                   },
-                  {} as Record<string, MenuItemType[]>,
+                  {} as Record<string, any[]>,
                 )}
               sharedOrderItems={sharedOrderItems}
               onAddToSharedOrder={handleAddToSharedOrder}
               onSharedOrderItemQuantityChange={handleSharedOrderItemQuantityChange}
               onRemoveSharedOrderItem={handleRemoveSharedOrderItem}
-              calculateSharedSubtotal={calculateSharedSubtotal}
-              sharedOrderSummaryRef={sharedOrderSummaryRef}
+              calculateSharedSubtotal={() =>
+                sharedOrderItems.reduce((sum, si) => {
+                  const menuItem = menu.find((m) => m.id === si.itemId)
+                  return menuItem ? sum + menuItem.price * si.quantity : sum
+                }, 0)
+              }
+              sharedOrderSummaryRef={useRef<HTMLDivElement>(null)}
               activeTab={selectedView}
               menu={menu}
               disabled={orderPlaced}
             />
+          ) : (
+            people.map((person, i) => {
+              if (selectedView === `person-${i}`) {
+                const lockedByOther = person.locked && person.userId !== user?.uid
+                return (
+                  <PersonOrder
+                    key={person.personIndex}
+                    person={person}
+                    index={i}
+                    menuCategories={menu
+                      .filter((m) => m.availabilityStatus !== 'noDisponibleLargoPlazo')
+                      .reduce(
+                        (acc, item) => {
+                          const cat = item.recommendation || 'General'
+                          acc[cat] = acc[cat] || []
+                          acc[cat].push(item)
+                          return acc
+                        },
+                        {} as Record<string, any[]>,
+                      )}
+                    menu={menu}
+                    onAddItemToPerson={handleAddItemToPerson}
+                    onPersonOrderItemQuantityChange={handlePersonOrderItemQuantityChange}
+                    onRemoveItemFromPerson={handleRemoveItemFromPerson}
+                    calculateSubtotal={(personItems) =>
+                      personItems.reduce((total, it) => {
+                        const menuItem = menu.find((m) => m.id === it.id)
+                        return menuItem ? total + menuItem.price * it.quantity : total
+                      }, 0)
+                    }
+                    personOrderSummaryRef={useRef<HTMLDivElement>(null)}
+                    activeTab={selectedView}
+                    onPersonFinishedOrder={handlePersonFinishedOrder}
+                    isFinished={person.finished || false}
+                    personLocked={person.locked || false}
+                    isCurrentUserTab={person.userId === user?.uid}
+                    personIndex={i}
+                    disabled={lockedByOther || orderPlaced}
+                    isOrderOwner={isOwner}
+                  />
+                )
+              }
+              return null
+            })
           )}
 
-          {people.map((person, i) => {
-            if (selectedView === `person-${i}`) {
-              // Para saber si está bloqueada por otro => disabled
-              const lockedByOther = person.locked && person.userId !== user?.uid
-              return (
-                <PersonOrder
-                  key={person.personIndex}
-                  person={person}
-                  index={i}
-                  menuCategories={menu
-                    .filter((m) => m.availabilityStatus !== 'noDisponibleLargoPlazo')
-                    .reduce(
-                      (acc, item) => {
-                        const cat = item.recommendation || 'General'
-                        acc[cat] = acc[cat] || []
-                        acc[cat].push(item)
-                        return acc
-                      },
-                      {} as Record<string, MenuItemType[]>,
-                    )}
-                  menu={menu}
-                  onAddItemToPerson={handleAddItemToPerson}
-                  onPersonOrderItemQuantityChange={handlePersonOrderItemQuantityChange}
-                  onRemoveItemFromPerson={handleRemoveItemFromPerson}
-                  calculateSubtotal={calculateSubtotal}
-                  personOrderSummaryRef={personOrderSummaryRef}
-                  activeTab={selectedView}
-                  onPersonFinishedOrder={handlePersonFinishedOrder}
-                  isFinished={person.finished || false}
-                  personLocked={person.locked || false}
-                  isCurrentUserTab={person.userId === user?.uid}
-                  personIndex={i}
-                  disabled={lockedByOther || orderPlaced} // Ver o no, pero sin poder editar si locked por otro
-                />
-              )
-            }
-            return null
-          })}
-
-          {/* Botón para REVISAR si soy el owner y todos terminaron */}
+          {/* Botón para revisar el pedido grupal (solo visible para el creador) */}
           <div className="flex justify-center mt-8">
             {isOwner && allFinished && !orderPlaced ? (
               <button
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl focus:outline-none transition-colors duration-300"
                 onClick={handleReviewOrder}
                 disabled={orderPlaced}
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300"
               >
                 ¡Revisar Pedido Grupal! ✅
               </button>
@@ -643,7 +548,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
               </p>
             ) : !isOwner ? (
               <p className="text-center text-gray-600">
-                Espera a que el dueño del pedido revise y confirme.
+                Solo el creador del pedido puede finalizar pedidos de otros.
               </p>
             ) : !allFinished ? (
               <p className="text-center text-gray-600">
@@ -653,14 +558,23 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           </div>
         </>
       ) : (
-        // Resumen final
         <OrderReview
           people={people}
           sharedOrderItems={sharedOrderItems}
           menu={menu}
           onClosePedidoForm={() => setShowPedidoForm(false)}
-          calculateSharedSubtotal={calculateSharedSubtotal}
-          calculateSubtotal={calculateSubtotal}
+          calculateSharedSubtotal={() =>
+            sharedOrderItems.reduce((sum, si) => {
+              const menuItem = menu.find((m) => m.id === si.itemId)
+              return menuItem ? sum + menuItem.price * si.quantity : sum
+            }, 0)
+          }
+          calculateSubtotal={(personItems) =>
+            personItems.reduce((total, it) => {
+              const menuItem = menu.find((m) => m.id === it.id)
+              return menuItem ? total + menuItem.price * it.quantity : total
+            }, 0)
+          }
           isOrderOwner={isOwner}
           onOrderPlaced={handleOrderPlacement}
           orderPlaced={orderPlaced}
@@ -669,7 +583,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         />
       )}
 
-      {/* Modal para nombre de Persona */}
       <NameModal
         open={showNameModal}
         onClose={handleNameModalClose}

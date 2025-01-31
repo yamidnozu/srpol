@@ -1,60 +1,57 @@
 /* src\App.tsx */
 /* Inicio src\App.tsx */
-import React from "react";
-import {
-  Navigate,
-  Route,
-  BrowserRouter as Router,
-  Routes,
-} from "react-router-dom";
-import MainLayout from "./components/layout/MainLayout";
-import PublicLayout from "./components/layout/PublicLayout";
-import ErrorBoundary from "./components/ui/ErrorBoundry";
-import { AppProvider } from "./context/AppContext";
-import { AuthProvider } from "./context/AuthContext";
-import { useAuth } from "./hooks/useAuth";
-import Dashboard from "./pages/Dashboard";
-import GestionMenu from "./pages/GestionMenu";
-import GestionUsuarios from "./pages/GestionUsuarios";
-import Login from "./pages/Login";
+import React from 'react'
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
+import MainLayout from './components/layout/MainLayout'
+import PublicLayout from './components/layout/PublicLayout'
+import ErrorBoundary from './components/ui/ErrorBoundry'
+import { AppProvider } from './context/AppContext'
+import { AuthProvider } from './context/AuthContext'
+import { useAuth } from './hooks/useAuth'
+import Dashboard from './pages/Dashboard'
+import GestionMenu from './pages/GestionMenu'
+import GestionUsuarios from './pages/GestionUsuarios'
+import Login from './pages/Login'
 
-import GroupOrderPage from "./components/menu/GroupOrderPage";
-import MenuPage from "./pages/MenuPage"; // Importa MenuPage
-import PedidosPage from "./pages/PedidosPage";
-import Perfil from "./pages/Perfil";
-import Success from "./pages/Success";
-import "./styles/global.css";
+import GroupOrderPage from './components/menu/GroupOrderPage'
+import ContabilidadDetail from './pages/ContabilidadDetail'
+import ContabilidadPage from './pages/ContabilidadPage'
+import MenuPage from './pages/MenuPage' // Importa MenuPage
+import PedidosPage from './pages/PedidosPage'
+import Perfil from './pages/Perfil'
+import Success from './pages/Success'
+import './styles/global.css'
 
 const PrivateRoute: React.FC<{
-  children: React.ReactNode;
-  allowedRoles?: string[];
+  children: React.ReactNode
+  allowedRoles?: string[]
 }> = ({ children, allowedRoles }) => {
-  const { user, loading, userRole } = useAuth();
+  const { user, loading, userRole } = useAuth()
 
   if (loading) {
-    return <div>Cargando...</div>;
+    return <div>Cargando...</div>
   }
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" />
   }
 
-  if (allowedRoles && !allowedRoles.includes(userRole || "client")) {
-    return <Navigate to="/" />;
+  if (allowedRoles && !allowedRoles.includes(userRole || 'client')) {
+    return <Navigate to="/" />
   }
 
-  return <MainLayout>{children}</MainLayout>;
-};
+  return <MainLayout>{children}</MainLayout>
+}
 
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuth()
 
   if (loading) {
-    return <div>Cargando...</div>;
+    return <div>Cargando...</div>
   }
 
-  return !user ? <PublicLayout>{children}</PublicLayout> : <Navigate to="/" />;
-};
+  return !user ? <PublicLayout>{children}</PublicLayout> : <Navigate to="/" />
+}
 
 const App: React.FC = () => {
   return (
@@ -116,7 +113,7 @@ const App: React.FC = () => {
               <Route
                 path="/gestion-menu"
                 element={
-                  <PrivateRoute allowedRoles={["admin", "encargado"]}>
+                  <PrivateRoute allowedRoles={['admin', 'encargado']}>
                     <GestionMenu />
                   </PrivateRoute>
                 }
@@ -132,7 +129,7 @@ const App: React.FC = () => {
               <Route
                 path="/gestion-usuarios"
                 element={
-                  <PrivateRoute allowedRoles={["admin"]}>
+                  <PrivateRoute allowedRoles={['admin']}>
                     <GestionUsuarios />
                   </PrivateRoute>
                 }
@@ -146,6 +143,24 @@ const App: React.FC = () => {
                   </PrivateRoute>
                 }
               />
+              <Route
+                path="/contabilidad"
+                element={
+                  <PrivateRoute allowedRoles={['admin', 'encargado']}>
+                    <ContabilidadPage />
+                  </PrivateRoute>
+                }
+              />
+              {/* Detalle del día */}
+              <Route
+                path="/contabilidad/:id"
+                element={
+                  <PrivateRoute allowedRoles={['admin', 'encargado']}>
+                    <ContabilidadDetail />
+                  </PrivateRoute>
+                }
+              />
+
               {/* Ruta por defecto */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
@@ -153,9 +168,9 @@ const App: React.FC = () => {
         </Router>
       </AppProvider>
     </AuthProvider>
-  );
-};
+  )
+}
 
-export default App;
+export default App
 
 /* Fin src\App.tsx */

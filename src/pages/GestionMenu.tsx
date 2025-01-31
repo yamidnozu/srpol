@@ -1,357 +1,426 @@
-import { Alert, Snackbar } from '@mui/material'
-import { addDoc, collection, doc, updateDoc } from 'firebase/firestore'
-import React, { useState } from 'react'
-import MenuList from '../components/menu/MenuList'
-import MenuModal from '../components/menu/MenuModal'
-import Button from '../components/ui/Button' // Importa el Button de Tailwind
-import Container from '../components/ui/Container' // Importa Container de Tailwind si lo creaste, sino usa un div normal
-import { MenuItem } from '../context/AppContext'
-import { useAuth } from '../hooks/useAuth' // Importa useAuth
-import { useMenu } from '../hooks/useMenu'
+// src/pages/GestionMenu.tsx
+
+import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
+import { MenuItem as MenuItemType } from '../context/AppContext'
 import { COLLECTIONS } from '../utils/constants'
 import { db } from '../utils/firebase'
 
+// Valores iniciales para el formulario
+const initialFormValues: Partial<MenuItemType> = {
+  name: '',
+  description: '',
+  price: 0,
+  cost: 0,
+  imageUrls: [], // Campo para múltiples imágenes (array de URLs)
+  available: true,
+  recommendation: '',
+  observations: '',
+  availabilityStatus: 'disponible',
+}
+
 const GestionMenu: React.FC = () => {
-  const { menu, loading } = useMenu()
-  const [openModal, setOpenModal] = useState(false)
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean
-    message: string
-    severity: 'success' | 'error'
-  }>({ open: false, message: '', severity: 'success' })
-  const { userRole } = useAuth() // Obtiene el rol del usuario
-  const [loadingSampleData, setLoadingSampleData] = useState(false) // Estado de carga para el botón de datos de ejemplo
+  const [menuItems, setMenuItems] = useState<MenuItemType[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [modalOpen, setModalOpen] = useState<boolean>(false)
+  const [editingItem, setEditingItem] = useState<MenuItemType | null>(null)
+  const [formValues, setFormValues] = useState<Partial<MenuItemType>>(initialFormValues)
+  const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
-  if (loading) {
-    return <div>Cargando...</div>
-  }
-
-  const handleOpenModal = () => {
-    setOpenModal(true)
-    setSelectedItem(null)
-  }
-
-  const handleCloseModal = () => {
-    setOpenModal(false)
-    setSelectedItem(null)
-  }
-
-  const handleEdit = (item: MenuItem) => {
-    setSelectedItem(item)
-    setOpenModal(true)
-  }
-
-  const handleDelete = async (item: MenuItem) => {
-    if (
-      !window.confirm(
-        `¿Estás seguro de marcar como no disponible a largo plazo el item "${item.name}"?`,
+  // Cargar ítems desde Firestore
+  useEffect(() => {
+    const fetchMenu = async () => {
+      setLoading(true)
+      const querySnapshot = await getDocs(collection(db, COLLECTIONS.MENU))
+      const items: MenuItemType[] = querySnapshot.docs.map(
+        (doc) => ({ id: doc.id, ...doc.data() }) as MenuItemType,
       )
-    )
+      setMenuItems(items)
+      setLoading(false)
+    }
+    fetchMenu()
+  }, [])
+
+  // Manejo de cambios en el formulario
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+  ) => {
+    const { name, value } = e.target
+    setFormValues((prev) => ({
+      ...prev,
+      // Si el campo es numérico (price o cost) se convierte a Number
+      [name]: name === 'price' || name === 'cost' ? Number(value) : value,
+    }))
+  }
+
+  // Para las imágenes se usa un input de texto que acepta URLs separadas por comas
+  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target
+    const urls = value
+      .split(',')
+      .map((url) => url.trim())
+      .filter((url) => url !== '')
+    setFormValues((prev) => ({
+      ...prev,
+      imageUrls: urls,
+    }))
+  }
+
+  // Abrir modal para agregar un nuevo ítem
+  const openAddModal = () => {
+    setFormValues(initialFormValues)
+    setEditingItem(null)
+    setModalOpen(true)
+  }
+
+  // Abrir modal para editar un ítem existente
+  const openEditModal = (item: MenuItemType) => {
+    setEditingItem(item)
+    setFormValues(item)
+    setModalOpen(true)
+  }
+
+  // Eliminar un ítem con confirmación
+  const handleDelete = async (item: MenuItemType) => {
+    if (window.confirm(`¿Eliminar el item "${item.name}"?`)) {
+      try {
+        await deleteDoc(doc(db, COLLECTIONS.MENU, item.id))
+        setMenuItems((prev) => prev.filter((i) => i.id !== item.id))
+        setAlert({ type: 'success', message: 'Item eliminado correctamente' })
+      } catch (error) {
+        console.error(error)
+        setAlert({ type: 'error', message: 'Error al eliminar el item' })
+      }
+    }
+  }
+
+  // Guardar (agregar o editar) un ítem
+  const handleSave = async () => {
+    if (!formValues.name) {
+      setAlert({ type: 'error', message: 'El nombre es obligatorio' })
       return
-    try {
-      // Al "eliminar" un item, se actualiza su estado a "noDisponibleLargoPlazo" y available a false
-      await updateDoc(doc(db, COLLECTIONS.MENU, item.id), {
-        availabilityStatus: 'noDisponibleLargoPlazo', // Se marca como no disponible a largo plazo
-        available: false, // Se marca como no disponible para que no aparezca en el menu para clientes
-      })
-      setSnackbar({
-        open: true,
-        message: 'Item marcado como no disponible a largo plazo.',
-        severity: 'success',
-      })
-    } catch (error) {
-      console.error(error)
-      setSnackbar({
-        open: true,
-        message: 'Error al actualizar el item.',
-        severity: 'error',
-      })
     }
-  }
-
-  const handleSubmit = async (values: Partial<MenuItem>) => {
     try {
-      if (selectedItem) {
-        await updateDoc(doc(db, COLLECTIONS.MENU, selectedItem.id), values)
-        setSnackbar({
-          open: true,
-          message: 'Item actualizado exitosamente.',
-          severity: 'success',
-        })
+      if (editingItem) {
+        // Actualizar ítem
+        await updateDoc(doc(db, COLLECTIONS.MENU, editingItem.id), formValues)
+        setMenuItems((prev) =>
+          prev.map((i) =>
+            i.id === editingItem.id ? ({ ...i, ...formValues } as MenuItemType) : i,
+          ),
+        )
+        setAlert({ type: 'success', message: 'Item actualizado correctamente' })
       } else {
-        await addDoc(collection(db, COLLECTIONS.MENU), values)
-        setSnackbar({
-          open: true,
-          message: 'Item agregado exitosamente.',
-          severity: 'success',
-        })
+        // Agregar nuevo ítem
+        const docRef = await addDoc(collection(db, COLLECTIONS.MENU), formValues)
+        setMenuItems((prev) => [...prev, { id: docRef.id, ...formValues } as MenuItemType])
+        setAlert({ type: 'success', message: 'Item agregado correctamente' })
       }
-      handleCloseModal()
+      setModalOpen(false)
     } catch (error) {
       console.error(error)
-      setSnackbar({
-        open: true,
-        message: 'Error al guardar el item.',
-        severity: 'error',
-      })
+      setAlert({ type: 'error', message: 'Error al guardar el item' })
     }
   }
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false })
-  }
-
-  // Función para agregar datos de ejemplo
-  const handleAddSampleData = async () => {
-    setLoadingSampleData(true)
-    setSnackbar({
-      open: true,
-      message: 'Agregando datos de ejemplo...',
-      severity: 'success',
-    })
+  // Marcar ítem como no disponible (corto o largo plazo)
+  const handleMarkUnavailable = async (
+    item: MenuItemType,
+    type: 'noDisponibleMomento' | 'noDisponibleLargoPlazo',
+  ) => {
     try {
-      const sampleMenuItems = generateSampleMenuItems()
-      const menuCollectionRef = collection(db, COLLECTIONS.MENU)
-      for (const item of sampleMenuItems) {
-        await addDoc(menuCollectionRef, item)
-      }
-      setSnackbar({
-        open: true,
-        message: 'Datos de ejemplo agregados exitosamente!',
-        severity: 'success',
+      await updateDoc(doc(db, COLLECTIONS.MENU, item.id), {
+        availabilityStatus: type,
+        available: false,
+      })
+      setMenuItems((prev) =>
+        prev.map((i) =>
+          i.id === item.id
+            ? ({ ...i, availabilityStatus: type, available: false } as MenuItemType)
+            : i,
+        ),
+      )
+      setAlert({
+        type: 'success',
+        message:
+          type === 'noDisponibleMomento'
+            ? 'Item marcado como no disponible ahora'
+            : 'Item marcado como no disponible a largo plazo',
       })
     } catch (error) {
-      console.error('Error al agregar datos de ejemplo:', error)
-      setSnackbar({
-        open: true,
-        message: 'Error al agregar datos de ejemplo.',
-        severity: 'error',
-      })
-    } finally {
-      setLoadingSampleData(false)
+      console.error(error)
+      setAlert({ type: 'error', message: 'Error al actualizar la disponibilidad' })
     }
   }
 
-  const generateSampleMenuItems = () => {
-    return [
-      {
-        name: 'Hamburguesa Clásica',
-        description: 'Carne de res, queso cheddar, lechuga, tomate y cebolla.',
-        price: 28000, // COP Approx. $8.99 USD
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Hamburguesas',
-        observations: 'Se puede pedir sin cebolla.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Pizza Margarita Personal',
-        description: 'Salsa de tomate, mozzarella fresca y albahaca.',
-        price: 35000, // COP Approx. $12.5 USD (Adjusted for personal size)
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Pizzas',
-        observations: 'Opción vegana disponible con queso de almendras.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Pizza Margarita Familiar',
-        description: 'Salsa de tomate, mozzarella fresca y albahaca.',
-        price: 65000, // COP Approx. $12.5 USD (Adjusted for family size)
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Pizzas',
-        observations: 'Opción vegana disponible con queso de almendras.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Ensalada César',
-        description: 'Lechuga romana, crutones, parmesano y aderezo César.',
-        price: 22000, // COP Approx. $6.75 USD
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Ensaladas',
-        observations: 'Se puede añadir pollo a la parrilla.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Pasta Carbonara',
-        description: 'Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.',
-        price: 32000, // COP Approx. $10.2 USD
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Pastas',
-        observations: 'Sin gluten disponible con pasta de arroz.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Tacos al Pastor (3 unidades)',
-        description:
-          'Carne de cerdo adobada, piña, cebolla y cilantro, en tortilla de maíz. Orden de 3 tacos.',
-        price: 30000, // COP Approx. $9.5 USD (for 3 tacos)
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Tacos',
-        observations: 'Picante medio.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Sushi Variado (12 piezas)',
-        description: 'Selección de nigiris y makis variados. 12 piezas.',
-        price: 50000, // COP Approx. $15.99 USD
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Sushi',
-        observations: 'Incluye salsa de soya, wasabi y jengibre.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Pollo Frito Individual',
-        description: '1 presa grande de pollo frito, crujiente y jugoso.',
-        price: 15000, // COP - Individual piece
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Pollos',
-        observations: 'Opción extra crujiente disponible.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Combo Pollo Frito Personal',
-        description: '2 presas de pollo frito, papas fritas pequeñas y gaseosa personal.',
-        price: 30000, // COP - Personal combo
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Combos de Pollo',
-        observations: 'Incluye gaseosa personal a elección.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Combo Pollo Frito Familiar',
-        description:
-          '6 presas de pollo frito, papas fritas familiares, ensalada coleslaw familiar y gaseosa 1.5L.',
-        price: 85000, // COP - Family combo
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Combos de Pollo',
-        observations: 'Ideal para compartir en familia.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Pollo Asado Entero',
-        description: 'Pollo entero asado al carbón, jugoso y lleno de sabor.',
-        price: 55000, // COP - Whole roasted chicken
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Pollos',
-        observations: 'Perfecto para compartir.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Sopa de Tomate',
-        description: 'Sopa cremosa de tomate, hecha en casa.',
-        price: 18000, // COP Approx. $5.5 USD
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Sopas',
-        observations: 'Servida con pan tostado.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Brownie con Helado',
-        description: 'Brownie de chocolate caliente con helado de vainilla.',
-        price: 20000, // COP Approx. $6.25 USD
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Postres',
-        observations: 'Se puede pedir sin nueces.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Jugo de Naranja',
-        description: 'Jugo de naranja natural, recién exprimido.',
-        price: 8000, // COP
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Bebidas',
-        observations: 'Sin azúcar añadida.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Limonada Natural',
-        description: 'Limonada refrescante, preparada al momento.',
-        price: 7000, // COP
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Bebidas',
-        observations: 'Puedes pedirla endulzada o sin azúcar.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Coca-Cola Personal',
-        description: 'Gaseosa Coca-Cola en presentación personal.',
-        price: 5000, // COP
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Gaseosas',
-        observations: '',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Sprite Personal',
-        description: 'Gaseosa Sprite en presentación personal.',
-        price: 5000, // COP
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Gaseosas',
-        observations: '',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Agua con gas Personal',
-        description: 'Agua con gas en presentación personal.',
-        price: 4000, // COP
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Bebidas',
-        observations: '',
-        availabilityStatus: 'disponible',
-      },
-    ]
+  const closeAlert = () => {
+    setAlert(null)
   }
 
   return (
-    <Container className="my-3">
-      <div className="flex justify-between items-center mb-4">
-        <Button variant="contained" color="primary" onClick={handleOpenModal} className="">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+      <header className="mb-8 text-center">
+        <h1 className="text-3xl font-bold text-gray-800">Gestionar Menú</h1>
+      </header>
+
+      {alert && (
+        <div
+          className={`mb-4 p-3 rounded ${
+            alert.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          } flex items-center justify-between`}
+        >
+          <span>{alert.message}</span>
+          <button onClick={closeAlert} className="font-bold text-xl">
+            &times;
+          </button>
+        </div>
+      )}
+
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={openAddModal}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+        >
           Agregar Item
-        </Button>
-        {/* Botón "Agregar datos de ejemplo" condicional */}
-        {(userRole === 'admin' || userRole === 'encargado') && (
-          <Button
-            variant="contained"
-            color="success"
-            onClick={void handleAddSampleData}
-            disabled={loadingSampleData}
-          >
-            {loadingSampleData ? 'Cargando Menú...' : 'Cargar Menú Ejemplo'}
-          </Button>
-        )}
+        </button>
       </div>
 
-      <MenuList menu={menu} onEdit={handleEdit} onDelete={handleDelete} />
-      <MenuModal
-        open={openModal}
-        onClose={handleCloseModal} // Pass handleCloseModal as onClose
-        initialValues={selectedItem || undefined}
-        onSubmit={handleSubmit}
-      />
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Container>
+      {loading ? (
+        <p className="text-center text-gray-600">Cargando menú...</p>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {menuItems.map((item) => (
+            <div key={item.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="relative">
+                <Carousel images={item.imageUrls || []} />
+                <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                  {item.availabilityStatus === 'disponible'
+                    ? 'Disponible'
+                    : item.availabilityStatus === 'noDisponibleMomento'
+                      ? 'No Disponible Ahora'
+                      : 'No Disponible a Largo Plazo'}
+                </div>
+              </div>
+              <div className="p-4">
+                <h2 className="text-xl font-semibold text-gray-800">{item.name}</h2>
+                <p className="text-gray-600 text-sm mt-1">{item.description}</p>
+                <div className="mt-2">
+                  <span className="font-medium text-gray-700">Precio:</span>{' '}
+                  <span className="text-gray-900">
+                    {item.price
+                      ? item.price.toLocaleString('es-CO', {
+                          style: 'currency',
+                          currency: 'COP',
+                          minimumFractionDigits: 0,
+                        })
+                      : '-'}
+                  </span>
+                </div>
+                <div className="mt-1">
+                  <span className="font-medium text-gray-700">Costo:</span>{' '}
+                  <span className="text-gray-900">
+                    {item.cost
+                      ? item.cost.toLocaleString('es-CO', {
+                          style: 'currency',
+                          currency: 'COP',
+                          minimumFractionDigits: 0,
+                        })
+                      : '-'}
+                  </span>
+                </div>
+                {item.recommendation && (
+                  <p className="mt-2 text-sm text-gray-500">Recomendación: {item.recommendation}</p>
+                )}
+                {item.observations && (
+                  <p className="mt-1 text-sm text-gray-500">Observaciones: {item.observations}</p>
+                )}
+                <div className="flex justify-between mt-4">
+                  <button
+                    onClick={() => openEditModal(item)}
+                    className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded text-sm"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item)}
+                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded text-sm"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+                <div className="flex justify-between mt-2">
+                  <button
+                    onClick={() => handleMarkUnavailable(item, 'noDisponibleMomento')}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded text-xs"
+                  >
+                    No Disponible Ahora
+                  </button>
+                  <button
+                    onClick={() => handleMarkUnavailable(item, 'noDisponibleLargoPlazo')}
+                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs"
+                  >
+                    No Disponible Largo Plazo
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Modal para Agregar/Editar Ítem */}
+      {modalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 transform transition-all duration-300">
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">
+              {editingItem ? 'Editar Item' : 'Agregar Item'}
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formValues.name || ''}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                <textarea
+                  name="description"
+                  value={formValues.description || ''}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                ></textarea>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Precio</label>
+                  <input
+                    type="number"
+                    name="price"
+                    value={formValues.price || 0}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Costo</label>
+                  <input
+                    type="number"
+                    name="cost"
+                    value={formValues.cost || 0}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Imágenes (URLs, separadas por comas)
+                </label>
+                <input
+                  type="text"
+                  name="images"
+                  value={(formValues.imageUrls || []).join(', ')}
+                  onChange={handleImagesChange}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Recomendación</label>
+                  <input
+                    type="text"
+                    name="recommendation"
+                    value={formValues.recommendation || ''}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Observaciones</label>
+                  <input
+                    type="text"
+                    name="observations"
+                    value={formValues.observations || ''}
+                    onChange={handleChange}
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Disponibilidad</label>
+                <select
+                  name="availabilityStatus"
+                  value={formValues.availabilityStatus || 'disponible'}
+                  onChange={handleChange}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="disponible">Disponible</option>
+                  <option value="noDisponibleMomento">No Disponible Ahora</option>
+                  <option value="noDisponibleLargoPlazo">No Disponible Largo Plazo</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end mt-6 space-x-4">
+              <button
+                onClick={() => setModalOpen(false)}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSave}
+                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Componente Carousel para mostrar múltiples imágenes en cada tarjeta
+interface CarouselProps {
+  images: string[]
+}
+const Carousel: React.FC<CarouselProps> = ({ images }) => {
+  const [current, setCurrent] = useState(0)
+  if (images.length === 0) {
+    return (
+      <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+        <span className="text-gray-500">Sin imagen</span>
+      </div>
+    )
+  }
+  const next = () => setCurrent((prev) => (prev + 1) % images.length)
+  const prev = () => setCurrent((prev) => (prev - 1 + images.length) % images.length)
+  return (
+    <div className="relative">
+      <img src={images[current]} alt="Producto" className="w-full h-48 object-cover" />
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={prev}
+            className="absolute top-1/2 left-2 transform -translate-y-1/2 bg-black bg-opacity-30 text-white p-2 rounded-full hover:bg-opacity-50 transition"
+          >
+            &#10094;
+          </button>
+          <button
+            onClick={next}
+            className="absolute top-1/2 right-2 transform -translate-y-1/2 bg-black bg-opacity-30 text-white p-2 rounded-full hover:bg-opacity-50 transition"
+          >
+            &#10095;
+          </button>
+        </>
+      )}
+    </div>
   )
 }
 

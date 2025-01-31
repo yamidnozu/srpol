@@ -7,7 +7,7 @@
 ├── package.json [57]
 ├── postcss.config.js [7]
 ├── 📂 src
-│   ├── App.tsx [162]
+│   ├── App.tsx [177]
 │   ├── 📂 components
 │   │   ├── 📂 auth
 │   │   │   ├── LoginForm.tsx [83]
@@ -19,9 +19,9 @@
 │   │   │   ├── MainLayout.tsx [37]
 │   │   │   ├── Navbar.tsx [59]
 │   │   │   ├── PublicLayout.tsx [19]
-│   │   │   └── Sidebar.tsx [120]
+│   │   │   └── Sidebar.tsx [123]
 │   │   ├── 📂 menu
-│   │   │   ├── GroupOrderPage.tsx [695]
+│   │   │   ├── GroupOrderPage.tsx [684]
 │   │   │   ├── JoinOrderModal.tsx [57]
 │   │   │   ├── MenuForm.tsx [223]
 │   │   │   ├── MenuItem.tsx [95]
@@ -54,7 +54,9 @@
 │   │   └── useMenu.ts [10]
 │   ├── main.tsx [10]
 │   ├── 📂 pages
-│   │   ├── Dashboard.tsx [754]
+│   │   ├── ContabilidadDetail.tsx [468]
+│   │   ├── ContabilidadPage.tsx [184]
+│   │   ├── Dashboard.tsx [1009]
 │   │   ├── GestionMenu.tsx [359]
 │   │   ├── GestionUsuarios.tsx [82]
 │   │   ├── Login.tsx [56]
@@ -78,7 +80,7 @@
 └── vite.config.ts [41]
 
 
-Total de líneas resumidas: 6575
+Total de líneas resumidas: 7489
 
 
 /* Inicio .prettierrc.json */
@@ -220,61 +222,58 @@ export default {
 /* Inicio src\App.tsx */
 /* src\App.tsx */
 /* Inicio src\App.tsx */
-import React from "react";
-import {
-  Navigate,
-  Route,
-  BrowserRouter as Router,
-  Routes,
-} from "react-router-dom";
-import MainLayout from "./components/layout/MainLayout";
-import PublicLayout from "./components/layout/PublicLayout";
-import ErrorBoundary from "./components/ui/ErrorBoundry";
-import { AppProvider } from "./context/AppContext";
-import { AuthProvider } from "./context/AuthContext";
-import { useAuth } from "./hooks/useAuth";
-import Dashboard from "./pages/Dashboard";
-import GestionMenu from "./pages/GestionMenu";
-import GestionUsuarios from "./pages/GestionUsuarios";
-import Login from "./pages/Login";
+import React from 'react'
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
+import MainLayout from './components/layout/MainLayout'
+import PublicLayout from './components/layout/PublicLayout'
+import ErrorBoundary from './components/ui/ErrorBoundry'
+import { AppProvider } from './context/AppContext'
+import { AuthProvider } from './context/AuthContext'
+import { useAuth } from './hooks/useAuth'
+import Dashboard from './pages/Dashboard'
+import GestionMenu from './pages/GestionMenu'
+import GestionUsuarios from './pages/GestionUsuarios'
+import Login from './pages/Login'
 
-import GroupOrderPage from "./components/menu/GroupOrderPage";
-import MenuPage from "./pages/MenuPage"; // Importa MenuPage
-import PedidosPage from "./pages/PedidosPage";
-import Perfil from "./pages/Perfil";
-import Success from "./pages/Success";
-import "./styles/global.css";
+import GroupOrderPage from './components/menu/GroupOrderPage'
+import ContabilidadDetail from './pages/ContabilidadDetail'
+import ContabilidadPage from './pages/ContabilidadPage'
+import MenuPage from './pages/MenuPage' // Importa MenuPage
+import PedidosPage from './pages/PedidosPage'
+import Perfil from './pages/Perfil'
+import Success from './pages/Success'
+import './styles/global.css'
 
 const PrivateRoute: React.FC<{
-  children: React.ReactNode;
-  allowedRoles?: string[];
+  children: React.ReactNode
+  allowedRoles?: string[]
 }> = ({ children, allowedRoles }) => {
-  const { user, loading, userRole } = useAuth();
+  const { user, loading, userRole } = useAuth()
 
   if (loading) {
-    return <div>Cargando...</div>;
+    return <div>Cargando...</div>
   }
 
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" />
   }
 
-  if (allowedRoles && !allowedRoles.includes(userRole || "client")) {
-    return <Navigate to="/" />;
+  if (allowedRoles && !allowedRoles.includes(userRole || 'client')) {
+    return <Navigate to="/" />
   }
 
-  return <MainLayout>{children}</MainLayout>;
-};
+  return <MainLayout>{children}</MainLayout>
+}
 
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuth()
 
   if (loading) {
-    return <div>Cargando...</div>;
+    return <div>Cargando...</div>
   }
 
-  return !user ? <PublicLayout>{children}</PublicLayout> : <Navigate to="/" />;
-};
+  return !user ? <PublicLayout>{children}</PublicLayout> : <Navigate to="/" />
+}
 
 const App: React.FC = () => {
   return (
@@ -336,7 +335,7 @@ const App: React.FC = () => {
               <Route
                 path="/gestion-menu"
                 element={
-                  <PrivateRoute allowedRoles={["admin", "encargado"]}>
+                  <PrivateRoute allowedRoles={['admin', 'encargado']}>
                     <GestionMenu />
                   </PrivateRoute>
                 }
@@ -352,7 +351,7 @@ const App: React.FC = () => {
               <Route
                 path="/gestion-usuarios"
                 element={
-                  <PrivateRoute allowedRoles={["admin"]}>
+                  <PrivateRoute allowedRoles={['admin']}>
                     <GestionUsuarios />
                   </PrivateRoute>
                 }
@@ -366,6 +365,24 @@ const App: React.FC = () => {
                   </PrivateRoute>
                 }
               />
+              <Route
+                path="/contabilidad"
+                element={
+                  <PrivateRoute allowedRoles={['admin', 'encargado']}>
+                    <ContabilidadPage />
+                  </PrivateRoute>
+                }
+              />
+              {/* Detalle del día */}
+              <Route
+                path="/contabilidad/:id"
+                element={
+                  <PrivateRoute allowedRoles={['admin', 'encargado']}>
+                    <ContabilidadDetail />
+                  </PrivateRoute>
+                }
+              />
+
               {/* Ruta por defecto */}
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
@@ -373,10 +390,10 @@ const App: React.FC = () => {
         </Router>
       </AppProvider>
     </AuthProvider>
-  );
-};
+  )
+}
 
-export default App;
+export default App
 
 /* Fin src\App.tsx */
 
@@ -1137,87 +1154,92 @@ export default PublicLayout;
 /* Inicio src\components\layout\Sidebar.tsx */
 // src/components/layout/Sidebar.tsx
 import {
+  AddBusiness as AddBusinessIcon,
   Dashboard as DashboardIcon,
   People as PeopleIcon,
   Person as PersonIcon,
   RestaurantMenu as RestaurantMenuIcon,
   Settings as SettingsIcon,
   ShoppingCart as ShoppingCartIcon,
-} from "@mui/icons-material";
-import React from "react";
-import { NavLink, useLocation } from "react-router-dom"; // Importa NavLink y useLocation
-import { useAuth } from "../../hooks/useAuth";
+} from '@mui/icons-material'
+import React from 'react'
+import { NavLink, useLocation } from 'react-router-dom' // Importa NavLink y useLocation
+import { useAuth } from '../../hooks/useAuth'
 
 interface SidebarProps {
-  drawerOpen: boolean;
-  handleDrawerClose: () => void;
+  drawerOpen: boolean
+  handleDrawerClose: () => void
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ drawerOpen, handleDrawerClose }) => {
-  const { userRole } = useAuth();
-  const location = useLocation(); // Hook para obtener la ruta actual
+  const { userRole } = useAuth()
+  const location = useLocation() // Hook para obtener la ruta actual
 
   const menuItems = [
     {
-      text: "Dashboard",
+      text: 'Dashboard',
       icon: <DashboardIcon />,
-      path: "/",
-      roles: ["admin", "encargado", "client"],
+      path: '/',
+      roles: ['admin', 'encargado', 'client'],
     },
     {
-      text: "Menú",
+      text: 'Menú',
       icon: <RestaurantMenuIcon />,
-      path: "/menu",
-      roles: ["admin", "encargado", "client"],
+      path: '/menu',
+      roles: ['admin', 'encargado', 'client'],
     },
     {
-      text: "Pedidos",
+      text: 'Pedidos',
       icon: <ShoppingCartIcon />,
-      path: "/pedidos",
-      roles: ["admin", "encargado", "client"],
+      path: '/pedidos',
+      roles: ['admin', 'encargado', 'client'],
     },
     {
-      text: "Gestionar Menú",
+      text: 'Gestionar Menú',
       icon: <SettingsIcon />,
-      path: "/gestion-menu",
-      roles: ["admin", "encargado"],
+      path: '/gestion-menu',
+      roles: ['admin', 'encargado'],
     },
     {
-      text: "Perfil",
+      text: 'Perfil',
       icon: <PersonIcon />,
-      path: "/perfil",
-      roles: ["admin", "encargado", "client"],
+      path: '/perfil',
+      roles: ['admin', 'encargado', 'client'],
     },
     {
-      text: "Gestión de Usuarios",
+      text: 'Gestión de Usuarios',
       icon: <PeopleIcon />,
-      path: "/gestion-usuarios",
-      roles: ["admin"],
+      path: '/gestion-usuarios',
+      roles: ['admin'],
     },
-  ];
+    {
+      text: 'Contabilidad',
+      icon: <AddBusinessIcon />, // Algún ícono que quieras (o un emoji de dinero 💸)
+      path: '/contabilidad',
+      roles: ['admin', 'encargado'],
+    },
+  ]
 
   return (
     <aside
       className={`bg-gray-50 w-64 flex-shrink-0 overflow-y-auto fixed top-16 md:top-0 left-0 h-full z-40 transition-transform duration-300 ease-in-out md:translate-x-0 ${
-        drawerOpen ? "translate-x-0" : "-translate-x-full"
+        drawerOpen ? 'translate-x-0' : '-translate-x-full'
       } md:shadow-md`} // Shadow en desktop
     >
       <div className="py-6 px-4 md:px-6">
-        {" "}
+        {' '}
         {/* Más padding en desktop */}
         <span className="text-xl font-semibold text-gray-900 block mb-2 md:hidden text-center">
           Navegación
-        </span>{" "}
+        </span>{' '}
         {/* Título en mobile */}
         <nav className="space-y-2">
           {menuItems
             .filter(
-              (item) =>
-                item.roles.includes(userRole || "public") ||
-                item.roles.includes("public")
+              (item) => item.roles.includes(userRole || 'public') || item.roles.includes('public'),
             )
             .map((item) => {
-              const isActive = location.pathname === item.path; // Verifica si la ruta coincide
+              const isActive = location.pathname === item.path // Verifica si la ruta coincide
               return (
                 <NavLink
                   key={item.text}
@@ -1227,40 +1249,39 @@ const Sidebar: React.FC<SidebarProps> = ({ drawerOpen, handleDrawerClose }) => {
                   }) => `group flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200
                                       ${
                                         isActive
-                                          ? "bg-indigo-100 text-indigo-700"
-                                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                                          ? 'bg-indigo-100 text-indigo-700'
+                                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
                                       }`}
                   onClick={handleDrawerClose} // Cierra el drawer en mobile al hacer clic
                 >
                   <span
                     className={`mr-3 h-6 w-6 flex items-center justify-center ${
-                      isActive
-                        ? "text-indigo-500"
-                        : "text-gray-500 group-hover:text-gray-600"
+                      isActive ? 'text-indigo-500' : 'text-gray-500 group-hover:text-gray-600'
                     }`}
                   >
-                    {" "}
+                    {' '}
                     {/* Icon color changes on hover and active */}
                     {item.icon}
                   </span>
                   {item.text}
                 </NavLink>
-              );
+              )
             })}
         </nav>
       </div>
     </aside>
-  );
-};
+  )
+}
 
-export default Sidebar;
+export default Sidebar
 
 /* Fin src\components\layout\Sidebar.tsx */
 
 /* Inicio src\components\menu\GroupOrderPage.tsx */
-/* eslint-disable @typescript-eslint/no-floating-promises */
-/* eslint-disable @typescript-eslint/no-misused-promises */
 /* src/components/menu/GroupOrderPage.tsx */
+/* Versión con burbujas coloridas y posibilidad de ver el contenido aunque esté bloqueado */
+/* Se asume que si person.photoUrl existe, la mostramos; sino, mostramos la primera letra del nombre */
+
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore'
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -1282,6 +1303,7 @@ export interface Person {
   items: { id: string; quantity: number }[]
   locked?: boolean
   finished?: boolean
+  photoUrl?: string // Ejemplo: si la tienes en la BD
 }
 
 export interface SharedOrderItem {
@@ -1290,11 +1312,6 @@ export interface SharedOrderItem {
   personIds: string[]
 }
 
-export interface GroupOrderPageProps {
-  name: string
-}
-
-/** Estructura (aprox) en Firestore de groupOrders */
 interface GroupOrderData {
   code: string
   ownerId: string
@@ -1306,6 +1323,10 @@ interface GroupOrderData {
   showPricesToAll?: boolean
 }
 
+export interface GroupOrderPageProps {
+  name: string
+}
+
 const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const { menu } = useMenu()
   const { user } = useAuth()
@@ -1314,8 +1335,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const [showPeopleNames, setShowPeopleNames] = useState(false)
   const [showPedidoForm, setShowPedidoForm] = useState(false)
   const [sharedOrderItems, setSharedOrderItems] = useState<SharedOrderItem[]>([])
-  const [activeTab, setActiveTab] = useState<string>('shared')
-  const [feedbackMessage] = useState<string>('')
+  const [selectedView, setSelectedView] = useState<string>('shared') // "shared" o "person-N"
 
   const [groupOrderCode, setGroupOrderCode] = useState<string | null>(null)
   const [groupOrderId, setGroupOrderId] = useState<string | null>(null)
@@ -1324,8 +1344,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const [showNameModal, setShowNameModal] = useState(false)
   const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(null)
   const [orderPlaced, setOrderPlaced] = useState(false)
-
-  // Para visibilidad de precios
   const [showPricesToAll, setShowPricesToAll] = useState(false)
 
   const [tempPersonName, setTempPersonName] = useState<string>('')
@@ -1335,235 +1353,217 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const codeFromURL = searchParams.get('code')
   const joiningWithCode = !!codeFromURL
 
+  // Refs para scrollear si deseas
   const sharedOrderSummaryRef = useRef<HTMLDivElement>(null)
   const personOrderSummaryRef = useRef<HTMLDivElement>(null)
-  const [, setIsMobile] = useState(false)
-  const [, setIsSummaryVisible] = useState(true)
 
+  // Obtenemos la ID de la ruta
   const { groupOrderId: routeGroupId } = useParams()
 
+  // Colores para las burbujas (así cada persona tiene un color distinto)
+  const bubbleColors = [
+    'bg-pink-100',
+    'bg-blue-100',
+    'bg-yellow-100',
+    'bg-green-100',
+    'bg-purple-100',
+    'bg-teal-100',
+  ]
+
+  // -------------------- EFECTOS --------------------
   useEffect(() => {
     if (routeGroupId) {
       setGroupOrderId(routeGroupId)
       setGroupOrderCode(codeFromURL)
       subscribeToGroupOrder(routeGroupId)
     } else {
-      console.log('GroupOrderPage - No routeGroupId, not subscribing to group order.')
+      console.log('No se encontró groupOrderId en la ruta')
     }
   }, [routeGroupId, codeFromURL])
 
-  useEffect(() => {
-    const checkMobile = () => window.innerWidth < 768
-    setIsMobile(checkMobile())
-    const handleResize = () => setIsMobile(checkMobile())
-    window.addEventListener('resize', handleResize)
-    setIsSummaryVisible(!checkMobile())
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
   const subscribeToGroupOrder = (groupId: string) => {
-    if (!groupId) return
-    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupId)
-
+    const ref = doc(db, COLLECTIONS.GROUP_ORDERS, groupId)
     return onSnapshot(
-      groupOrderDocRef,
-      (docSnapshot) => {
-        if (!docSnapshot.exists()) {
+      ref,
+      (docSnap) => {
+        if (!docSnap.exists()) {
           navigate('/menu')
           return
         }
-        const groupOrderData = docSnapshot.data() as GroupOrderData
+        const data = docSnap.data() as GroupOrderData
+        setGroupOrderCode(data.code)
+        setPeople(data.participants)
+        setSharedOrderItems(data.sharedItems)
+        setIsOwner(user?.uid === data.ownerId)
+        setAllFinished(data.participants.every((p) => p.finished))
+        setOrderPlaced(!!data.orderPlaced)
+        setShowPricesToAll(!!data.showPricesToAll)
 
-        setGroupOrderCode(groupOrderData.code)
-        setPeople(groupOrderData.participants)
-        setSharedOrderItems(groupOrderData.sharedItems)
-        setIsOwner(user?.uid === groupOrderData.ownerId)
-        setAllFinished(groupOrderData.participants.every((p) => p.finished))
-        setOrderPlaced(!!groupOrderData.orderPlaced)
-
-        // Sincronizamos showPricesToAll
-        setShowPricesToAll(!!groupOrderData.showPricesToAll)
-
-        // Ajustamos numPeople para que coincida
-        const participantsList = groupOrderData.participants
-        if (participantsList && participantsList.length && participantsList.length !== numPeople) {
-          setNumPeople(participantsList.length)
+        if (data.participants.length !== numPeople) {
+          setNumPeople(data.participants.length)
         }
-
-        // Si ya se marcó que el pedido fue realizado, mostramos la revisión
-        if (groupOrderData.orderPlaced) {
+        if (data.orderPlaced) {
           setShowPedidoForm(true)
         }
       },
       () => {
-        // On error => volver a /menu
         navigate('/menu')
       },
     )
   }
 
-  const handleNumPeopleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const num = Number(event.target.value)
+  // -------------------- HANDLERS & LOGIC --------------------
+  const handleNumPeopleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const num = Number(e.target.value)
     setNumPeople(num)
-    setPeople((prevPeople) => {
-      const currentPeopleCount = prevPeople.length
-      if (num > currentPeopleCount) {
-        const newPeople = Array.from({ length: num - currentPeopleCount }, (_, index) => ({
-          personIndex: currentPeopleCount + index,
+
+    setPeople((prev) => {
+      const currentCount = prev.length
+      if (num > currentCount) {
+        // Agregar personas
+        const newOnes = Array.from({ length: num - currentCount }, (_, i) => ({
+          personIndex: currentCount + i,
           userId: null,
-          name: `Persona ${currentPeopleCount + index + 1}`,
+          name: `Persona ${currentCount + i + 1}`,
           items: [],
           locked: false,
           finished: false,
         }))
-        return [...prevPeople, ...newPeople]
-      } else if (num < currentPeopleCount) {
-        return prevPeople.slice(0, num)
+        return [...prev, ...newOnes]
+      } else if (num < currentCount) {
+        // Eliminar
+        return prev.slice(0, num)
       } else {
-        return prevPeople
+        return prev
       }
     })
   }
 
   const handlePersonNameChange = (index: number, name: string) => {
-    const updatedPeople = [...people]
-    if (updatedPeople[index]) {
-      updatedPeople[index].name = name
-      setPeople(updatedPeople)
+    const updated = [...people]
+    if (updated[index]) {
+      updated[index].name = name
+      setPeople(updated)
     }
   }
 
   const handleStartOrder = () => {
-    if (people.every((person) => person.name.trim() !== '')) {
+    if (people.every((p) => p.name.trim() !== '')) {
       setShowPeopleNames(true)
-      setActiveTab('shared')
+      setSelectedView('shared')
     } else {
-      alert('Por favor, ingresa el nombre de cada persona.')
+      alert('Por favor ingresa el nombre de cada persona')
     }
   }
 
+  // --- Funciones para Items Compartidos ---
   const handleAddToSharedOrder = async (item: MenuItemType) => {
-    if (orderPlaced || !groupOrderId) return
+    if (!groupOrderId || orderPlaced) return
     if (item.availabilityStatus !== 'disponible') return
 
-    const existingItemIndex = sharedOrderItems.findIndex(
-      (sharedItem) => sharedItem.itemId === item.id,
-    )
-    let updatedSharedOrderItems: SharedOrderItem[]
-    if (existingItemIndex > -1) {
-      updatedSharedOrderItems = sharedOrderItems.map((si, index) =>
-        index === existingItemIndex ? { ...si, quantity: si.quantity + 1 } : si,
+    const existingIndex = sharedOrderItems.findIndex((si) => si.itemId === item.id)
+    let updated: SharedOrderItem[]
+    if (existingIndex >= 0) {
+      updated = sharedOrderItems.map((si, idx) =>
+        idx === existingIndex ? { ...si, quantity: si.quantity + 1 } : si,
       )
     } else {
-      updatedSharedOrderItems = [
-        ...sharedOrderItems,
-        { itemId: item.id, quantity: 1, personIds: [] },
-      ]
+      updated = [...sharedOrderItems, { itemId: item.id, quantity: 1, personIds: [] }]
     }
-    setSharedOrderItems(updatedSharedOrderItems)
+    setSharedOrderItems(updated)
 
     try {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
-      await updateDoc(groupOrderDocRef, {
-        sharedItems: updatedSharedOrderItems,
+      await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
+        sharedItems: updated,
       })
     } catch (error) {
-      console.error('Error al actualizar items compartidos:', error)
+      console.error('Error al actualizar sharedItems:', error)
     }
   }
 
   const handleSharedOrderItemQuantityChange = async (itemId: string, quantity: number) => {
-    if (orderPlaced || !groupOrderId) return
+    if (!groupOrderId || orderPlaced) return
     if (quantity < 0) return
 
-    const updatedSharedOrderItems = sharedOrderItems.map((sharedItem) =>
-      sharedItem.itemId === itemId ? { ...sharedItem, quantity } : sharedItem,
-    )
-    setSharedOrderItems(updatedSharedOrderItems)
+    const updated = sharedOrderItems.map((si) => (si.itemId === itemId ? { ...si, quantity } : si))
+    setSharedOrderItems(updated)
 
     try {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
-      await updateDoc(groupOrderDocRef, {
-        sharedItems: updatedSharedOrderItems,
+      await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
+        sharedItems: updated,
       })
     } catch (error) {
-      console.error('Error actualizando sharedOrderItems:', error)
+      console.error('Error al cambiar qty en sharedItems:', error)
     }
   }
 
   const handleRemoveSharedOrderItem = async (itemId: string) => {
-    if (orderPlaced || !groupOrderId) return
+    if (!groupOrderId || orderPlaced) return
 
-    const updatedSharedOrderItems = sharedOrderItems.filter((item) => item.itemId !== itemId)
-    setSharedOrderItems(updatedSharedOrderItems)
+    const updated = sharedOrderItems.filter((si) => si.itemId !== itemId)
+    setSharedOrderItems(updated)
+
     try {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
-      await updateDoc(groupOrderDocRef, {
-        sharedItems: updatedSharedOrderItems,
+      await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
+        sharedItems: updated,
       })
     } catch (error) {
       console.error('Error al remover item compartido:', error)
     }
   }
 
+  // --- Funciones para Items de Persona ---
   const handleAddItemToPerson = async (personIndex: number, menuItem: MenuItemType) => {
-    if (orderPlaced || !groupOrderId || !user) return
+    if (!groupOrderId || orderPlaced || !user) return
+    if (menuItem.availabilityStatus !== 'disponible') return
 
-    const currentPerson = people[personIndex]
-    // Chequeo de lock
-    if (currentPerson.locked && currentPerson.userId !== user.uid) {
-      alert('Esta pestaña está siendo usada por otra persona')
+    const personData = people[personIndex]
+    const lockedByOther = personData.locked && personData.userId !== user.uid
+    if (lockedByOther) {
+      // Está bloqueada por otro, podemos ver, pero no agregar
       return
     }
 
-    let updatedParticipants = [...people]
-    // Si no está bloqueada, bloquear
-    if (!currentPerson.locked) {
-      if (currentPerson.name.startsWith('Persona')) {
+    // Si no está bloqueada o es mía, puedo agregar
+    let updatedPeople = [...people]
+
+    // Bloquear la persona si no lo está
+    if (!personData.locked) {
+      if (personData.name.startsWith('Persona')) {
         setCurrentPersonIndex(personIndex)
-        setTempPersonName(currentPerson.name)
+        setTempPersonName(personData.name)
         setShowNameModal(true)
       }
-      updatedParticipants = updatedParticipants.map((p, idx) =>
+      updatedPeople = updatedPeople.map((p, idx) =>
         idx === personIndex ? { ...p, userId: user.uid, locked: true } : p,
       )
     }
 
-    // Insert item si está disponible
-    if (menuItem.availabilityStatus !== 'disponible') {
-      return
-    }
-    updatedParticipants = updatedParticipants.map((p, idx) => {
+    // Agregar el ítem
+    updatedPeople = updatedPeople.map((p, idx) => {
       if (idx === personIndex) {
-        const itemExists = p.items.some((orderItem) => orderItem.id === menuItem.id)
-        if (itemExists) {
+        const foundItem = p.items.find((it) => it.id === menuItem.id)
+        if (foundItem) {
           return {
             ...p,
-            items: p.items.map((orderItem) =>
-              orderItem.id === menuItem.id
-                ? { ...orderItem, quantity: orderItem.quantity + 1 }
-                : orderItem,
+            items: p.items.map((it) =>
+              it.id === menuItem.id ? { ...it, quantity: it.quantity + 1 } : it,
             ),
           }
         } else {
-          return {
-            ...p,
-            items: [...p.items, { id: menuItem.id, quantity: 1 }],
-          }
+          return { ...p, items: [...p.items, { id: menuItem.id, quantity: 1 }] }
         }
       }
       return p
     })
-
-    setPeople(updatedParticipants)
+    setPeople(updatedPeople)
 
     try {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
-      await updateDoc(groupOrderDocRef, {
-        participants: updatedParticipants,
+      await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
+        participants: updatedPeople,
       })
     } catch (error) {
-      console.error('Firestore update FAILED', error)
+      console.error('Error al agregar item a persona:', error)
     }
   }
 
@@ -1572,109 +1572,76 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     itemId: string,
     quantity: number,
   ) => {
-    if (orderPlaced || !groupOrderId) return
+    if (!groupOrderId || orderPlaced) return
     if (quantity < 0) return
 
-    const updatedParticipants = people.map((person, index) => {
-      if (index === personIndex) {
+    const updated = people.map((p, idx) => {
+      if (idx === personIndex) {
         return {
-          ...person,
-          items: person.items.map((it) => (it.id === itemId ? { ...it, quantity } : it)),
+          ...p,
+          items: p.items.map((it) => (it.id === itemId ? { ...it, quantity } : it)),
         }
       }
-      return person
+      return p
     })
-    setPeople(updatedParticipants)
+    setPeople(updated)
 
     try {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
-      await updateDoc(groupOrderDocRef, { participants: updatedParticipants })
+      await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
+        participants: updated,
+      })
     } catch (error) {
-      console.error('Error actualizando cantidad de item de persona:', error)
+      console.error('Error al cambiar cantidad de item persona:', error)
     }
   }
 
   const handleRemoveItemFromPerson = async (personIndex: number, itemId: string) => {
-    if (orderPlaced || !groupOrderId) return
+    if (!groupOrderId || orderPlaced) return
 
-    const updatedParticipants = people.map((person, index) => {
-      if (index === personIndex) {
+    const updated = people.map((p, idx) => {
+      if (idx === personIndex) {
         return {
-          ...person,
-          items: person.items.filter((item) => item.id !== itemId),
+          ...p,
+          items: p.items.filter((it) => it.id !== itemId),
         }
       }
-      return person
+      return p
     })
-    setPeople(updatedParticipants)
+    setPeople(updated)
 
     try {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
-      await updateDoc(groupOrderDocRef, { participants: updatedParticipants })
+      await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
+        participants: updated,
+      })
     } catch (error) {
       console.error('Error al remover item de persona:', error)
     }
   }
 
-  const handleClaimPersonTab = async (personIndex: number) => {
-    if (orderPlaced || !groupOrderId || !user) return
-
-    const currentPerson = people[personIndex]
-    if (currentPerson.locked && currentPerson.userId !== user.uid) {
-      alert('Esta pestaña ya está siendo usada por otra persona')
-      return
-    }
-
-    if (currentPerson.name.startsWith('Persona ')) {
-      setCurrentPersonIndex(personIndex)
-      setTempPersonName(currentPerson.name)
-      setShowNameModal(true)
-      return
-    }
-
-    const updatedParticipants = people.map((p, idx) =>
-      idx === personIndex ? { ...p, userId: user.uid, locked: true } : p,
-    )
-    setPeople(updatedParticipants)
-
-    try {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
-      await updateDoc(groupOrderDocRef, { participants: updatedParticipants })
-    } catch (error) {
-      console.error('Error al bloquear pestaña para el usuario:', error)
-    }
-  }
-
   const handlePersonFinishedOrder = async (personIndex: number) => {
-    if (orderPlaced || !groupOrderId || !user) return
-
-    const currentUserPersonIndex = people.findIndex((p) => p.userId === user.uid)
-    if (currentUserPersonIndex !== personIndex) {
-      alert('No puedes terminar el pedido de otra persona.')
+    if (!groupOrderId || orderPlaced || !user) return
+    const myIndex = people.findIndex((p) => p.userId === user.uid)
+    if (myIndex !== personIndex) {
+      // No puedes terminar si no es tuya
       return
     }
 
-    const updatedParticipants = people.map((person, index) => {
-      if (index === personIndex) {
-        return { ...person, finished: true }
-      }
-      return person
-    })
-    setPeople(updatedParticipants)
-    const allAreFinished = updatedParticipants.every((p) => p.finished)
-    setAllFinished(allAreFinished)
+    const updated = people.map((p, idx) => (idx === personIndex ? { ...p, finished: true } : p))
+    setPeople(updated)
+    const everyoneDone = updated.every((p) => p.finished)
+    setAllFinished(everyoneDone)
 
     try {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
-      await updateDoc(groupOrderDocRef, {
-        participants: updatedParticipants,
-        allFinished: allAreFinished,
+      await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
+        participants: updated,
+        allFinished: everyoneDone,
       })
     } catch (error) {
-      console.error('Error al marcar persona como finished:', error)
+      console.error('Error al terminar persona:', error)
     }
   }
 
+  // --- Modal para cambiar nombre ---
   const handleNameModalClose = () => {
     setShowNameModal(false)
     setCurrentPersonIndex(null)
@@ -1683,102 +1650,104 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const handleNameSubmit = async (name: string) => {
     if (!groupOrderId || currentPersonIndex === null || !user) return
 
-    const updatedParticipants = people.map((person, index) => {
-      if (index === currentPersonIndex) {
-        const finalName = name.trim() !== '' ? name : person.name
+    const updated = people.map((p, idx) => {
+      if (idx === currentPersonIndex) {
+        const finalName = name.trim() !== '' ? name : p.name
         return {
-          ...person,
+          ...p,
           name: finalName,
           userId: user.uid,
           locked: true,
         }
       }
-      return person
+      return p
     })
-    setPeople(updatedParticipants)
+    setPeople(updated)
     setShowNameModal(false)
     setCurrentPersonIndex(null)
 
     try {
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
-      await updateDoc(groupOrderDocRef, { participants: updatedParticipants })
+      await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
+        participants: updated,
+      })
     } catch (error) {
-      console.error('Error al actualizar con el nombre en Firestore:', error)
+      console.error('Error al actualizar con nombre:', error)
     }
   }
 
-  const distributeSharedOrderItems = () => {
-    /* Lógica si se quiere implementar */
-  }
-
+  // --- Revisión final ---
   const handleReviewOrder = () => {
-    distributeSharedOrderItems()
+    // Si deseas hacer algo con los items compartidos
     setShowPedidoForm(true)
   }
 
   const handleOrderPlacement = async () => {
     if (!groupOrderId) return
-    const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
-    await updateDoc(groupOrderDocRef, { orderPlaced: true })
+    await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), { orderPlaced: true })
+    setOrderPlaced(true)
     setShowPedidoForm(true)
   }
 
   const handleToggleShowPrices = async () => {
     if (!groupOrderId) return
+    const newVal = !showPricesToAll
+    setShowPricesToAll(newVal)
     try {
-      const newValue = !showPricesToAll
-      setShowPricesToAll(newValue)
-      const groupOrderDocRef = doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId)
-      await updateDoc(groupOrderDocRef, {
-        showPricesToAll: newValue,
+      await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
+        showPricesToAll: newVal,
       })
     } catch (error) {
-      console.error('Error al togglear showPricesToAll:', error)
+      console.error('Error toggling showPricesToAll:', error)
     }
   }
 
-  // =======================================================
-  // NUEVO: FUNCIONES DE CÁLCULO DE SUBTOTALES
-  // =======================================================
+  // --- Cálculos ---
   const calculateSubtotal = (personItems: { id: string; quantity: number }[]) => {
     let total = 0
-    personItems.forEach((item) => {
-      const menuItem = menu.find((m) => m.id === item.id)
-      if (menuItem) {
-        total += menuItem.price * item.quantity
-      }
+    personItems.forEach((it) => {
+      const found = menu.find((m) => m.id === it.id)
+      if (found) total += found.price * it.quantity
     })
     return total
   }
 
   const calculateSharedSubtotal = () => {
-    let total = 0
-    sharedOrderItems.forEach((sharedItem) => {
-      const menuItem = menu.find((m) => m.id === sharedItem.itemId)
-      if (menuItem) {
-        total += menuItem.price * sharedItem.quantity
-      }
-    })
-    return total
+    return sharedOrderItems.reduce((sum, si) => {
+      const found = menu.find((m) => m.id === si.itemId)
+      return found ? sum + found.price * si.quantity : sum
+    }, 0)
   }
-  // =======================================================
 
+  // --- Helpers Avatares ---
+  const getSharedItemCount = () => sharedOrderItems.reduce((acc, si) => acc + si.quantity, 0)
+
+  const getPersonItemCount = (person: Person) =>
+    person.items.reduce((acc, it) => acc + it.quantity, 0)
+
+  // Retorna la primera letra del nombre (o "?")
+  const getInitialLetter = (name: string) => {
+    if (!name || name.trim() === '') return '?'
+    return name.trim()[0].toUpperCase()
+  }
+
+  // --- Render ---
   return (
     <div className="container mx-auto my-8 p-6 bg-white rounded-xl shadow-md relative">
       <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center text-indigo-700">
-        ¡Pedido Grupal Fácil y Divertido! 🎉
+        ¡Pedido Grupal con Burbujas! 🎉
       </h1>
 
+      {/* Muestra código si existe */}
       {groupOrderCode && (
         <div className="text-center mb-4">
           <h3 className="text-xl font-semibold text-gray-800">
-            Código de Pedido Compartido:{' '}
-            <span className="font-bold text-indigo-600">{groupOrderCode}</span>
+            Código de Pedido: <span className="text-indigo-600 font-bold">{groupOrderCode}</span>
           </h3>
-          <p className="text-sm text-gray-500">Compártelo con tus amigos.</p>
+          <p className="text-sm text-gray-500">Compártelo con tus amigos</p>
         </div>
       )}
 
+      {/* Si no hemos inicializado los nombres y no venimos con un code */}
       {!showPeopleNames && !joiningWithCode ? (
         <PeopleSelection
           numPeople={numPeople}
@@ -1789,50 +1758,92 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         />
       ) : !showPedidoForm ? (
         <>
-          <div className="border-b border-gray-200 mb-4">
-            <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
-              <button
-                onClick={() => setActiveTab('shared')}
-                className={`${
-                  activeTab === 'shared'
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300`}
+          {/* ============ Burbujas/Avatares arriba ============ */}
+          <div className="flex flex-wrap gap-4 items-center justify-center mb-8">
+            {/* Compartido */}
+            <div
+              className="flex flex-col items-center space-y-1 cursor-pointer"
+              onClick={() => setSelectedView('shared')}
+            >
+              <div
+                className={`relative w-16 h-16 rounded-full ring-4 flex items-center justify-center 
+                  ${
+                    selectedView === 'shared' ? 'ring-indigo-500' : 'ring-gray-300'
+                  } bg-indigo-100 transition-transform hover:scale-105`}
               >
-                🍕 Para Compartir
-              </button>
-              {people.map((person, index) => (
+                {/* Icono o inicial para 'compartido' */}
+                <span className="text-sm font-semibold text-gray-700">🤝</span>
+                {/* Badge con total de items si > 0 */}
+                {getSharedItemCount() > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5">
+                    {getSharedItemCount()}
+                  </span>
+                )}
+              </div>
+              <span className="text-sm font-medium text-gray-700">Compartido</span>
+            </div>
+
+            {/* Burbujas para cada persona */}
+            {people.map((person, index) => {
+              const lockedByOther = person.locked && person.userId !== user?.uid
+              const active = selectedView === `person-${index}`
+              const itemCount = getPersonItemCount(person)
+              const color = bubbleColors[index % bubbleColors.length]
+
+              return (
                 <div
                   key={person.personIndex}
-                  className={`${
-                    activeTab === `person-${index}`
-                      ? 'border-indigo-500 text-indigo-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-300 cursor-pointer`}
-                  onClick={() => setActiveTab(`person-${index}`)}
+                  className="flex flex-col items-center space-y-1 cursor-pointer"
+                  onClick={() => setSelectedView(`person-${index}`)}
                 >
-                  {person.name}
-                  {!person.locked && !person.finished && user?.uid && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        void handleClaimPersonTab(index)
-                      }}
-                      className="ml-2 px-2 py-1 bg-indigo-200 text-indigo-700 rounded-full text-xs hover:bg-indigo-300 focus:outline-none"
-                    >
-                      Soy yo
-                    </button>
-                  )}
-                  {person.finished && <span className="ml-2 text-green-500">✅ Terminado</span>}
-                  {person.locked && person.userId !== user?.uid && (
-                    <span className="ml-2 text-red-500">🔒</span>
-                  )}
+                  {/* Avatar circular */}
+                  <div
+                    className={`relative w-16 h-16 rounded-full ring-4 flex items-center justify-center 
+                      ${
+                        active ? 'ring-indigo-500' : 'ring-gray-300'
+                      } ${color} transition-transform hover:scale-105`}
+                  >
+                    {/* Si person.photoUrl existe, mostramos foto */}
+                    {person.photoUrl ? (
+                      <img
+                        src={person.photoUrl}
+                        alt={person.name}
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                    ) : (
+                      <span className="text-xl font-bold text-gray-700">
+                        {getInitialLetter(person.name)}
+                      </span>
+                    )}
+                    {/* Badge de items */}
+                    {itemCount > 0 && (
+                      <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5">
+                        {itemCount}
+                      </span>
+                    )}
+                    {/* Si locked by other => icono candado */}
+                    {lockedByOther && (
+                      <span className="absolute top-0 left-0 text-red-500 text-lg">🔒</span>
+                    )}
+                    {/* Si finished => check en esquina inferior */}
+                    {person.finished && (
+                      <span className="absolute bottom-0 right-0 text-green-500 text-lg font-bold">
+                        ✅
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Nombre debajo del avatar */}
+                  <span className="text-sm font-medium text-gray-700 text-center max-w-[4rem] truncate">
+                    {person.name}
+                  </span>
                 </div>
-              ))}
-            </nav>
+              )
+            })}
           </div>
 
-          {activeTab === 'shared' && (
+          {/* ============ Sección "Compartido" o "PersonOrder" ============ */}
+          {selectedView === 'shared' && (
             <SharedOrder
               menuCategories={menu
                 .filter((i) => i.availabilityStatus !== 'noDisponibleLargoPlazo')
@@ -1849,50 +1860,54 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
               onAddToSharedOrder={handleAddToSharedOrder}
               onSharedOrderItemQuantityChange={handleSharedOrderItemQuantityChange}
               onRemoveSharedOrderItem={handleRemoveSharedOrderItem}
-              // Corrección: ahora sí pasamos la función real
               calculateSharedSubtotal={calculateSharedSubtotal}
               sharedOrderSummaryRef={sharedOrderSummaryRef}
-              activeTab={activeTab}
+              activeTab={selectedView}
               menu={menu}
               disabled={orderPlaced}
             />
           )}
 
-          {people.map((person, index) =>
-            activeTab === `person-${index}` ? (
-              <PersonOrder
-                key={person.personIndex}
-                person={person}
-                index={index}
-                menuCategories={menu
-                  .filter((i) => i.availabilityStatus !== 'noDisponibleLargoPlazo')
-                  .reduce(
-                    (acc, item) => {
-                      const cat = item.recommendation || 'General'
-                      acc[cat] = acc[cat] || []
-                      acc[cat].push(item)
-                      return acc
-                    },
-                    {} as Record<string, MenuItemType[]>,
-                  )}
-                menu={menu}
-                onAddItemToPerson={handleAddItemToPerson}
-                onPersonOrderItemQuantityChange={handlePersonOrderItemQuantityChange}
-                onRemoveItemFromPerson={handleRemoveItemFromPerson}
-                // Corrección: la función real
-                calculateSubtotal={calculateSubtotal}
-                personOrderSummaryRef={personOrderSummaryRef}
-                activeTab={activeTab}
-                onPersonFinishedOrder={handlePersonFinishedOrder}
-                isFinished={person.finished || false}
-                personLocked={person.locked || false}
-                isCurrentUserTab={person.userId === user?.uid}
-                personIndex={index}
-                disabled={orderPlaced}
-              />
-            ) : null,
-          )}
+          {people.map((person, i) => {
+            if (selectedView === `person-${i}`) {
+              // Para saber si está bloqueada por otro => disabled
+              const lockedByOther = person.locked && person.userId !== user?.uid
+              return (
+                <PersonOrder
+                  key={person.personIndex}
+                  person={person}
+                  index={i}
+                  menuCategories={menu
+                    .filter((m) => m.availabilityStatus !== 'noDisponibleLargoPlazo')
+                    .reduce(
+                      (acc, item) => {
+                        const cat = item.recommendation || 'General'
+                        acc[cat] = acc[cat] || []
+                        acc[cat].push(item)
+                        return acc
+                      },
+                      {} as Record<string, MenuItemType[]>,
+                    )}
+                  menu={menu}
+                  onAddItemToPerson={handleAddItemToPerson}
+                  onPersonOrderItemQuantityChange={handlePersonOrderItemQuantityChange}
+                  onRemoveItemFromPerson={handleRemoveItemFromPerson}
+                  calculateSubtotal={calculateSubtotal}
+                  personOrderSummaryRef={personOrderSummaryRef}
+                  activeTab={selectedView}
+                  onPersonFinishedOrder={handlePersonFinishedOrder}
+                  isFinished={person.finished || false}
+                  personLocked={person.locked || false}
+                  isCurrentUserTab={person.userId === user?.uid}
+                  personIndex={i}
+                  disabled={lockedByOther || orderPlaced} // Ver o no, pero sin poder editar si locked por otro
+                />
+              )
+            }
+            return null
+          })}
 
+          {/* Botón para REVISAR si soy el owner y todos terminaron */}
           <div className="flex justify-center mt-8">
             {isOwner && allFinished && !orderPlaced ? (
               <button
@@ -1918,12 +1933,12 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           </div>
         </>
       ) : (
+        // Resumen final
         <OrderReview
           people={people}
           sharedOrderItems={sharedOrderItems}
           menu={menu}
           onClosePedidoForm={() => setShowPedidoForm(false)}
-          // Cambios: pasamos nuestras funciones de cálculo
           calculateSharedSubtotal={calculateSharedSubtotal}
           calculateSubtotal={calculateSubtotal}
           isOrderOwner={isOwner}
@@ -1934,13 +1949,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         />
       )}
 
-      {feedbackMessage && (
-        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg animate-fade-in">
-          {feedbackMessage}
-        </div>
-      )}
-
-      {/* MODAL para el nombre */}
+      {/* Modal para nombre de Persona */}
       <NameModal
         open={showNameModal}
         onClose={handleNameModalClose}
@@ -4657,17 +4666,678 @@ createRoot(document.getElementById('root')).render(
 
 /* Fin src\main.tsx */
 
+/* Inicio src\pages\ContabilidadDetail.tsx */
+// src/pages/ContabilidadDetail.tsx
+import { arrayRemove, arrayUnion, doc, onSnapshot, updateDoc } from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import MainLayout from '../components/layout/MainLayout'
+import { useAuth } from '../hooks/useAuth'
+import { db } from '../utils/firebase'
+
+interface Movement {
+  movementId: string
+  type: 'entry' | 'exit'
+  amount: number
+  concept: string
+  description?: string
+  category: string
+  method: string
+  createdAt: any
+  createdBy: string
+}
+
+interface DailyCashRegister {
+  id: string
+  date: string
+  openingAmount: number
+  closingAmount?: number
+  realClosingAmount?: number
+  discrepancy?: number
+  status: 'open' | 'closed'
+  createdBy: string
+  closedBy?: string
+  movements: Movement[]
+}
+
+const ContabilidadDetail: React.FC = () => {
+  const { user, userRole } = useAuth()
+  const params = useParams<{ id: string }>()
+  const navigate = useNavigate()
+
+  const [registerData, setRegisterData] = useState<DailyCashRegister | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  // Nuevos estados para registrar un movimiento
+  const [movementType, setMovementType] = useState<'entry' | 'exit'>('entry')
+  const [movementAmount, setMovementAmount] = useState<number>(0)
+  const [movementConcept, setMovementConcept] = useState('')
+  const [movementDescription, setMovementDescription] = useState('')
+  const [movementCategory, setMovementCategory] = useState('venta') // Default to 'ventas'
+  const [movementMethod, setMovementMethod] = useState('efectivo') // Default to 'efectivo'
+
+  // Campos para cerrar el día
+  const [closingAmount, setClosingAmount] = useState<number>(0)
+  const [realClosingAmount, setRealClosingAmount] = useState<number>(0)
+
+  useEffect(() => {
+    if (!params.id) {
+      setLoading(false)
+      return
+    }
+
+    const docRef = doc(db, 'caja', params.id)
+    const unsubscribe = onSnapshot(docRef, (snapshot) => {
+      if (!snapshot.exists()) {
+        setLoading(false)
+        return
+      }
+      const data = snapshot.data() as Omit<DailyCashRegister, 'id'>
+      setRegisterData({
+        id: snapshot.id,
+        ...data,
+      })
+      setLoading(false)
+    })
+
+    return () => unsubscribe()
+  }, [params.id])
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="p-4">Cargando detalle...</div>
+      </MainLayout>
+    )
+  }
+
+  if (!registerData) {
+    return (
+      <MainLayout>
+        <div className="p-4">No se encontró el registro de caja.</div>
+      </MainLayout>
+    )
+  }
+
+  // Calcular totales al vuelo:
+  const totalEntries = registerData.movements
+    .filter((m) => m.type === 'entry')
+    .reduce((acc, cur) => acc + cur.amount, 0)
+
+  const totalExits = registerData.movements
+    .filter((m) => m.type === 'exit')
+    .reduce((acc, cur) => acc + cur.amount, 0)
+
+  const expectedClose = registerData.openingAmount + totalEntries - totalExits
+
+  const handleAddMovement = async () => {
+    if (!user) return
+    if (registerData.status === 'closed') {
+      alert('Día cerrado, no se pueden agregar movimientos.')
+      return
+    }
+
+    // Crear un Movement
+    const movement: Movement = {
+      movementId: crypto.randomUUID(),
+      type: movementType,
+      amount: movementAmount,
+      concept: movementConcept.trim() || 'Sin concepto',
+      description: movementDescription.trim(),
+      category: movementCategory,
+      method: movementMethod,
+      createdAt: new Date(),
+      createdBy: user.uid,
+    }
+    try {
+      const docRef = doc(db, 'caja', registerData.id)
+      await updateDoc(docRef, {
+        movements: arrayUnion(movement),
+      })
+      // Limpiar formulario
+      setMovementAmount(0)
+      setMovementConcept('')
+      setMovementDescription('')
+      setMovementMethod('efectivo')
+      setMovementCategory('venta')
+    } catch (error) {
+      console.error('Error al guardar movimiento:', error)
+      alert('Error al guardar movimiento')
+    }
+  }
+
+  const handleRemoveMovement = async (mov: Movement) => {
+    if (!user) return
+    if (registerData.status === 'closed') {
+      alert('Día cerrado, no se pueden eliminar movimientos.')
+      return
+    }
+    const confirmDelete = confirm(`¿Eliminar movimiento: "${mov.concept}" por ${mov.amount} COP?`)
+    if (!confirmDelete) return
+
+    try {
+      const docRef = doc(db, 'caja', registerData.id)
+      await updateDoc(docRef, {
+        movements: arrayRemove(mov),
+      })
+    } catch (error) {
+      console.error('Error al eliminar movimiento:', error)
+      alert('Error al eliminar movimiento')
+    }
+  }
+
+  const handleCloseDay = async () => {
+    if (!user) return
+    if (registerData.status === 'closed') {
+      alert('Este día ya está cerrado.')
+      return
+    }
+    // Cálculo
+    const discrepancy = expectedClose - realClosingAmount
+    try {
+      const docRef = doc(db, 'caja', registerData.id)
+      await updateDoc(docRef, {
+        closingAmount,
+        realClosingAmount,
+        discrepancy,
+        status: 'closed',
+        closedBy: user.uid,
+      })
+      alert('Día cerrado con éxito.')
+      navigate('/contabilidad')
+    } catch (error) {
+      console.error('Error al cerrar el día:', error)
+      alert('Error al cerrar el día')
+    }
+  }
+
+  // Function to format price to Colombian Pesos
+  const formatPriceCOP = (price: number) => {
+    return price.toLocaleString('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })
+  }
+
+  const categories = ['venta', 'compra_insumos', 'pago_servicios', 'nomina', 'otros']
+
+  const paymentMethods = ['efectivo', 'transferencia', 'tarjeta']
+
+  const groupedMovements = registerData.movements.reduce(
+    (acc, mov) => {
+      acc[mov.category] = acc[mov.category] || []
+      acc[mov.category].push(mov)
+      return acc
+    },
+    {} as Record<string, Movement[]>,
+  )
+
+  const calculateCategoryTotal = (category: string, type: 'entry' | 'exit') => {
+    return (groupedMovements[category] || [])
+      .filter((m) => m.type === type)
+      .reduce((sum, m) => sum + m.amount, 0)
+  }
+
+  return (
+    <MainLayout>
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-4 text-center text-indigo-700">
+          Detalle de Caja - {registerData.date}
+        </h1>
+        <div className="mb-6 bg-gray-100 p-4 rounded shadow">
+          <p>
+            <strong>Estado:</strong>{' '}
+            <span className={registerData.status === 'open' ? 'text-green-600' : 'text-gray-600'}>
+              {registerData.status.toUpperCase()}
+            </span>
+          </p>
+          <p>
+            <strong>Apertura:</strong> {formatPriceCOP(registerData.openingAmount)}
+          </p>
+          <p>
+            <strong>Entradas:</strong> {formatPriceCOP(totalEntries)}
+          </p>
+          <p>
+            <strong>Salidas:</strong> {formatPriceCOP(totalExits)}
+          </p>
+          <p>
+            <strong className="text-indigo-700">Cierre Esperado:</strong>{' '}
+            {formatPriceCOP(expectedClose)}
+          </p>
+          {registerData.status === 'closed' && (
+            <>
+              <p>
+                <strong>Declarado al Cerrar:</strong>{' '}
+                {formatPriceCOP(registerData.closingAmount || 0)}
+              </p>
+              <p>
+                <strong>Efectivo Real Contado:</strong>{' '}
+                {formatPriceCOP(registerData.realClosingAmount || 0)}
+              </p>
+              <p>
+                <strong>Discrepancia:</strong>{' '}
+                <span
+                  className={
+                    registerData.discrepancy === 0
+                      ? 'text-green-600 font-medium'
+                      : 'text-red-600 font-medium'
+                  }
+                >
+                  {registerData.discrepancy === 0
+                    ? 'Todo cuadra'
+                    : `${formatPriceCOP(registerData.discrepancy || 0)} (Sobrante/Pérdida)`}
+                </span>
+              </p>
+            </>
+          )}
+        </div>
+        {/* Resumen por categoría */}
+        {Object.keys(groupedMovements).length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-2 text-indigo-600">Resumen por Categoría</h2>
+            {Object.keys(groupedMovements).map((category) => (
+              <div key={category} className="p-3 bg-white border rounded shadow-sm mb-2">
+                <h3 className="text-lg font-medium text-gray-800 capitalize">{category}</h3>
+                <div className="ml-4">
+                  <p className="text-sm text-gray-700">
+                    <strong>Ingresos:</strong>{' '}
+                    {formatPriceCOP(calculateCategoryTotal(category, 'entry'))}
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    <strong>Egresos:</strong>{' '}
+                    {formatPriceCOP(calculateCategoryTotal(category, 'exit'))}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Movimientos */}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-2 text-indigo-600">Movimientos</h2>
+          {registerData.movements.length === 0 && (
+            <p className="text-gray-400 text-center">No hay movimientos aún.</p>
+          )}
+          <ul className="space-y-3">
+            {registerData.movements.map((mov) => (
+              <li
+                key={mov.movementId}
+                className="bg-white border p-3 rounded flex items-center justify-between shadow-sm hover:shadow-md transition-shadow duration-200"
+              >
+                <div>
+                  <p>
+                    {mov.type === 'entry' ? (
+                      <span className="text-green-600 font-medium">
+                        +{formatPriceCOP(mov.amount)}
+                      </span>
+                    ) : (
+                      <span className="text-red-600 font-medium">
+                        -{formatPriceCOP(mov.amount)}
+                      </span>
+                    )}{' '}
+                    - {mov.concept}
+                  </p>
+                  <p className="text-gray-600 text-xs">
+                    <strong>Categoria:</strong> {mov.category} <strong>Metodo:</strong> {mov.method}
+                  </p>
+                  {mov.description && (
+                    <p className="text-gray-500 text-sm mt-1">{mov.description}</p>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    {new Date(mov.createdAt).toLocaleString()} | Creado por: {mov.createdBy}
+                  </p>
+                </div>
+                {registerData.status === 'open' &&
+                  (userRole === 'admin' || userRole === 'encargado') && (
+                    <button
+                      onClick={() => handleRemoveMovement(mov)}
+                      className="text-red-500 hover:text-red-700 ml-2 text-sm"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="w-5 h-5"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M14.74 9l-.346 9m-.478 0l-.345-9m7.021-2.01C18.692 6.905 17.127 5.536 15.313 5.536H8.687C6.873 5.536 5.308 6.905 5.308 8.72v.81c0 1.18.914 2.12 2.094 2.201l1.652.072m7.324 0l1.652-.072a2.094 2.094 0 002.094-2.201v-.81c0-1.814-1.365-3.183-3.187-3.183zm-2.961 8.903L15.7 11.855m-2.606 5.15l-2.796-5.15m5.136 0l-2.794 5.15z"
+                        />
+                      </svg>
+                    </button>
+                  )}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Formulario para añadir movimiento (solo si día abierto) */}
+        {registerData.status === 'open' && (userRole === 'admin' || userRole === 'encargado') && (
+          <div className="mb-8 p-4 border rounded bg-gray-50 shadow-sm">
+            <h3 className="font-semibold mb-2 text-indigo-600">Registrar Movimiento</h3>
+            <div className="mb-3">
+              <label className="block text-sm text-gray-700 mb-1">Tipo</label>
+              <select
+                className="border p-2 w-full rounded"
+                value={movementType}
+                onChange={(e) => setMovementType(e.target.value as 'entry' | 'exit')}
+              >
+                <option value="entry">Entrada</option>
+                <option value="exit">Salida</option>
+              </select>
+            </div>
+            <div className="mb-3">
+              <label className="block text-sm text-gray-700 mb-1">Monto</label>
+              <input
+                type="number"
+                className="border p-2 w-full rounded"
+                value={movementAmount}
+                onChange={(e) => setMovementAmount(Number(e.target.value))}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="block text-sm text-gray-700 mb-1">Concepto</label>
+              <input
+                type="text"
+                className="border p-2 w-full rounded"
+                value={movementConcept}
+                onChange={(e) => setMovementConcept(e.target.value)}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="block text-sm text-gray-700 mb-1">Descripción (opcional)</label>
+              <input
+                type="text"
+                className="border p-2 w-full rounded"
+                value={movementDescription}
+                onChange={(e) => setMovementDescription(e.target.value)}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="block text-sm text-gray-700 mb-1">Categoria</label>
+              <select
+                className="border p-2 w-full rounded"
+                value={movementCategory}
+                onChange={(e) => setMovementCategory(e.target.value)}
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-3">
+              <label className="block text-sm text-gray-700 mb-1">Metodo de Pago</label>
+              <select
+                className="border p-2 w-full rounded"
+                value={movementMethod}
+                onChange={(e) => setMovementMethod(e.target.value)}
+              >
+                {paymentMethods.map((method) => (
+                  <option key={method} value={method}>
+                    {method}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={handleAddMovement}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              Agregar Movimiento
+            </button>
+          </div>
+        )}
+
+        {/* Cerrar día (si está abierto) */}
+        {registerData.status === 'open' && (userRole === 'admin' || userRole === 'encargado') && (
+          <div className="p-4 border rounded bg-gray-50 shadow-sm">
+            <h3 className="font-semibold mb-2 text-indigo-600">Cerrar Día</h3>
+            <div className="mb-3">
+              <label className="block text-sm text-gray-700 mb-1">
+                Cierre declarado (opcional)
+              </label>
+              <input
+                type="number"
+                className="border p-2 w-full rounded"
+                value={closingAmount}
+                onChange={(e) => setClosingAmount(Number(e.target.value))}
+              />
+            </div>
+            <div className="mb-3">
+              <label className="block text-sm text-gray-700 mb-1">Efectivo Real Contado</label>
+              <input
+                type="number"
+                className="border p-2 w-full rounded"
+                value={realClosingAmount}
+                onChange={(e) => setRealClosingAmount(Number(e.target.value))}
+              />
+            </div>
+            <button
+              onClick={handleCloseDay}
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+            >
+              Cerrar Día
+            </button>
+          </div>
+        )}
+      </div>
+    </MainLayout>
+  )
+}
+
+export default ContabilidadDetail
+
+/* Fin src\pages\ContabilidadDetail.tsx */
+
+/* Inicio src\pages\ContabilidadPage.tsx */
+// src/pages/ContabilidadPage.tsx
+import { addDoc, collection, onSnapshot, query } from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
+import MainLayout from '../components/layout/MainLayout'
+import { useAuth } from '../hooks/useAuth'
+import { db } from '../utils/firebase'
+
+interface Movement {
+  movementId: string
+  type: 'entry' | 'exit'
+  amount: number
+  concept: string
+  createdAt: any
+  createdBy: string
+}
+
+interface DailyCashRegister {
+  id: string
+  date: string
+  openingAmount: number
+  closingAmount?: number
+  realClosingAmount?: number
+  discrepancy?: number
+  status: 'open' | 'closed'
+  createdBy: string
+  closedBy?: string
+  movements: Movement[]
+}
+
+const ContabilidadPage: React.FC = () => {
+  const { user, userRole } = useAuth()
+  const [cashRegisters, setCashRegisters] = useState<DailyCashRegister[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const qRef = query(collection(db, 'caja'))
+    const unsubscribe = onSnapshot(qRef, (snapshot) => {
+      const data: DailyCashRegister[] = snapshot.docs.map((docSnap) => {
+        const docData = docSnap.data()
+        return {
+          id: docSnap.id,
+          ...docData,
+        } as DailyCashRegister
+      })
+      setCashRegisters(data)
+      setLoading(false)
+    })
+
+    return () => unsubscribe()
+  }, [])
+
+  const handleOpenDay = async () => {
+    if (!user) return
+    // Ver si ya hay un registro "open"
+    const alreadyOpen = cashRegisters.find((reg) => reg.status === 'open')
+    if (alreadyOpen) {
+      alert('Ya hay un día abierto, ciérralo primero antes de abrir otro.')
+      return
+    }
+    // Pedir monto de apertura
+    const opening = Number(prompt('Monto de apertura en efectivo:') || 0)
+    const today = new Date()
+    const dateStr = today.toISOString().split('T')[0] // "YYYY-MM-DD"
+
+    try {
+      await addDoc(collection(db, 'caja'), {
+        date: dateStr,
+        openingAmount: opening,
+        status: 'open',
+        createdBy: user.uid,
+        movements: [],
+      })
+      alert('Día abierto exitosamente.')
+    } catch (error) {
+      console.error('Error abriendo el día:', error)
+      alert('Ocurrió un error al abrir el día')
+    }
+  }
+
+  const goToDetail = (id: string) => {
+    window.location.href = `/contabilidad/${id}`
+  }
+
+  if (loading) {
+    return (
+      <MainLayout>
+        <div className="p-4">Cargando datos de contabilidad...</div>
+      </MainLayout>
+    )
+  }
+
+  // Function to format price to Colombian Pesos
+  const formatPriceCOP = (price: number) => {
+    return price.toLocaleString('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    })
+  }
+
+  return (
+    <MainLayout>
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-2 text-center text-indigo-700">Contabilidad / Caja</h1>
+        <p className="mb-4 text-gray-600 text-center">
+          Aquí podrás abrir un nuevo día, registrar movimientos y cerrar la caja diaria.
+        </p>
+
+        {(userRole === 'admin' || userRole === 'encargado') && (
+          <div className="text-center mb-4">
+            <button
+              onClick={handleOpenDay}
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-200"
+            >
+              Abrir Nuevo Día
+            </button>
+          </div>
+        )}
+
+        <div className="mt-8 space-y-4">
+          {cashRegisters.map((reg) => (
+            <div
+              key={reg.id}
+              className="border p-4 rounded flex justify-between items-center shadow-sm hover:shadow-md transition-shadow duration-200 bg-gray-100"
+            >
+              <div>
+                <p>
+                  <strong>Fecha:</strong> {reg.date}
+                </p>
+                <p>
+                  <strong>Estado:</strong>{' '}
+                  <span className={reg.status === 'open' ? 'text-green-600' : 'text-gray-600'}>
+                    {reg.status.toUpperCase()}
+                  </span>
+                </p>
+                <p>
+                  <strong>Apertura:</strong> {formatPriceCOP(reg.openingAmount)}
+                </p>
+                {reg.status === 'closed' && (
+                  <>
+                    <p>
+                      <strong>Declarado al Cerrar:</strong> {formatPriceCOP(reg.closingAmount || 0)}
+                    </p>
+                    <p>
+                      <strong>Efectivo Contado:</strong>{' '}
+                      {reg.realClosingAmount !== undefined
+                        ? formatPriceCOP(reg.realClosingAmount)
+                        : '—'}
+                    </p>
+                    {reg.discrepancy !== undefined && (
+                      <p
+                        className={
+                          reg.discrepancy === 0
+                            ? 'text-green-700 font-semibold'
+                            : 'text-red-600 font-semibold'
+                        }
+                      >
+                        Discrepancia: {formatPriceCOP(reg.discrepancy || 0)}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200"
+                onClick={() => goToDetail(reg.id)}
+              >
+                Ver Detalle
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {cashRegisters.length === 0 && (
+          <p className="mt-6 text-gray-500 text-center">No hay registros de caja todavía.</p>
+        )}
+      </div>
+    </MainLayout>
+  )
+}
+
+export default ContabilidadPage
+
+/* Fin src\pages\ContabilidadPage.tsx */
+
 /* Inicio src\pages\Dashboard.tsx */
-/* src\pages\Dashboard.tsx */
 import {
+  ArcElement,
   BarElement,
   CategoryScale,
   Chart as ChartJS,
   Legend,
   LinearScale,
+  LineController,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
-} from "chart.js";
+} from 'chart.js'
 import {
   collection,
   doc,
@@ -4676,227 +5346,366 @@ import {
   setDoc,
   updateDoc,
   where,
-} from "firebase/firestore";
-import React, { useEffect, useState } from "react";
-import { Bar } from "react-chartjs-2";
-import { v4 as uuidv4 } from "uuid"; // Import UUID
-import { useAuth } from "../hooks/useAuth";
-import { db } from "../utils/firebase";
+} from 'firebase/firestore'
+import React, { useEffect, useRef, useState } from 'react'
+import { Bar, Line, Pie } from 'react-chartjs-2'
+import { v4 as uuidv4 } from 'uuid' // Import UUID
+import { useAuth } from '../hooks/useAuth'
+import { db } from '../utils/firebase'
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
-  Legend
-);
+  Legend,
+  LineController,
+  ArcElement, // Registra ArcElement
+)
 
 /** Interfaz para pedido */
 interface Pedido {
-  id: string;
-  status: string;
-  total: number;
-  orderDate: Date;
-  userId: string; // Asegúrate de que tu interfaz Pedido incluya userId
+  id: string
+  status: string
+  total: number
+  orderDate: Date
+  userId: string // Asegúrate de que tu interfaz Pedido incluya userId
 }
 
 interface Task {
-  id: string;
-  taskId: string;
-  taskName: string;
-  taskType: "daily" | "periodic";
-  dueDate?: Date | null;
-  dailyCompletions: { [date: string]: boolean }; // Track completion per day
-  completionDate?: Date | null;
-  dayOfWeek?: number;
-  subtasks?: string[];
+  id: string
+  taskId: string
+  taskName: string
+  taskType: 'daily' | 'periodic'
+  dueDate?: Date | null
+  dailyCompletions: { [date: string]: boolean } // Track completion per day
+  completionDate?: Date | null
+  dayOfWeek?: number
+  subtasks?: string[]
 }
 
 // Estados que manejaremos en la app
-const ALL_STATUSES = [
-  "pendiente",
-  "atendiendo",
-  "preparando",
-  "enviado",
-  "entregado",
-];
+const ALL_STATUSES = ['pendiente', 'atendiendo', 'preparando', 'enviado', 'entregado']
 
 const defaultDailyTasks = [
   {
-    taskName: "Hacer el aseo del restaurante",
+    taskName: 'Hacer el aseo del restaurante',
     subtasks: [
-      "Barrer y trapear pisos",
-      "Limpiar mesas y sillas",
-      "Vaciar papeleras",
-      "Limpiar baños",
+      'Barrer y trapear pisos',
+      'Limpiar mesas y sillas',
+      'Vaciar papeleras',
+      'Limpiar baños',
     ],
   },
-  { taskName: "Lavar la freidora", subtasks: [] },
+  { taskName: 'Lavar la freidora', subtasks: [] },
   {
-    taskName: "Revisar inventario y hacer pedidos si es necesario",
+    taskName: 'Revisar inventario y hacer pedidos si es necesario',
     subtasks: [
-      "Verificar niveles de stock",
-      "Listar productos a pedir",
-      "Enviar pedido a proveedores",
-      "Recibir y organizar pedido",
+      'Verificar niveles de stock',
+      'Listar productos a pedir',
+      'Enviar pedido a proveedores',
+      'Recibir y organizar pedido',
     ],
   },
-];
+]
 
 const periodicTasksConfig = [
-  { dayOfMonth: 25, taskName: "Pagar arriendo", taskType: "periodic" },
-  { dayOfMonth: 25, taskName: "Pagar factura de luz", taskType: "periodic" },
-  { dayOfMonth: 25, taskName: "Pagar factura de agua", taskType: "periodic" },
+  { dayOfMonth: 25, taskName: 'Pagar arriendo', taskType: 'periodic' },
+  { dayOfMonth: 25, taskName: 'Pagar factura de luz', taskType: 'periodic' },
+  { dayOfMonth: 25, taskName: 'Pagar factura de agua', taskType: 'periodic' },
   // Add more periodic tasks as needed
-];
+]
+
+interface Movement {
+  movementId: string
+  type: 'entry' | 'exit'
+  amount: number
+  concept: string
+  description?: string
+  category: string
+  method: string
+  createdAt: any
+  createdBy: string
+}
+
+interface DailyCashRegister {
+  id: string
+  date: string
+  openingAmount: number
+  closingAmount?: number
+  realClosingAmount?: number
+  discrepancy?: number
+  status: 'open' | 'closed'
+  createdBy: string
+  closedBy?: string
+  movements: Movement[]
+}
 
 const Dashboard: React.FC = () => {
-  const { user, userRole, points } = useAuth();
-  const [pedidos, setPedidos] = useState<Pedido[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loadingTasks, setLoadingTasks] = useState<boolean>(true);
+  const { user, userRole, points } = useAuth()
+  const [pedidos, setPedidos] = useState<Pedido[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [loadingTasks, setLoadingTasks] = useState<boolean>(true)
 
   // Para filtrar por un estado específico o "todos"
-  const [selectedStatus, setSelectedStatus] = useState<string | "todos">(
-    "todos"
-  );
+  const [selectedStatus, setSelectedStatus] = useState<string | 'todos'>('todos')
 
   // Métricas generales
-  const [todaySales, setTodaySales] = useState<number>(0);
-  const [monthSales, setMonthSales] = useState<number>(0);
-  const [pendingOrdersCount, setPendingOrdersCount] = useState<number>(0);
-  const [totalOrders, setTotalOrders] = useState<number>(0);
-  const [, setClientTotalOrders] = useState<number>(0); // Total pedidos del cliente
+  const [todaySales, setTodaySales] = useState<number>(0)
+  const [monthSales, setMonthSales] = useState<number>(0)
+  const [pendingOrdersCount, setPendingOrdersCount] = useState<number>(0)
+  const [totalOrders, setTotalOrders] = useState<number>(0)
+  const [, setClientTotalOrders] = useState<number>(0) // Total pedidos del cliente
+
+  // Métricas de contabilidad
+  const [cashRegisters, setCashRegisters] = useState<DailyCashRegister[]>([])
+  const [monthlyIncome, setMonthlyIncome] = useState(0)
+  const [monthlyExpenses, setMonthlyExpenses] = useState(0)
+  const [monthlyBalance, setMonthlyBalance] = useState(0)
+  const [categoryData, setCategoryData] = useState<{
+    labels: string[]
+    income: number[]
+    expenses: number[]
+  } | null>(null) // No default value anymore, start as null
+  const [monthlyLabelsContabilidad, setMonthlyLabelsContabilidad] = useState<string[]>([])
+  const [monthlyIncomeContabilidad, setMonthlyIncomeContabilidad] = useState<number[]>([])
+  const [monthlyExpensesContabilidad, setMonthlyExpensesContabilidad] = useState<number[]>([])
+  const [contabilityError, setContabilityError] = useState<boolean>(false) // Estado de error contabilidad
 
   // Gráficos (últimos 7 días + últimos 6 meses)
-  const [dailyLabels, setDailyLabels] = useState<string[]>([]);
-  const [dailyData, setDailyData] = useState<number[]>([]);
-  const [monthlyLabels, setMonthlyLabels] = useState<string[]>([]);
-  const [monthlyData, setMonthlyData] = useState<number[]>([]);
+  const [dailyLabels, setDailyLabels] = useState<string[]>([])
+  const [dailyData, setDailyData] = useState<number[]>([])
+  const [monthlyLabels, setMonthlyLabels] = useState<string[]>([])
+  const [monthlyData, setMonthlyData] = useState<number[]>([])
+  const [selectedDateRange, setSelectedDateRange] = useState<{
+    from: Date | null
+    to: Date | null
+  }>({ from: null, to: null })
+
+  const chartRef = useRef<ChartJS | null>(null)
+
+  const categories = ['venta', 'compra_insumos', 'pago_servicios', 'nomina', 'otros']
+
+  useEffect(() => {
+    setContabilityError(false) // Reset error
+    const qRef = query(collection(db, 'caja'))
+    const unsubscribe = onSnapshot(
+      qRef,
+      (snapshot) => {
+        const data: DailyCashRegister[] = snapshot.docs.map((docSnap) => {
+          const docData = docSnap.data()
+          return {
+            id: docSnap.id,
+            ...docData,
+          } as DailyCashRegister
+        })
+        setCashRegisters(data)
+      },
+      (error) => {
+        console.error('Error fetching contability data:', error)
+        setContabilityError(true) // Set error state to true on error
+        setLoading(false)
+      },
+    )
+    return () => unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    // Inicializar
+    setCategoryData({ labels: [], income: [], expenses: [] })
+    setMonthlyLabelsContabilidad([])
+    setMonthlyExpensesContabilidad([])
+    setMonthlyIncomeContabilidad([])
+    setContabilityError(false) // Reset error
+
+    const qRef = query(collection(db, 'caja'))
+    const unsubscribe = onSnapshot(
+      qRef,
+      (snapshot) => {
+        const data: DailyCashRegister[] = snapshot.docs.map((docSnap) => {
+          const docData = docSnap.data()
+          return {
+            id: docSnap.id,
+            ...docData,
+          } as DailyCashRegister
+        })
+        setCashRegisters(data)
+        // --- ADD CONSOLE LOG HERE: Inspect raw cashRegisters data ---
+        console.log('Raw cashRegisters data from Firestore:', data)
+      },
+      (error) => {
+        console.error('Error fetching contability data:', error)
+        setContabilityError(true) // Set error state to true on error
+        setLoading(false)
+      },
+    )
+    return () => unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    // Calculate contability metrics
+    if (!cashRegisters || cashRegisters.length === 0) {
+      setMonthlyIncome(0)
+      setMonthlyExpenses(0)
+      setMonthlyBalance(0)
+      setCategoryData(null)
+      setMonthlyLabelsContabilidad([])
+      setMonthlyExpensesContabilidad([])
+      setMonthlyIncomeContabilidad([])
+      return
+    }
+
+    const now = new Date()
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const filteredRegisters = cashRegisters.filter((reg) => {
+      const date = new Date(reg.date)
+      return date >= firstDayOfMonth && date <= now
+    })
+
+    let totalIncome = 0
+    let totalExpenses = 0
+    const categoryTotals = categories.reduce(
+      (acc, category) => {
+        acc[category] = { income: 0, expenses: 0 }
+        return acc
+      },
+      {} as Record<string, { income: number; expenses: number }>,
+    )
+
+    // --- LOGGING: Inspect cashRegisters data at start of processing ---
+    console.log('cashRegisters data inside categoryData useEffect:', cashRegisters)
+
+    filteredRegisters.forEach((register) => {
+      register.movements.forEach((mov) => {
+        if (mov.type === 'entry') {
+          totalIncome += mov.amount
+          categoryTotals[mov.category].income += mov.amount
+        } else {
+          totalExpenses += mov.amount
+          categoryTotals[mov.category].expenses += mov.amount
+        }
+      })
+    })
+
+    // --- LOGGING: Inspect categoryTotals after processing movements ---
+    console.log('categoryTotals after processing movements:', categoryTotals)
+
+    setMonthlyIncome(totalIncome)
+    setMonthlyExpenses(totalExpenses)
+    setMonthlyBalance(totalIncome - totalExpenses)
+
+    // Prepare data for the chart
+    const labels: string[] = []
+    const income: number[] = []
+    const expenses: number[] = []
+
+    categories.forEach((category) => {
+      if (categoryTotals[category].income > 0 || categoryTotals[category].expenses > 0) {
+        labels.push(category)
+        income.push(categoryTotals[category].income)
+        expenses.push(categoryTotals[category].expenses)
+      }
+    })
+
+    const finalCategoryData = { labels, income, expenses }
+
+    // --- LOGGING: Inspect final categoryData before setState ---
+    console.log('Final categoryData before setState:', finalCategoryData)
+
+    setCategoryData(finalCategoryData)
+  }, [cashRegisters])
 
   useEffect(() => {
     // Escuchamos la colección 'pedidos'
-    let pedidosQuery = collection(db, "pedidos");
+    let pedidosQuery = collection(db, 'pedidos')
     if (userRole === 'client' && user) {
-      pedidosQuery = query(pedidosQuery, where("userId", "==", user.uid)) as never;
+      pedidosQuery = query(pedidosQuery, where('userId', '==', user.uid)) as never
     }
 
-    const unsubscribe = onSnapshot(pedidosQuery, (snapshot) => {
-      const pedidosData: Pedido[] = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          status: data.status,
-          total: data.total,
-          orderDate: data.orderDate?.toDate
-            ? data.orderDate.toDate()
-            : new Date(), // fallback
-          userId: data.userId, // Asegúrate de mapear userId
-        } as Pedido;
-      });
-      setPedidos(pedidosData);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error en el listener de pedidos:", error);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, [user, userRole]);
+    const unsubscribe = onSnapshot(
+      pedidosQuery,
+      (snapshot) => {
+        const pedidosData: Pedido[] = snapshot.docs.map((doc) => {
+          const data = doc.data()
+          return {
+            id: doc.id,
+            status: data.status,
+            total: data.total,
+            orderDate: data.orderDate?.toDate ? data.orderDate.toDate() : new Date(), // fallback
+            userId: data.userId, // Asegúrate de mapear userId
+          } as Pedido
+        })
+        setPedidos(pedidosData)
+        setLoading(false)
+      },
+      (error) => {
+        console.error('Error en el listener de pedidos:', error)
+        setLoading(false)
+      },
+    )
+    return () => unsubscribe()
+  }, [user, userRole])
 
   useEffect(() => {
     // Conditionally subscribe to tasks only if user is admin or encargado
     if (userRole === 'admin' || userRole === 'encargado') {
-      const today = new Date();
-      const todayDateString = today.toISOString().split("T")[0];
+      const today = new Date()
+      const todayDateString = today.toISOString().split('T')[0]
 
-      const tasksCollection = collection(db, "tasks");
-      const unsubscribeTasks = onSnapshot(tasksCollection, (snapshot) => {
-        let fetchedTasks: Task[] = snapshot.docs.map((doc) => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            taskId: data.taskId,
-            taskName: data.taskName,
-            taskType: data.taskType,
-            dueDate: data.dueDate ? data.dueDate.toDate() : null,
-            dailyCompletions: data.dailyCompletions || {}, // Initialize dailyCompletions
-            completionDate: data.completionDate
-              ? data.completionDate.toDate()
-              : null,
-            subtasks: data.subtasks || [],
-          } as Task;
-        });
+      const tasksCollection = collection(db, 'tasks')
+      const unsubscribeTasks = onSnapshot(
+        tasksCollection,
+        (snapshot) => {
+          let fetchedTasks: Task[] = snapshot.docs.map((doc) => {
+            const data = doc.data()
+            return {
+              id: doc.id,
+              taskId: data.taskId,
+              taskName: data.taskName,
+              taskType: data.taskType,
+              dueDate: data.dueDate ? data.dueDate.toDate() : null,
+              dailyCompletions: data.dailyCompletions || {}, // Initialize dailyCompletions
+              completionDate: data.completionDate ? data.completionDate.toDate() : null,
+              subtasks: data.subtasks || [],
+            } as Task
+          })
 
-        // Filter for today's daily tasks and periodic tasks due today
-        fetchedTasks = fetchedTasks.filter((task) => {
-          if (task.taskType === "daily") {
-            return true; // Show all daily tasks
-          } else if (task.taskType === "periodic" && task.dueDate) {
-            const taskDueDate = task.dueDate;
-            return taskDueDate.toISOString().split("T")[0] === todayDateString;
-          }
-          return false;
-        });
-        setTasks(fetchedTasks);
-        setLoadingTasks(false);
-
-        if (fetchedTasks.length === 0) {
-          // Initialize daily tasks if none exist for today
-          defaultDailyTasks.forEach(async (defaultTask) => {
-            await addDefaultTask(
-              defaultTask.taskName,
-              "daily",
-              defaultTask.subtasks
-            );
-          });
-          // Initialize periodic tasks if today is the day for them and they don't exist
-          periodicTasksConfig.forEach(async (periodicTaskConfig) => {
-            if (today.getDate() === periodicTaskConfig.dayOfMonth) {
-              const taskExists = fetchedTasks.some(
-                (task) =>
-                  task.taskType === "periodic" &&
-                  task.taskName === periodicTaskConfig.taskName &&
-                  task.dueDate &&
-                  task.dueDate.getDate() === today.getDate() &&
-                  task.dueDate.getMonth() === today.getMonth() &&
-                  task.dueDate.getFullYear() === today.getFullYear()
-              );
-              if (!taskExists) {
-                const dueDate = new Date(
-                  today.getFullYear(),
-                  today.getMonth(),
-                  periodicTaskConfig.dayOfMonth
-                );
-                await addDefaultTask(
-                  periodicTaskConfig.taskName,
-                  "periodic",
-                  [],
-                  dueDate
-                );
-              }
+          // Filter for today's daily tasks and periodic tasks due today
+          fetchedTasks = fetchedTasks.filter((task) => {
+            if (task.taskType === 'daily') {
+              return true // Show all daily tasks
+            } else if (task.taskType === 'periodic' && task.dueDate) {
+              const taskDueDate = task.dueDate
+              return taskDueDate.toISOString().split('T')[0] === todayDateString
             }
-          });
-        }
-      }, (error) => {
-        console.error("Error en el listener de tareas:", error);
-        setLoadingTasks(false);
-      });
-      return () => unsubscribeTasks();
+            return false
+          })
+          setTasks(fetchedTasks)
+          setLoadingTasks(false)
+        },
+        (error) => {
+          console.error('Error en el listener de tareas:', error)
+          setLoadingTasks(false)
+        },
+      )
+      return () => unsubscribeTasks()
     } else {
-      setLoadingTasks(false); // If not admin/encargado, we are not loading tasks
+      setLoadingTasks(false) // If not admin/encargado, we are not loading tasks
     }
-  }, [userRole]);
+  }, [userRole])
 
   const addDefaultTask = async (
     taskName: string,
-    taskType: "daily" | "periodic",
+    taskType: 'daily' | 'periodic',
     subtasks: string[] = [],
-    dueDate: Date | null = null
+    dueDate: Date | null = null,
   ) => {
     try {
-      await setDoc(doc(collection(db, "tasks"), uuidv4()), {
+      await setDoc(doc(collection(db, 'tasks'), uuidv4()), {
         // use uuid as doc id
         taskId: uuidv4(), // add taskId
         taskName: taskName,
@@ -4905,154 +5714,145 @@ const Dashboard: React.FC = () => {
         dailyCompletions: {}, // Initialize dailyCompletions to empty object
         subtasks: subtasks,
         dueDate: dueDate || null,
-      });
+      })
     } catch (error) {
-      console.error("Error adding default task:", error);
+      console.error('Error adding default task:', error)
     }
-  };
+  }
 
   // Recalcula estadísticas cuando cambien los pedidos o el filtro de estado
   useEffect(() => {
     if (!pedidos.length) {
       // Si no hay pedidos, limpiamos
-      setTodaySales(0);
-      setMonthSales(0);
-      setPendingOrdersCount(0);
-      setTotalOrders(0);
-      setDailyLabels([]);
-      setDailyData([]);
-      setMonthlyLabels([]);
-      setMonthlyData([]);
-      setClientTotalOrders(0); // Reset client total orders
-      return;
+      setTodaySales(0)
+      setMonthSales(0)
+      setPendingOrdersCount(0)
+      setTotalOrders(0)
+      setDailyLabels([])
+      setDailyData([])
+      setMonthlyLabels([])
+      setMonthlyData([])
+      setClientTotalOrders(0) // Reset client total orders
+      return
     }
 
     const filtered =
-      selectedStatus === "todos"
-        ? pedidos
-        : pedidos.filter((p) => p.status === selectedStatus);
+      selectedStatus === 'todos' ? pedidos : pedidos.filter((p) => p.status === selectedStatus)
 
     // ---------- Estadísticas simples ----------
-    const now = new Date();
-    const today = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate()
-    ).getTime();
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
 
-    let sumToday = 0;
-    let sumMonth = 0;
-    let pendingCount = 0;
-    const totalCount = filtered.length;
-    let clientOrderCount = 0; // Contador para pedidos del cliente
+    let sumToday = 0
+    let sumMonth = 0
+    let pendingCount = 0
+    const totalCount = filtered.length
+    let clientOrderCount = 0 // Contador para pedidos del cliente
 
     filtered.forEach((pedido) => {
       // Fecha sin hora del pedido
       const pedidoDate = new Date(
         pedido.orderDate.getFullYear(),
         pedido.orderDate.getMonth(),
-        pedido.orderDate.getDate()
-      ).getTime();
+        pedido.orderDate.getDate(),
+      ).getTime()
 
       // Venta de hoy
       if (pedidoDate === today) {
-        sumToday += pedido.total;
+        sumToday += pedido.total
       }
 
       // Venta del mes actual
       const isThisMonth =
         pedido.orderDate.getMonth() === now.getMonth() &&
-        pedido.orderDate.getFullYear() === now.getFullYear();
+        pedido.orderDate.getFullYear() === now.getFullYear()
       if (isThisMonth) {
-        sumMonth += pedido.total;
+        sumMonth += pedido.total
       }
 
       // Pedidos pendientes
-      if (pedido.status === "pendiente") {
-        pendingCount++;
+      if (pedido.status === 'pendiente') {
+        pendingCount++
       }
 
       if (userRole === 'client' && user && pedido.userId === user.uid) {
-        clientOrderCount++; // Incrementa solo si es pedido del cliente
+        clientOrderCount++ // Incrementa solo si es pedido del cliente
       }
-    });
+    })
 
-    setTodaySales(sumToday);
-    setMonthSales(sumMonth);
-    setPendingOrdersCount(pendingCount);
-    setTotalOrders(totalCount);
-    setClientTotalOrders(clientOrderCount); // Establece el total de pedidos del cliente
+    setTodaySales(sumToday)
+    setMonthSales(sumMonth)
+    setPendingOrdersCount(pendingCount)
+    setTotalOrders(totalCount)
+    setClientTotalOrders(clientOrderCount) // Establece el total de pedidos del cliente
 
     // ---------- Gráfico: últimos 7 días ----------
     const last7Dates = Array.from({ length: 7 }).map((_, i) => {
-      const d = new Date();
+      const d = new Date()
       // "hace (6 - i) días" para que se armen en orden cronológico
-      d.setDate(d.getDate() - (6 - i));
-      return d;
-    });
+      d.setDate(d.getDate() - (6 - i))
+      return d
+    })
 
-    const daysLabels: string[] = [];
-    const daysData: number[] = [];
+    const daysLabels: string[] = []
+    const daysData: number[] = []
 
     last7Dates.forEach((date) => {
       // Etiqueta: "dd/MM"
-      const dayKey = date.toLocaleDateString("es-ES", {
-        day: "2-digit",
-        month: "2-digit",
-      });
-      daysLabels.push(dayKey);
+      const dayKey = date.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+      })
+      daysLabels.push(dayKey)
 
-      let dayTotal = 0;
+      let dayTotal = 0
       filtered.forEach((pedido) => {
         if (
           pedido.orderDate.getDate() === date.getDate() &&
           pedido.orderDate.getMonth() === date.getMonth() &&
           pedido.orderDate.getFullYear() === date.getFullYear()
         ) {
-          dayTotal += pedido.total;
+          dayTotal += pedido.total
         }
-      });
-      daysData.push(dayTotal);
-    });
+      })
+      daysData.push(dayTotal)
+    })
 
-    setDailyLabels(daysLabels);
-    setDailyData(daysData);
+    setDailyLabels(daysLabels)
+    setDailyData(daysData)
 
     // ---------- Gráfico: últimos 6 meses ----------
     const last6Months = Array.from({ length: 6 }).map((_, i) => {
-      const d = new Date();
+      const d = new Date()
       // retrocedemos (5 - i) meses
-      d.setMonth(d.getMonth() - (5 - i));
-      d.setDate(1);
-      return d;
-    });
+      d.setMonth(d.getMonth() - (5 - i))
+      d.setDate(1)
+      return d
+    })
 
-    const monthLabels: string[] = [];
-    const monthTotals: number[] = [];
+    const monthLabels: string[] = []
+    const monthTotals: number[] = []
 
     last6Months.forEach((date) => {
       // Etiqueta "MM/YY"
-      const label = date.toLocaleDateString("es-ES", {
-        month: "2-digit",
-        year: "2-digit",
-      });
-      monthLabels.push(label);
+      const label = date.toLocaleDateString('es-ES', { month: '2-digit', year: '2-digit' })
+      monthLabels.push(label)
 
-      let monthTotal = 0;
+      let monthTotal = 0
       filtered.forEach((pedido) => {
         if (
           pedido.orderDate.getFullYear() === date.getFullYear() &&
           pedido.orderDate.getMonth() === date.getMonth()
         ) {
-          monthTotal += pedido.total;
+          monthTotal += pedido.total
         }
-      });
-      monthTotals.push(monthTotal);
-    });
+      })
+      monthTotals.push(monthTotal)
+    })
 
-    setMonthlyLabels(monthLabels);
-    setMonthlyData(monthTotals);
-  }, [pedidos, selectedStatus, userRole, user]);
+    setMonthlyLabels(monthLabels)
+    setMonthlyData(monthTotals)
+  }, [pedidos, selectedStatus, userRole, user])
 
   // Opciones genéricas para los gráficos
   const chartOptions = {
@@ -5063,72 +5863,141 @@ const Dashboard: React.FC = () => {
         display: false as const,
       },
       tooltip: {
-        backgroundColor: "#1e293b", // gris oscuro
-        titleColor: "#fff",
-        bodyColor: "#fff",
+        backgroundColor: '#1e293b', // gris oscuro
+        titleColor: '#fff',
+        bodyColor: '#fff',
         callbacks: {
           label: function (context) {
-            let label = context.dataset.label || "";
+            let label = context.dataset.label || ''
             if (label) {
-              label += ": ";
+              label += ': '
             }
             if (context.parsed.y !== null) {
-              label += new Intl.NumberFormat("es-CO", {
-                style: "currency",
-                currency: "COP",
+              label += new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
-              }).format(context.parsed.y);
+              }).format(context.parsed.y)
             }
-            return label;
+            return label
           },
         },
       },
     },
-  };
+  }
 
   // Dataset para gráfico diario
   const dailyChartData = {
     labels: dailyLabels,
     datasets: [
       {
-        label: "Ventas diarias",
+        label: 'Ventas diarias',
         data: dailyData,
-        backgroundColor: "#4F46E5", // Indigo-600
+        backgroundColor: '#4F46E5', // Indigo-600
         borderRadius: 4,
       },
     ],
-  };
+  }
 
   // Dataset para gráfico mensual
   const monthlyChartData = {
     labels: monthlyLabels,
     datasets: [
       {
-        label: "Ventas mensuales",
+        label: 'Ventas mensuales',
         data: monthlyData,
-        backgroundColor: "#22C55E", // Green-500
+        backgroundColor: '#22C55E', // Green-500
         borderRadius: 4,
       },
     ],
-  };
+  }
+
+  const monthlyContabilidadChartData = {
+    labels: monthlyLabelsContabilidad,
+    datasets: [
+      {
+        label: 'Ingresos',
+        data: monthlyIncomeContabilidad,
+        borderColor: '#43D478', // Green
+        backgroundColor: '#43D478',
+        fill: false,
+        tension: 0.3,
+      },
+      {
+        label: 'Egresos',
+        data: monthlyExpensesContabilidad,
+        borderColor: '#E53935', // Red
+        backgroundColor: '#E53935',
+        fill: false,
+        tension: 0.3,
+      },
+    ],
+  }
+
+  const categoryChartData =
+    categoryData &&
+    categoryData.labels &&
+    categoryData.labels.length > 0 &&
+    categoryData.income &&
+    categoryData.expenses
+      ? {
+          // Validación aquí
+          labels: categoryData.labels,
+          datasets: [
+            {
+              label: 'Ingresos',
+              // --- Debugging logs START ---
+              data: categoryData.income.map((val, index) => {
+                if (typeof val === 'undefined') {
+                  console.error(
+                    'Undefined value in categoryData.income at index:',
+                    index,
+                    'CategoryData:',
+                    categoryData,
+                  )
+                }
+                return val || 0
+              }),
+              // --- Debugging logs END ---
+              backgroundColor: ['#00A86B', '#43D478', '#95E1D3', '#F7B731', '#F73D47', '#78103C'],
+              hoverOffset: 4,
+            },
+            {
+              label: 'Egresos',
+              // --- Debugging logs START ---
+              data: categoryData.expenses.map((val, index) => {
+                if (typeof val === 'undefined') {
+                  console.error(
+                    'Undefined value in categoryData.expenses at index:',
+                    index,
+                    'CategoryData:',
+                    categoryData,
+                  )
+                }
+                return val || 0
+              }),
+              // --- Debugging logs END ---
+              backgroundColor: ['#E53935', '#870D17', '#F06292', '#A7004B', '#004772', '#0087D0'],
+              hoverOffset: 4,
+            },
+          ],
+        }
+      : null
 
   // Para saber si debemos mostrar la parte de admin/encargado
-  const showAdminStats = userRole === "admin" || userRole === "encargado";
-  const showChecklist = userRole === "admin" || userRole === "encargado";
-  const showClientStats = userRole === 'client';
+  const showAdminStats = userRole === 'admin' || userRole === 'encargado'
+  const showChecklist = userRole === 'admin' || userRole === 'encargado'
+  const showClientStats = userRole === 'client'
 
-  const handleTaskCompletionChange = async (
-    taskId: string,
-    completed: boolean
-  ) => {
-    const todayDate = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const handleTaskCompletionChange = async (taskId: string, completed: boolean) => {
+    const todayDate = new Date().toISOString().split('T')[0] // YYYY-MM-DD
     try {
-      const taskDocRef = doc(db, "tasks", taskId);
+      const taskDocRef = doc(db, 'tasks', taskId)
       await updateDoc(taskDocRef, {
         [`dailyCompletions.${todayDate}`]: completed, // Update completion for today
         completionDate: completed ? new Date() : null, // Optionally update completionDate
-      });
+      })
 
       setTasks((currentTasks) =>
         currentTasks.map((task) => {
@@ -5140,44 +6009,40 @@ const Dashboard: React.FC = () => {
                 [todayDate]: completed,
               },
               completionDate: completed ? new Date() : null,
-            };
+            }
           }
-          return task;
-        })
-      );
+          return task
+        }),
+      )
     } catch (error) {
-      console.error("Error updating task completion:", error);
+      console.error('Error updating task completion:', error)
     }
-  };
+  }
 
   const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const day = new Date();
-    day.setDate(day.getDate() - i);
-    return day;
-  }).reverse();
+    const day = new Date()
+    day.setDate(day.getDate() - i)
+    return day
+  }).reverse()
 
-  const last7DaysFormatted = last7Days.map(
-    (day) => day.toISOString().split("T")[0]
-  );
-
-
+  const last7DaysFormatted = last7Days.map((day) => day.toISOString().split('T')[0])
 
   // Function to format price to Colombian Pesos
   const formatPriceCOP = (price: number) => {
-    return price.toLocaleString("es-CO", {
-      style: "currency",
-      currency: "COP",
+    return price.toLocaleString('es-CO', {
+      style: 'currency',
+      currency: 'COP',
       minimumFractionDigits: 0, // Remove cents if whole number
       maximumFractionDigits: 0,
-    });
-  };
+    })
+  }
 
   if (loading || loadingTasks) {
     return (
       <div className="pt-20 p-4 text-center">
         <p className="text-xl animate-pulse">Cargando Dashboard...</p>
       </div>
-    );
+    )
   }
 
   if (showClientStats) {
@@ -5190,7 +6055,7 @@ const Dashboard: React.FC = () => {
           <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
             <p className="text-gray-700 font-semibold text-lg mb-2">Descubre nuestro Menú</p>
             <p className="text-gray-600">Explora deliciosos platos y arma tu pedido.</p>
-             <p className="text-2xl font-bold text-indigo-600 mt-4">¡Haz tu pedido ahora!</p>
+            <p className="text-2xl font-bold text-indigo-600 mt-4">¡Haz tu pedido ahora!</p>
           </div>
           <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
             <p className="text-gray-700 font-semibold text-lg mb-2">Acumula Puntos</p>
@@ -5200,19 +6065,16 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="bg-white rounded shadow p-4 mb-6 text-center">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">
-              ¿Listo para ordenar?
-            </h2>
-            <p className="text-gray-600 mb-4">
-                Navega por nuestro menú, personaliza tu pedido y disfruta de la mejor comida.
-            </p>
-            <p className="text-lg text-indigo-700 font-semibold">
-                ¡Empieza a explorar nuestro menú hoy mismo!
-            </p>
-          </div>
-
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">¿Listo para ordenar?</h2>
+          <p className="text-gray-600 mb-4">
+            Navega por nuestro menú, personaliza tu pedido y disfruta de la mejor comida.
+          </p>
+          <p className="text-lg text-indigo-700 font-semibold">
+            ¡Empieza a explorar nuestro menú hoy mismo!
+          </p>
+        </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -5226,14 +6088,13 @@ const Dashboard: React.FC = () => {
       {/* Filtro por estado */}
       {showAdminStats && (
         <div className="flex flex-wrap items-center mb-6 gap-2">
-          {/* ... filter buttons for admin/encargado ... */}
           <button
-            onClick={() => setSelectedStatus("todos")}
+            onClick={() => setSelectedStatus('todos')}
             className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm transition transform hover:scale-105
               ${
-                selectedStatus === "todos"
-                  ? "bg-indigo-600 text-white"
-                  : "bg-white text-gray-800 hover:bg-gray-200"
+                selectedStatus === 'todos'
+                  ? 'bg-indigo-600 text-white'
+                  : 'bg-white text-gray-800 hover:bg-gray-200'
               }`}
           >
             Todos
@@ -5243,18 +6104,17 @@ const Dashboard: React.FC = () => {
               key={status}
               onClick={() => setSelectedStatus(status)}
               className={`px-4 py-2 rounded-md text-sm font-medium shadow-sm transition transform hover:scale-105
-                ${
-                  selectedStatus === status
-                    ? "bg-indigo-600 text-white"
-                    : "bg-white text-gray-800 hover:bg-gray-200"
-                }`}
+                  ${
+                    selectedStatus === status
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-white text-gray-800 hover:bg-gray-200'
+                  }`}
             >
               {status.charAt(0).toUpperCase() + status.slice(1)}
             </button>
           ))}
         </div>
       )}
-
 
       {/* Sección de Tarjetas de estadísticas */}
       {showAdminStats && (
@@ -5266,21 +6126,102 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
             <p className="text-gray-600">Ventas Hoy</p>
-            <p className="text-2xl font-bold text-indigo-600">
-              {formatPriceCOP(todaySales)}
-            </p>
+            <p className="text-2xl font-bold text-indigo-600">{formatPriceCOP(todaySales)}</p>
           </div>
           <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
             <p className="text-gray-600">Ventas del Mes</p>
-            <p className="text-2xl font-bold text-indigo-600">
-              {formatPriceCOP(monthSales)}
-            </p>
+            <p className="text-2xl font-bold text-indigo-600">{formatPriceCOP(monthSales)}</p>
           </div>
           <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
             <p className="text-gray-600">Pedidos Pendientes</p>
-            <p className="text-2xl font-bold text-indigo-600">
-              {pendingOrdersCount}
+            <p className="text-2xl font-bold text-indigo-600">{pendingOrdersCount}</p>
+          </div>
+        </div>
+      )}
+
+      {showAdminStats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div className="bg-white rounded shadow p-4">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">
+              Resumen de Contabilidad Mensual
+            </h2>
+            <p className="text-gray-700">
+              <strong>Ingresos Totales:</strong> {formatPriceCOP(monthlyIncome)}
             </p>
+            <p className="text-gray-700">
+              <strong>Egresos Totales:</strong> {formatPriceCOP(monthlyExpenses)}
+            </p>
+            <p className="text-gray-700 font-semibold">
+              <strong>Balance Neto:</strong> {formatPriceCOP(monthlyBalance)}
+            </p>
+            <div className="h-64">
+              {/* Gráfico de barras del flujo de caja */}
+              {monthlyBalance > 0 ? (
+                <Bar
+                  data={{
+                    labels: ['Balance Neto'],
+                    datasets: [
+                      { label: 'Balance Neto', data: [monthlyBalance], backgroundColor: '#22C55E' },
+                    ],
+                  }}
+                  options={chartOptions}
+                />
+              ) : (
+                <Bar
+                  data={{
+                    labels: ['Balance Neto'],
+                    datasets: [
+                      { label: 'Balance Neto', data: [monthlyBalance], backgroundColor: '#E53935' },
+                    ],
+                  }}
+                  options={chartOptions}
+                />
+              )}
+            </div>
+          </div>
+          {showAdminStats &&
+          categoryData &&
+          categoryData.labels?.length &&
+          Array.isArray(categoryData.income) &&
+          Array.isArray(categoryData.expenses) ? ( // Validación estricta aquí
+            <div className="bg-white rounded shadow p-4">
+              <h2 className="text-xl font-semibold mb-4 text-gray-800">Análisis por Categoría</h2>
+              <div className="h-64 relative">
+                {/* --- CONSOLE LOG RIGHT BEFORE PIE CHART - CRUCIAL INSPECTION POINT --- */}
+                {console.log('CategoryChartData just before Pie render:', categoryChartData)}
+                {/* --- Pie Chart Rendering WITH EXTRA SAFETY --- */}
+                {categoryChartData.labels &&
+                Array.isArray(categoryChartData.labels) &&
+                categoryChartData.datasets &&
+                Array.isArray(categoryChartData.datasets) ? (
+                  <Pie data={categoryChartData} options={chartOptions} />
+                ) : (
+                  <p className="text-gray-500 italic text-center">
+                    Error al preparar datos para el gráfico de categorías.
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : null}
+          {contabilityError && (
+            <div className="bg-white rounded shadow p-4 text-center">
+              <p className="text-red-500 font-semibold">Error al cargar datos de contabilidad.</p>
+              <p className="text-gray-600 text-sm">
+                Por favor, intenta recargar la página o contacta al administrador.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Gráfico de contabilidad mensual */}
+      {showAdminStats && (
+        <div className="bg-white rounded shadow p-4 mb-6">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">
+            Comparativa de Ingresos y Egresos Mensuales
+          </h2>
+          <div className="h-64">
+            <Line data={monthlyContabilidadChartData} options={chartOptions} ref={chartRef} />
           </div>
         </div>
       )}
@@ -5298,7 +6239,6 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-
       {/* Gráfico de Ventas Mensuales (últimos 6 meses) */}
       {showAdminStats && (
         <div className="bg-white rounded shadow p-4 mb-6">
@@ -5312,7 +6252,6 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-
       {/* Daily Checklist Section */}
       {showChecklist && (
         <div className="bg-white rounded shadow p-4 mb-6">
@@ -5322,23 +6261,16 @@ const Dashboard: React.FC = () => {
           </h2>
           <ul>
             {tasks.map((task) => (
-              <li
-                key={task.id}
-                className="py-2 border-b border-gray-200 last:border-b-0"
-              >
+              <li key={task.id} className="py-2 border-b border-gray-200 last:border-b-0">
                 <div className="flex items-center justify-between">
                   <label className="flex items-center">
                     <input
                       type="checkbox"
                       className="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
                       checked={
-                        task.dailyCompletions[
-                          new Date().toISOString().split("T")[0]
-                        ] === true
+                        task.dailyCompletions[new Date().toISOString().split('T')[0]] === true
                       } // Check against today's completion status
-                      onChange={(e) =>
-                        handleTaskCompletionChange(task.id, e.target.checked)
-                      }
+                      onChange={(e) => handleTaskCompletionChange(task.id, e.target.checked)}
                     />
                     <span className="ml-2 text-gray-700">{task.taskName}</span>
                   </label>
@@ -5346,10 +6278,7 @@ const Dashboard: React.FC = () => {
                 {task.subtasks && task.subtasks.length > 0 && (
                   <ul className="ml-6 mt-1">
                     {task.subtasks.map((subtask, index) => (
-                      <li
-                        key={index}
-                        className="text-sm text-gray-500 list-disc ml-4"
-                      >
+                      <li key={index} className="text-sm text-gray-500 list-disc ml-4">
                         {subtask}
                       </li>
                     ))}
@@ -5364,22 +6293,18 @@ const Dashboard: React.FC = () => {
       {showChecklist && (
         <div className="bg-white rounded shadow p-4 mb-6 overflow-x-auto">
           {/* ... weekly task status table for admin/encargado ... */}
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">
-            Estado de Tareas Semanal
-          </h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Estado de Tareas Semanal</h2>
           <div className="overflow-x-auto">
             <table className="min-w-full table-fixed border-collapse border border-gray-200">
               <thead>
                 <tr>
-                  <th className="border border-gray-200 px-4 py-2 text-left">
-                    Tarea
-                  </th>
+                  <th className="border border-gray-200 px-4 py-2 text-left">Tarea</th>
                   {last7Days.map((day) => (
                     <th
-                      key={day.toISOString().split("T")[0]}
+                      key={day.toISOString().split('T')[0]}
                       className="border border-gray-200 px-4 py-2 text-center"
                     >
-                      {day.toLocaleDateString("es-ES", { weekday: "short" })}
+                      {day.toLocaleDateString('es-ES', { weekday: 'short' })}
                     </th>
                   ))}
                 </tr>
@@ -5387,15 +6312,13 @@ const Dashboard: React.FC = () => {
               <tbody>
                 {tasks.map((task) => (
                   <tr key={task.taskId}>
-                    <td className="border border-gray-200 px-4 py-2">
-                      {task.taskName}
-                    </td>
+                    <td className="border border-gray-200 px-4 py-2">{task.taskName}</td>
                     {last7DaysFormatted.map((date) => (
                       <td
                         key={`${task.taskId}-${date}`}
                         className="border border-gray-200 px-4 py-2 text-center"
                       >
-                        {task.dailyCompletions[date] ? "✅" : "❌"}
+                        {task.dailyCompletions[date] ? '✅' : '❌'}
                       </td>
                     ))}
                   </tr>
@@ -5405,13 +6328,12 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Aquí podrías agregar más secciones o gráficos */}
     </div>
-  );
-};
+  )
+}
 
-export default Dashboard;
+export default Dashboard
+
 /* Fin src\pages\Dashboard.tsx */
 
 /* Inicio src\pages\GestionMenu.tsx */
