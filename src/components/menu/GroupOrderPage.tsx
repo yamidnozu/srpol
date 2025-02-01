@@ -1,4 +1,3 @@
-// src/components/menu/GroupOrderPage.tsx
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore'
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -77,7 +76,18 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const joiningWithCode = !!codeFromURL
   const { groupOrderId: routeGroupId } = useParams()
 
-  // Suscripción al pedido grupal según el id en la URL
+  // ─── CREAR LOS REFS DE FORMA INCONDICIONAL ─────────────────────────────
+  // Para el SharedOrder (único)
+  const sharedOrderSummaryRef = useRef<HTMLDivElement>(null)
+  // Para cada PersonOrder, creamos un arreglo de refs:
+  const personRefs = useRef<React.RefObject<HTMLDivElement>[]>([])
+  if (personRefs.current.length !== people.length) {
+    personRefs.current = Array(people.length)
+      .fill(null)
+      .map(() => React.createRef<HTMLDivElement>())
+  }
+
+  // ─── SUSCRIPCIÓN AL PEDIDO GRUPAL ─────────────────────────────────────
   useEffect(() => {
     if (routeGroupId) {
       setGroupOrderId(routeGroupId)
@@ -118,6 +128,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     )
   }
 
+  // ─── MANEJO DE CAMBIOS ───────────────────────────────────────────────
   const handleNumPeopleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const num = Number(e.target.value)
     setNumPeople(num)
@@ -293,10 +304,9 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     }
   }
 
-  // --- Modificación para que solo el creador pueda finalizar pedidos de otros ---
+  // ─── Finalizar pedido de persona ─────────────────────────────────
   const handlePersonFinishedOrder = async (personIndex: number) => {
     if (!groupOrderId || orderPlaced || !user) return
-    // Si el usuario no es el creador, solo puede finalizar su propio pedido
     if (!isOwner) {
       const myIndex = people.findIndex((p) => p.userId === user.uid)
       if (myIndex !== personIndex) return
@@ -414,14 +424,14 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
               </div>
               <span className="mt-2 text-sm font-medium text-gray-700">Compartido</span>
             </div>
-            {people.map((person, index) => {
+            {people.map((person, i) => {
               const lockedByOther = person.locked && person.userId !== user?.uid
-              const active = selectedView === `person-${index}`
-              const color = bubbleColors[index % bubbleColors.length]
+              const active = selectedView === `person-${i}`
+              const color = bubbleColors[i % bubbleColors.length]
               return (
                 <div
                   key={person.personIndex}
-                  onClick={() => setSelectedView(`person-${index}`)}
+                  onClick={() => setSelectedView(`person-${i}`)}
                   className="cursor-pointer flex flex-col items-center"
                 >
                   <div
@@ -481,7 +491,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                   return menuItem ? sum + menuItem.price * si.quantity : sum
                 }, 0)
               }
-              sharedOrderSummaryRef={useRef<HTMLDivElement>(null)}
+              sharedOrderSummaryRef={sharedOrderSummaryRef}
               activeTab={selectedView}
               menu={menu}
               disabled={orderPlaced}
@@ -516,7 +526,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                         return menuItem ? total + menuItem.price * it.quantity : total
                       }, 0)
                     }
-                    personOrderSummaryRef={useRef<HTMLDivElement>(null)}
+                    personOrderSummaryRef={personRefs.current[i]}
                     activeTab={selectedView}
                     onPersonFinishedOrder={handlePersonFinishedOrder}
                     isFinished={person.finished || false}
@@ -524,7 +534,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                     isCurrentUserTab={person.userId === user?.uid}
                     personIndex={i}
                     disabled={lockedByOther || orderPlaced}
-                    isOrderOwner={isOwner}
                   />
                 )
               }
