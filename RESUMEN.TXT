@@ -4,7 +4,7 @@
 ├── eslint.config.js [16]
 ├── firebase.json [13]
 ├── index.html [17]
-├── package.json [57]
+├── package.json [59]
 ├── postcss.config.js [7]
 ├── 📂 src
 │   ├── App.tsx [177]
@@ -21,7 +21,7 @@
 │   │   │   ├── PublicLayout.tsx [19]
 │   │   │   └── Sidebar.tsx [123]
 │   │   ├── 📂 menu
-│   │   │   ├── GroupOrderPage.tsx [684]
+│   │   │   ├── GroupOrderPage.tsx [597]
 │   │   │   ├── JoinOrderModal.tsx [57]
 │   │   │   ├── MenuForm.tsx [223]
 │   │   │   ├── MenuItem.tsx [95]
@@ -56,8 +56,8 @@
 │   ├── 📂 pages
 │   │   ├── ContabilidadDetail.tsx [468]
 │   │   ├── ContabilidadPage.tsx [184]
-│   │   ├── Dashboard.tsx [1009]
-│   │   ├── GestionMenu.tsx [359]
+│   │   ├── Dashboard.tsx [908]
+│   │   ├── GestionMenu.tsx [1145]
 │   │   ├── GestionUsuarios.tsx [82]
 │   │   ├── Login.tsx [56]
 │   │   ├── MenuPage.tsx [406]
@@ -72,6 +72,7 @@
 │   └── 📂 utils
 │       ├── constants.ts [6]
 │       ├── firebase.ts [16]
+│       ├── menu-scripts.ts [476]
 │       └── theme.ts [43]
 ├── tailwind.config.js [9]
 ├── tsconfig.app.json [26]
@@ -80,7 +81,7 @@
 └── vite.config.ts [41]
 
 
-Total de líneas resumidas: 7489
+Total de líneas resumidas: 8565
 
 
 /* Inicio .prettierrc.json */
@@ -165,6 +166,7 @@ export default tseslint.config(
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@heroicons/react": "^2.2.0",
     "@mercadopago/sdk-js": "^0.0.3",
     "@mui/icons-material": "^6.4.1",
     "@mui/material": "^6.4.1",
@@ -207,6 +209,7 @@ export default tseslint.config(
     "vite-plugin-pwa": "^0.21.1"
   }
 }
+
 /* Fin package.json */
 
 /* Inicio postcss.config.js */
@@ -1278,14 +1281,10 @@ export default Sidebar
 /* Fin src\components\layout\Sidebar.tsx */
 
 /* Inicio src\components\menu\GroupOrderPage.tsx */
-/* src/components/menu/GroupOrderPage.tsx */
-/* Versión con burbujas coloridas y posibilidad de ver el contenido aunque esté bloqueado */
-/* Se asume que si person.photoUrl existe, la mostramos; sino, mostramos la primera letra del nombre */
-
+// src/components/menu/GroupOrderPage.tsx
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore'
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { MenuItem as MenuItemType } from '../../context/AppContext'
 import { useAuth } from '../../hooks/useAuth'
 import { useMenu } from '../../hooks/useMenu'
 import { COLLECTIONS } from '../../utils/constants'
@@ -1303,7 +1302,7 @@ export interface Person {
   items: { id: string; quantity: number }[]
   locked?: boolean
   finished?: boolean
-  photoUrl?: string // Ejemplo: si la tienes en la BD
+  photoUrl?: string
 }
 
 export interface SharedOrderItem {
@@ -1327,6 +1326,15 @@ export interface GroupOrderPageProps {
   name: string
 }
 
+const bubbleColors = [
+  'bg-pink-100',
+  'bg-blue-100',
+  'bg-yellow-100',
+  'bg-green-100',
+  'bg-purple-100',
+  'bg-teal-100',
+]
+
 const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const { menu } = useMenu()
   const { user } = useAuth()
@@ -1335,42 +1343,24 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const [showPeopleNames, setShowPeopleNames] = useState(false)
   const [showPedidoForm, setShowPedidoForm] = useState(false)
   const [sharedOrderItems, setSharedOrderItems] = useState<SharedOrderItem[]>([])
-  const [selectedView, setSelectedView] = useState<string>('shared') // "shared" o "person-N"
-
+  const [selectedView, setSelectedView] = useState<string>('shared')
   const [groupOrderCode, setGroupOrderCode] = useState<string | null>(null)
   const [groupOrderId, setGroupOrderId] = useState<string | null>(null)
   const [isOwner, setIsOwner] = useState(false)
   const [allFinished, setAllFinished] = useState(false)
-  const [showNameModal, setShowNameModal] = useState(false)
-  const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(null)
   const [orderPlaced, setOrderPlaced] = useState(false)
   const [showPricesToAll, setShowPricesToAll] = useState(false)
-
+  const [showNameModal, setShowNameModal] = useState(false)
+  const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(null)
   const [tempPersonName, setTempPersonName] = useState<string>('')
 
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const codeFromURL = searchParams.get('code')
   const joiningWithCode = !!codeFromURL
-
-  // Refs para scrollear si deseas
-  const sharedOrderSummaryRef = useRef<HTMLDivElement>(null)
-  const personOrderSummaryRef = useRef<HTMLDivElement>(null)
-
-  // Obtenemos la ID de la ruta
   const { groupOrderId: routeGroupId } = useParams()
 
-  // Colores para las burbujas (así cada persona tiene un color distinto)
-  const bubbleColors = [
-    'bg-pink-100',
-    'bg-blue-100',
-    'bg-yellow-100',
-    'bg-green-100',
-    'bg-purple-100',
-    'bg-teal-100',
-  ]
-
-  // -------------------- EFECTOS --------------------
+  // Suscripción al pedido grupal según el id en la URL
   useEffect(() => {
     if (routeGroupId) {
       setGroupOrderId(routeGroupId)
@@ -1398,7 +1388,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         setAllFinished(data.participants.every((p) => p.finished))
         setOrderPlaced(!!data.orderPlaced)
         setShowPricesToAll(!!data.showPricesToAll)
-
         if (data.participants.length !== numPeople) {
           setNumPeople(data.participants.length)
         }
@@ -1412,16 +1401,13 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     )
   }
 
-  // -------------------- HANDLERS & LOGIC --------------------
   const handleNumPeopleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const num = Number(e.target.value)
     setNumPeople(num)
-
     setPeople((prev) => {
       const currentCount = prev.length
       if (num > currentCount) {
-        // Agregar personas
-        const newOnes = Array.from({ length: num - currentCount }, (_, i) => ({
+        const newPeople = Array.from({ length: num - currentCount }, (_, i) => ({
           personIndex: currentCount + i,
           userId: null,
           name: `Persona ${currentCount + i + 1}`,
@@ -1429,13 +1415,11 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           locked: false,
           finished: false,
         }))
-        return [...prev, ...newOnes]
+        return [...prev, ...newPeople]
       } else if (num < currentCount) {
-        // Eliminar
         return prev.slice(0, num)
-      } else {
-        return prev
       }
+      return prev
     })
   }
 
@@ -1456,8 +1440,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     }
   }
 
-  // --- Funciones para Items Compartidos ---
-  const handleAddToSharedOrder = async (item: MenuItemType) => {
+  const handleAddToSharedOrder = async (item: any) => {
     if (!groupOrderId || orderPlaced) return
     if (item.availabilityStatus !== 'disponible') return
 
@@ -1471,7 +1454,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
       updated = [...sharedOrderItems, { itemId: item.id, quantity: 1, personIds: [] }]
     }
     setSharedOrderItems(updated)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         sharedItems: updated,
@@ -1487,13 +1469,12 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
 
     const updated = sharedOrderItems.map((si) => (si.itemId === itemId ? { ...si, quantity } : si))
     setSharedOrderItems(updated)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         sharedItems: updated,
       })
     } catch (error) {
-      console.error('Error al cambiar qty en sharedItems:', error)
+      console.error('Error al cambiar cantidad en sharedItems:', error)
     }
   }
 
@@ -1502,7 +1483,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
 
     const updated = sharedOrderItems.filter((si) => si.itemId !== itemId)
     setSharedOrderItems(updated)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         sharedItems: updated,
@@ -1512,22 +1492,15 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     }
   }
 
-  // --- Funciones para Items de Persona ---
-  const handleAddItemToPerson = async (personIndex: number, menuItem: MenuItemType) => {
+  const handleAddItemToPerson = async (personIndex: number, menuItem: any) => {
     if (!groupOrderId || orderPlaced || !user) return
     if (menuItem.availabilityStatus !== 'disponible') return
 
     const personData = people[personIndex]
     const lockedByOther = personData.locked && personData.userId !== user.uid
-    if (lockedByOther) {
-      // Está bloqueada por otro, podemos ver, pero no agregar
-      return
-    }
+    if (lockedByOther) return
 
-    // Si no está bloqueada o es mía, puedo agregar
     let updatedPeople = [...people]
-
-    // Bloquear la persona si no lo está
     if (!personData.locked) {
       if (personData.name.startsWith('Persona')) {
         setCurrentPersonIndex(personIndex)
@@ -1538,8 +1511,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         idx === personIndex ? { ...p, userId: user.uid, locked: true } : p,
       )
     }
-
-    // Agregar el ítem
     updatedPeople = updatedPeople.map((p, idx) => {
       if (idx === personIndex) {
         const foundItem = p.items.find((it) => it.id === menuItem.id)
@@ -1557,7 +1528,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
       return p
     })
     setPeople(updatedPeople)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         participants: updatedPeople,
@@ -1575,40 +1545,28 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     if (!groupOrderId || orderPlaced) return
     if (quantity < 0) return
 
-    const updated = people.map((p, idx) => {
-      if (idx === personIndex) {
-        return {
-          ...p,
-          items: p.items.map((it) => (it.id === itemId ? { ...it, quantity } : it)),
-        }
-      }
-      return p
-    })
+    const updated = people.map((p, idx) =>
+      idx === personIndex
+        ? { ...p, items: p.items.map((it) => (it.id === itemId ? { ...it, quantity } : it)) }
+        : p,
+    )
     setPeople(updated)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         participants: updated,
       })
     } catch (error) {
-      console.error('Error al cambiar cantidad de item persona:', error)
+      console.error('Error al cambiar cantidad de item en persona:', error)
     }
   }
 
   const handleRemoveItemFromPerson = async (personIndex: number, itemId: string) => {
     if (!groupOrderId || orderPlaced) return
 
-    const updated = people.map((p, idx) => {
-      if (idx === personIndex) {
-        return {
-          ...p,
-          items: p.items.filter((it) => it.id !== itemId),
-        }
-      }
-      return p
-    })
+    const updated = people.map((p, idx) =>
+      idx === personIndex ? { ...p, items: p.items.filter((it) => it.id !== itemId) } : p,
+    )
     setPeople(updated)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         participants: updated,
@@ -1618,30 +1576,28 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     }
   }
 
+  // --- Modificación para que solo el creador pueda finalizar pedidos de otros ---
   const handlePersonFinishedOrder = async (personIndex: number) => {
     if (!groupOrderId || orderPlaced || !user) return
-    const myIndex = people.findIndex((p) => p.userId === user.uid)
-    if (myIndex !== personIndex) {
-      // No puedes terminar si no es tuya
-      return
+    // Si el usuario no es el creador, solo puede finalizar su propio pedido
+    if (!isOwner) {
+      const myIndex = people.findIndex((p) => p.userId === user.uid)
+      if (myIndex !== personIndex) return
     }
-
     const updated = people.map((p, idx) => (idx === personIndex ? { ...p, finished: true } : p))
     setPeople(updated)
     const everyoneDone = updated.every((p) => p.finished)
     setAllFinished(everyoneDone)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         participants: updated,
         allFinished: everyoneDone,
       })
     } catch (error) {
-      console.error('Error al terminar persona:', error)
+      console.error('Error al finalizar pedido de persona:', error)
     }
   }
 
-  // --- Modal para cambiar nombre ---
   const handleNameModalClose = () => {
     setShowNameModal(false)
     setCurrentPersonIndex(null)
@@ -1649,35 +1605,24 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
 
   const handleNameSubmit = async (name: string) => {
     if (!groupOrderId || currentPersonIndex === null || !user) return
-
-    const updated = people.map((p, idx) => {
-      if (idx === currentPersonIndex) {
-        const finalName = name.trim() !== '' ? name : p.name
-        return {
-          ...p,
-          name: finalName,
-          userId: user.uid,
-          locked: true,
-        }
-      }
-      return p
-    })
+    const updated = people.map((p, idx) =>
+      idx === currentPersonIndex
+        ? { ...p, name: name.trim() !== '' ? name : p.name, userId: user.uid, locked: true }
+        : p,
+    )
     setPeople(updated)
     setShowNameModal(false)
     setCurrentPersonIndex(null)
-
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         participants: updated,
       })
     } catch (error) {
-      console.error('Error al actualizar con nombre:', error)
+      console.error('Error al actualizar nombre:', error)
     }
   }
 
-  // --- Revisión final ---
   const handleReviewOrder = () => {
-    // Si deseas hacer algo con los items compartidos
     setShowPedidoForm(true)
   }
 
@@ -1697,57 +1642,31 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         showPricesToAll: newVal,
       })
     } catch (error) {
-      console.error('Error toggling showPricesToAll:', error)
+      console.error('Error al alternar visualización de precios:', error)
     }
   }
 
-  // --- Cálculos ---
-  const calculateSubtotal = (personItems: { id: string; quantity: number }[]) => {
-    let total = 0
-    personItems.forEach((it) => {
-      const found = menu.find((m) => m.id === it.id)
-      if (found) total += found.price * it.quantity
-    })
-    return total
-  }
-
-  const calculateSharedSubtotal = () => {
-    return sharedOrderItems.reduce((sum, si) => {
-      const found = menu.find((m) => m.id === si.itemId)
-      return found ? sum + found.price * si.quantity : sum
-    }, 0)
-  }
-
-  // --- Helpers Avatares ---
   const getSharedItemCount = () => sharedOrderItems.reduce((acc, si) => acc + si.quantity, 0)
-
   const getPersonItemCount = (person: Person) =>
     person.items.reduce((acc, it) => acc + it.quantity, 0)
+  const getInitialLetter = (name: string) =>
+    !name || name.trim() === '' ? '?' : name.trim()[0].toUpperCase()
 
-  // Retorna la primera letra del nombre (o "?")
-  const getInitialLetter = (name: string) => {
-    if (!name || name.trim() === '') return '?'
-    return name.trim()[0].toUpperCase()
-  }
-
-  // --- Render ---
   return (
-    <div className="container mx-auto my-8 p-6 bg-white rounded-xl shadow-md relative">
-      <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center text-indigo-700">
-        ¡Pedido Grupal con Burbujas! 🎉
-      </h1>
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+      {/* Encabezado */}
+      <header className="mb-6 text-center">
+        {groupOrderCode && (
+          <div>
+            <h2 className="text-2xl font-bold text-indigo-600">
+              Código de Pedido: <span className="text-3xl">{groupOrderCode}</span>
+            </h2>
+            <p className="text-sm text-gray-500">Comparte este código con tus amigos</p>
+          </div>
+        )}
+      </header>
 
-      {/* Muestra código si existe */}
-      {groupOrderCode && (
-        <div className="text-center mb-4">
-          <h3 className="text-xl font-semibold text-gray-800">
-            Código de Pedido: <span className="text-indigo-600 font-bold">{groupOrderCode}</span>
-          </h3>
-          <p className="text-sm text-gray-500">Compártelo con tus amigos</p>
-        </div>
-      )}
-
-      {/* Si no hemos inicializado los nombres y no venimos con un code */}
+      {/* Selección de número de personas y nombres */}
       {!showPeopleNames && !joiningWithCode ? (
         <PeopleSelection
           numPeople={numPeople}
@@ -1758,52 +1677,41 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         />
       ) : !showPedidoForm ? (
         <>
-          {/* ============ Burbujas/Avatares arriba ============ */}
-          <div className="flex flex-wrap gap-4 items-center justify-center mb-8">
-            {/* Compartido */}
+          {/* Burbujas para cambiar de vista */}
+          <div className="flex flex-wrap gap-4 justify-center mb-8">
             <div
-              className="flex flex-col items-center space-y-1 cursor-pointer"
               onClick={() => setSelectedView('shared')}
+              className="cursor-pointer flex flex-col items-center"
             >
               <div
-                className={`relative w-16 h-16 rounded-full ring-4 flex items-center justify-center 
-                  ${
-                    selectedView === 'shared' ? 'ring-indigo-500' : 'ring-gray-300'
-                  } bg-indigo-100 transition-transform hover:scale-105`}
+                className={`relative w-16 h-16 rounded-full ring-4 transition-transform duration-300 flex items-center justify-center ${
+                  selectedView === 'shared' ? 'ring-indigo-500 scale-110' : 'ring-gray-300'
+                } bg-indigo-100`}
               >
-                {/* Icono o inicial para 'compartido' */}
-                <span className="text-sm font-semibold text-gray-700">🤝</span>
-                {/* Badge con total de items si > 0 */}
+                <span className="text-2xl">🤝</span>
                 {getSharedItemCount() > 0 && (
                   <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5">
                     {getSharedItemCount()}
                   </span>
                 )}
               </div>
-              <span className="text-sm font-medium text-gray-700">Compartido</span>
+              <span className="mt-2 text-sm font-medium text-gray-700">Compartido</span>
             </div>
-
-            {/* Burbujas para cada persona */}
             {people.map((person, index) => {
               const lockedByOther = person.locked && person.userId !== user?.uid
               const active = selectedView === `person-${index}`
-              const itemCount = getPersonItemCount(person)
               const color = bubbleColors[index % bubbleColors.length]
-
               return (
                 <div
                   key={person.personIndex}
-                  className="flex flex-col items-center space-y-1 cursor-pointer"
                   onClick={() => setSelectedView(`person-${index}`)}
+                  className="cursor-pointer flex flex-col items-center"
                 >
-                  {/* Avatar circular */}
                   <div
-                    className={`relative w-16 h-16 rounded-full ring-4 flex items-center justify-center 
-                      ${
-                        active ? 'ring-indigo-500' : 'ring-gray-300'
-                      } ${color} transition-transform hover:scale-105`}
+                    className={`relative w-16 h-16 rounded-full transition-transform duration-300 flex items-center justify-center ${
+                      active ? 'ring-indigo-500 scale-110' : 'ring-gray-300'
+                    } ${color}`}
                   >
-                    {/* Si person.photoUrl existe, mostramos foto */}
                     {person.photoUrl ? (
                       <img
                         src={person.photoUrl}
@@ -1815,26 +1723,16 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                         {getInitialLetter(person.name)}
                       </span>
                     )}
-                    {/* Badge de items */}
-                    {itemCount > 0 && (
-                      <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5">
-                        {itemCount}
-                      </span>
-                    )}
-                    {/* Si locked by other => icono candado */}
                     {lockedByOther && (
                       <span className="absolute top-0 left-0 text-red-500 text-lg">🔒</span>
                     )}
-                    {/* Si finished => check en esquina inferior */}
                     {person.finished && (
                       <span className="absolute bottom-0 right-0 text-green-500 text-lg font-bold">
                         ✅
                       </span>
                     )}
                   </div>
-
-                  {/* Nombre debajo del avatar */}
-                  <span className="text-sm font-medium text-gray-700 text-center max-w-[4rem] truncate">
+                  <span className="mt-2 text-sm font-medium text-gray-700 max-w-[4rem] truncate">
                     {person.name}
                   </span>
                 </div>
@@ -1842,8 +1740,8 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
             })}
           </div>
 
-          {/* ============ Sección "Compartido" o "PersonOrder" ============ */}
-          {selectedView === 'shared' && (
+          {/* Sección de vista según selección */}
+          {selectedView === 'shared' ? (
             <SharedOrder
               menuCategories={menu
                 .filter((i) => i.availabilityStatus !== 'noDisponibleLargoPlazo')
@@ -1854,66 +1752,76 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                     acc[cat].push(item)
                     return acc
                   },
-                  {} as Record<string, MenuItemType[]>,
+                  {} as Record<string, any[]>,
                 )}
               sharedOrderItems={sharedOrderItems}
               onAddToSharedOrder={handleAddToSharedOrder}
               onSharedOrderItemQuantityChange={handleSharedOrderItemQuantityChange}
               onRemoveSharedOrderItem={handleRemoveSharedOrderItem}
-              calculateSharedSubtotal={calculateSharedSubtotal}
-              sharedOrderSummaryRef={sharedOrderSummaryRef}
+              calculateSharedSubtotal={() =>
+                sharedOrderItems.reduce((sum, si) => {
+                  const menuItem = menu.find((m) => m.id === si.itemId)
+                  return menuItem ? sum + menuItem.price * si.quantity : sum
+                }, 0)
+              }
+              sharedOrderSummaryRef={useRef<HTMLDivElement>(null)}
               activeTab={selectedView}
               menu={menu}
               disabled={orderPlaced}
             />
+          ) : (
+            people.map((person, i) => {
+              if (selectedView === `person-${i}`) {
+                const lockedByOther = person.locked && person.userId !== user?.uid
+                return (
+                  <PersonOrder
+                    key={person.personIndex}
+                    person={person}
+                    index={i}
+                    menuCategories={menu
+                      .filter((m) => m.availabilityStatus !== 'noDisponibleLargoPlazo')
+                      .reduce(
+                        (acc, item) => {
+                          const cat = item.recommendation || 'General'
+                          acc[cat] = acc[cat] || []
+                          acc[cat].push(item)
+                          return acc
+                        },
+                        {} as Record<string, any[]>,
+                      )}
+                    menu={menu}
+                    onAddItemToPerson={handleAddItemToPerson}
+                    onPersonOrderItemQuantityChange={handlePersonOrderItemQuantityChange}
+                    onRemoveItemFromPerson={handleRemoveItemFromPerson}
+                    calculateSubtotal={(personItems) =>
+                      personItems.reduce((total, it) => {
+                        const menuItem = menu.find((m) => m.id === it.id)
+                        return menuItem ? total + menuItem.price * it.quantity : total
+                      }, 0)
+                    }
+                    personOrderSummaryRef={useRef<HTMLDivElement>(null)}
+                    activeTab={selectedView}
+                    onPersonFinishedOrder={handlePersonFinishedOrder}
+                    isFinished={person.finished || false}
+                    personLocked={person.locked || false}
+                    isCurrentUserTab={person.userId === user?.uid}
+                    personIndex={i}
+                    disabled={lockedByOther || orderPlaced}
+                    isOrderOwner={isOwner}
+                  />
+                )
+              }
+              return null
+            })
           )}
 
-          {people.map((person, i) => {
-            if (selectedView === `person-${i}`) {
-              // Para saber si está bloqueada por otro => disabled
-              const lockedByOther = person.locked && person.userId !== user?.uid
-              return (
-                <PersonOrder
-                  key={person.personIndex}
-                  person={person}
-                  index={i}
-                  menuCategories={menu
-                    .filter((m) => m.availabilityStatus !== 'noDisponibleLargoPlazo')
-                    .reduce(
-                      (acc, item) => {
-                        const cat = item.recommendation || 'General'
-                        acc[cat] = acc[cat] || []
-                        acc[cat].push(item)
-                        return acc
-                      },
-                      {} as Record<string, MenuItemType[]>,
-                    )}
-                  menu={menu}
-                  onAddItemToPerson={handleAddItemToPerson}
-                  onPersonOrderItemQuantityChange={handlePersonOrderItemQuantityChange}
-                  onRemoveItemFromPerson={handleRemoveItemFromPerson}
-                  calculateSubtotal={calculateSubtotal}
-                  personOrderSummaryRef={personOrderSummaryRef}
-                  activeTab={selectedView}
-                  onPersonFinishedOrder={handlePersonFinishedOrder}
-                  isFinished={person.finished || false}
-                  personLocked={person.locked || false}
-                  isCurrentUserTab={person.userId === user?.uid}
-                  personIndex={i}
-                  disabled={lockedByOther || orderPlaced} // Ver o no, pero sin poder editar si locked por otro
-                />
-              )
-            }
-            return null
-          })}
-
-          {/* Botón para REVISAR si soy el owner y todos terminaron */}
+          {/* Botón para revisar el pedido grupal (solo visible para el creador) */}
           <div className="flex justify-center mt-8">
             {isOwner && allFinished && !orderPlaced ? (
               <button
-                className="bg-green-500 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-xl focus:outline-none transition-colors duration-300"
                 onClick={handleReviewOrder}
                 disabled={orderPlaced}
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-xl transition-colors duration-300"
               >
                 ¡Revisar Pedido Grupal! ✅
               </button>
@@ -1923,7 +1831,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
               </p>
             ) : !isOwner ? (
               <p className="text-center text-gray-600">
-                Espera a que el dueño del pedido revise y confirme.
+                Solo el creador del pedido puede finalizar pedidos de otros.
               </p>
             ) : !allFinished ? (
               <p className="text-center text-gray-600">
@@ -1933,14 +1841,23 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           </div>
         </>
       ) : (
-        // Resumen final
         <OrderReview
           people={people}
           sharedOrderItems={sharedOrderItems}
           menu={menu}
           onClosePedidoForm={() => setShowPedidoForm(false)}
-          calculateSharedSubtotal={calculateSharedSubtotal}
-          calculateSubtotal={calculateSubtotal}
+          calculateSharedSubtotal={() =>
+            sharedOrderItems.reduce((sum, si) => {
+              const menuItem = menu.find((m) => m.id === si.itemId)
+              return menuItem ? sum + menuItem.price * si.quantity : sum
+            }, 0)
+          }
+          calculateSubtotal={(personItems) =>
+            personItems.reduce((total, it) => {
+              const menuItem = menu.find((m) => m.id === it.id)
+              return menuItem ? total + menuItem.price * it.quantity : total
+            }, 0)
+          }
           isOrderOwner={isOwner}
           onOrderPlaced={handleOrderPlacement}
           orderPlaced={orderPlaced}
@@ -1949,7 +1866,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         />
       )}
 
-      {/* Modal para nombre de Persona */}
       <NameModal
         open={showNameModal}
         onClose={handleNameModalClose}
@@ -5338,18 +5254,10 @@ import {
   Title,
   Tooltip,
 } from 'chart.js'
-import {
-  collection,
-  doc,
-  onSnapshot, // Import updateDoc here
-  query,
-  setDoc,
-  updateDoc,
-  where,
-} from 'firebase/firestore'
+import { collection, doc, onSnapshot, query, setDoc, updateDoc, where } from 'firebase/firestore'
 import React, { useEffect, useRef, useState } from 'react'
 import { Bar, Line, Pie } from 'react-chartjs-2'
-import { v4 as uuidv4 } from 'uuid' // Import UUID
+import { v4 as uuidv4 } from 'uuid'
 import { useAuth } from '../hooks/useAuth'
 import { db } from '../utils/firebase'
 
@@ -5363,16 +5271,15 @@ ChartJS.register(
   Tooltip,
   Legend,
   LineController,
-  ArcElement, // Registra ArcElement
+  ArcElement,
 )
 
-/** Interfaz para pedido */
 interface Pedido {
   id: string
   status: string
   total: number
   orderDate: Date
-  userId: string // Asegúrate de que tu interfaz Pedido incluya userId
+  userId: string
 }
 
 interface Task {
@@ -5381,13 +5288,12 @@ interface Task {
   taskName: string
   taskType: 'daily' | 'periodic'
   dueDate?: Date | null
-  dailyCompletions: { [date: string]: boolean } // Track completion per day
+  dailyCompletions: { [date: string]: boolean }
   completionDate?: Date | null
   dayOfWeek?: number
   subtasks?: string[]
 }
 
-// Estados que manejaremos en la app
 const ALL_STATUSES = ['pendiente', 'atendiendo', 'preparando', 'enviado', 'entregado']
 
 const defaultDailyTasks = [
@@ -5416,7 +5322,6 @@ const periodicTasksConfig = [
   { dayOfMonth: 25, taskName: 'Pagar arriendo', taskType: 'periodic' },
   { dayOfMonth: 25, taskName: 'Pagar factura de luz', taskType: 'periodic' },
   { dayOfMonth: 25, taskName: 'Pagar factura de agua', taskType: 'periodic' },
-  // Add more periodic tasks as needed
 ]
 
 interface Movement {
@@ -5451,7 +5356,7 @@ const Dashboard: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loadingTasks, setLoadingTasks] = useState<boolean>(true)
 
-  // Para filtrar por un estado específico o "todos"
+  // Filtro de estado de pedidos
   const [selectedStatus, setSelectedStatus] = useState<string | 'todos'>('todos')
 
   // Métricas generales
@@ -5459,9 +5364,9 @@ const Dashboard: React.FC = () => {
   const [monthSales, setMonthSales] = useState<number>(0)
   const [pendingOrdersCount, setPendingOrdersCount] = useState<number>(0)
   const [totalOrders, setTotalOrders] = useState<number>(0)
-  const [, setClientTotalOrders] = useState<number>(0) // Total pedidos del cliente
+  const [, setClientTotalOrders] = useState<number>(0)
 
-  // Métricas de contabilidad
+  // Datos de contabilidad
   const [cashRegisters, setCashRegisters] = useState<DailyCashRegister[]>([])
   const [monthlyIncome, setMonthlyIncome] = useState(0)
   const [monthlyExpenses, setMonthlyExpenses] = useState(0)
@@ -5470,13 +5375,13 @@ const Dashboard: React.FC = () => {
     labels: string[]
     income: number[]
     expenses: number[]
-  } | null>(null) // No default value anymore, start as null
+  } | null>(null)
   const [monthlyLabelsContabilidad, setMonthlyLabelsContabilidad] = useState<string[]>([])
   const [monthlyIncomeContabilidad, setMonthlyIncomeContabilidad] = useState<number[]>([])
   const [monthlyExpensesContabilidad, setMonthlyExpensesContabilidad] = useState<number[]>([])
-  const [contabilityError, setContabilityError] = useState<boolean>(false) // Estado de error contabilidad
+  const [contabilityError, setContabilityError] = useState<boolean>(false)
 
-  // Gráficos (últimos 7 días + últimos 6 meses)
+  // Gráficos de ventas
   const [dailyLabels, setDailyLabels] = useState<string[]>([])
   const [dailyData, setDailyData] = useState<number[]>([])
   const [monthlyLabels, setMonthlyLabels] = useState<string[]>([])
@@ -5490,8 +5395,9 @@ const Dashboard: React.FC = () => {
 
   const categories = ['venta', 'compra_insumos', 'pago_servicios', 'nomina', 'otros']
 
+  // Escucha la colección de caja para contabilidad
   useEffect(() => {
-    setContabilityError(false) // Reset error
+    setContabilityError(false)
     const qRef = query(collection(db, 'caja'))
     const unsubscribe = onSnapshot(
       qRef,
@@ -5507,47 +5413,15 @@ const Dashboard: React.FC = () => {
       },
       (error) => {
         console.error('Error fetching contability data:', error)
-        setContabilityError(true) // Set error state to true on error
+        setContabilityError(true)
         setLoading(false)
       },
     )
     return () => unsubscribe()
   }, [])
 
+  // UseEffect para calcular métricas de contabilidad
   useEffect(() => {
-    // Inicializar
-    setCategoryData({ labels: [], income: [], expenses: [] })
-    setMonthlyLabelsContabilidad([])
-    setMonthlyExpensesContabilidad([])
-    setMonthlyIncomeContabilidad([])
-    setContabilityError(false) // Reset error
-
-    const qRef = query(collection(db, 'caja'))
-    const unsubscribe = onSnapshot(
-      qRef,
-      (snapshot) => {
-        const data: DailyCashRegister[] = snapshot.docs.map((docSnap) => {
-          const docData = docSnap.data()
-          return {
-            id: docSnap.id,
-            ...docData,
-          } as DailyCashRegister
-        })
-        setCashRegisters(data)
-        // --- ADD CONSOLE LOG HERE: Inspect raw cashRegisters data ---
-        console.log('Raw cashRegisters data from Firestore:', data)
-      },
-      (error) => {
-        console.error('Error fetching contability data:', error)
-        setContabilityError(true) // Set error state to true on error
-        setLoading(false)
-      },
-    )
-    return () => unsubscribe()
-  }, [])
-
-  useEffect(() => {
-    // Calculate contability metrics
     if (!cashRegisters || cashRegisters.length === 0) {
       setMonthlyIncome(0)
       setMonthlyExpenses(0)
@@ -5568,6 +5442,7 @@ const Dashboard: React.FC = () => {
 
     let totalIncome = 0
     let totalExpenses = 0
+    // Inicializa categoryTotals con las categorías predefinidas
     const categoryTotals = categories.reduce(
       (acc, category) => {
         acc[category] = { income: 0, expenses: 0 }
@@ -5576,34 +5451,39 @@ const Dashboard: React.FC = () => {
       {} as Record<string, { income: number; expenses: number }>,
     )
 
-    // --- LOGGING: Inspect cashRegisters data at start of processing ---
     console.log('cashRegisters data inside categoryData useEffect:', cashRegisters)
 
     filteredRegisters.forEach((register) => {
       register.movements.forEach((mov) => {
         if (mov.type === 'entry') {
           totalIncome += mov.amount
+          // Si la categoría no existe en categoryTotals, la inicializamos
+          if (!categoryTotals[mov.category]) {
+            categoryTotals[mov.category] = { income: 0, expenses: 0 }
+          }
           categoryTotals[mov.category].income += mov.amount
         } else {
           totalExpenses += mov.amount
+          if (!categoryTotals[mov.category]) {
+            categoryTotals[mov.category] = { income: 0, expenses: 0 }
+          }
           categoryTotals[mov.category].expenses += mov.amount
         }
       })
     })
 
-    // --- LOGGING: Inspect categoryTotals after processing movements ---
     console.log('categoryTotals after processing movements:', categoryTotals)
 
     setMonthlyIncome(totalIncome)
     setMonthlyExpenses(totalExpenses)
     setMonthlyBalance(totalIncome - totalExpenses)
 
-    // Prepare data for the chart
+    // En lugar de iterar sobre las categorías predefinidas, usamos las claves de categoryTotals
     const labels: string[] = []
     const income: number[] = []
     const expenses: number[] = []
 
-    categories.forEach((category) => {
+    Object.keys(categoryTotals).forEach((category) => {
       if (categoryTotals[category].income > 0 || categoryTotals[category].expenses > 0) {
         labels.push(category)
         income.push(categoryTotals[category].income)
@@ -5612,15 +5492,11 @@ const Dashboard: React.FC = () => {
     })
 
     const finalCategoryData = { labels, income, expenses }
-
-    // --- LOGGING: Inspect final categoryData before setState ---
     console.log('Final categoryData before setState:', finalCategoryData)
-
     setCategoryData(finalCategoryData)
   }, [cashRegisters])
 
   useEffect(() => {
-    // Escuchamos la colección 'pedidos'
     let pedidosQuery = collection(db, 'pedidos')
     if (userRole === 'client' && user) {
       pedidosQuery = query(pedidosQuery, where('userId', '==', user.uid)) as never
@@ -5635,8 +5511,8 @@ const Dashboard: React.FC = () => {
             id: doc.id,
             status: data.status,
             total: data.total,
-            orderDate: data.orderDate?.toDate ? data.orderDate.toDate() : new Date(), // fallback
-            userId: data.userId, // Asegúrate de mapear userId
+            orderDate: data.orderDate?.toDate ? data.orderDate.toDate() : new Date(),
+            userId: data.userId,
           } as Pedido
         })
         setPedidos(pedidosData)
@@ -5651,7 +5527,6 @@ const Dashboard: React.FC = () => {
   }, [user, userRole])
 
   useEffect(() => {
-    // Conditionally subscribe to tasks only if user is admin or encargado
     if (userRole === 'admin' || userRole === 'encargado') {
       const today = new Date()
       const todayDateString = today.toISOString().split('T')[0]
@@ -5668,16 +5543,15 @@ const Dashboard: React.FC = () => {
               taskName: data.taskName,
               taskType: data.taskType,
               dueDate: data.dueDate ? data.dueDate.toDate() : null,
-              dailyCompletions: data.dailyCompletions || {}, // Initialize dailyCompletions
+              dailyCompletions: data.dailyCompletions || {},
               completionDate: data.completionDate ? data.completionDate.toDate() : null,
               subtasks: data.subtasks || [],
             } as Task
           })
 
-          // Filter for today's daily tasks and periodic tasks due today
           fetchedTasks = fetchedTasks.filter((task) => {
             if (task.taskType === 'daily') {
-              return true // Show all daily tasks
+              return true
             } else if (task.taskType === 'periodic' && task.dueDate) {
               const taskDueDate = task.dueDate
               return taskDueDate.toISOString().split('T')[0] === todayDateString
@@ -5694,7 +5568,7 @@ const Dashboard: React.FC = () => {
       )
       return () => unsubscribeTasks()
     } else {
-      setLoadingTasks(false) // If not admin/encargado, we are not loading tasks
+      setLoadingTasks(false)
     }
   }, [userRole])
 
@@ -5706,12 +5580,11 @@ const Dashboard: React.FC = () => {
   ) => {
     try {
       await setDoc(doc(collection(db, 'tasks'), uuidv4()), {
-        // use uuid as doc id
-        taskId: uuidv4(), // add taskId
+        taskId: uuidv4(),
         taskName: taskName,
         taskType: taskType,
         completed: false,
-        dailyCompletions: {}, // Initialize dailyCompletions to empty object
+        dailyCompletions: {},
         subtasks: subtasks,
         dueDate: dueDate || null,
       })
@@ -5720,10 +5593,8 @@ const Dashboard: React.FC = () => {
     }
   }
 
-  // Recalcula estadísticas cuando cambien los pedidos o el filtro de estado
   useEffect(() => {
     if (!pedidos.length) {
-      // Si no hay pedidos, limpiamos
       setTodaySales(0)
       setMonthSales(0)
       setPendingOrdersCount(0)
@@ -5732,14 +5603,13 @@ const Dashboard: React.FC = () => {
       setDailyData([])
       setMonthlyLabels([])
       setMonthlyData([])
-      setClientTotalOrders(0) // Reset client total orders
+      setClientTotalOrders(0)
       return
     }
 
     const filtered =
       selectedStatus === 'todos' ? pedidos : pedidos.filter((p) => p.status === selectedStatus)
 
-    // ---------- Estadísticas simples ----------
     const now = new Date()
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
 
@@ -5747,22 +5617,19 @@ const Dashboard: React.FC = () => {
     let sumMonth = 0
     let pendingCount = 0
     const totalCount = filtered.length
-    let clientOrderCount = 0 // Contador para pedidos del cliente
+    let clientOrderCount = 0
 
     filtered.forEach((pedido) => {
-      // Fecha sin hora del pedido
       const pedidoDate = new Date(
         pedido.orderDate.getFullYear(),
         pedido.orderDate.getMonth(),
         pedido.orderDate.getDate(),
       ).getTime()
 
-      // Venta de hoy
       if (pedidoDate === today) {
         sumToday += pedido.total
       }
 
-      // Venta del mes actual
       const isThisMonth =
         pedido.orderDate.getMonth() === now.getMonth() &&
         pedido.orderDate.getFullYear() === now.getFullYear()
@@ -5770,13 +5637,12 @@ const Dashboard: React.FC = () => {
         sumMonth += pedido.total
       }
 
-      // Pedidos pendientes
       if (pedido.status === 'pendiente') {
         pendingCount++
       }
 
       if (userRole === 'client' && user && pedido.userId === user.uid) {
-        clientOrderCount++ // Incrementa solo si es pedido del cliente
+        clientOrderCount++
       }
     })
 
@@ -5784,12 +5650,10 @@ const Dashboard: React.FC = () => {
     setMonthSales(sumMonth)
     setPendingOrdersCount(pendingCount)
     setTotalOrders(totalCount)
-    setClientTotalOrders(clientOrderCount) // Establece el total de pedidos del cliente
+    setClientTotalOrders(clientOrderCount)
 
-    // ---------- Gráfico: últimos 7 días ----------
     const last7Dates = Array.from({ length: 7 }).map((_, i) => {
       const d = new Date()
-      // "hace (6 - i) días" para que se armen en orden cronológico
       d.setDate(d.getDate() - (6 - i))
       return d
     })
@@ -5798,7 +5662,6 @@ const Dashboard: React.FC = () => {
     const daysData: number[] = []
 
     last7Dates.forEach((date) => {
-      // Etiqueta: "dd/MM"
       const dayKey = date.toLocaleDateString('es-ES', {
         day: '2-digit',
         month: '2-digit',
@@ -5821,10 +5684,8 @@ const Dashboard: React.FC = () => {
     setDailyLabels(daysLabels)
     setDailyData(daysData)
 
-    // ---------- Gráfico: últimos 6 meses ----------
     const last6Months = Array.from({ length: 6 }).map((_, i) => {
       const d = new Date()
-      // retrocedemos (5 - i) meses
       d.setMonth(d.getMonth() - (5 - i))
       d.setDate(1)
       return d
@@ -5834,7 +5695,6 @@ const Dashboard: React.FC = () => {
     const monthTotals: number[] = []
 
     last6Months.forEach((date) => {
-      // Etiqueta "MM/YY"
       const label = date.toLocaleDateString('es-ES', { month: '2-digit', year: '2-digit' })
       monthLabels.push(label)
 
@@ -5854,7 +5714,6 @@ const Dashboard: React.FC = () => {
     setMonthlyData(monthTotals)
   }, [pedidos, selectedStatus, userRole, user])
 
-  // Opciones genéricas para los gráficos
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -5863,11 +5722,11 @@ const Dashboard: React.FC = () => {
         display: false as const,
       },
       tooltip: {
-        backgroundColor: '#1e293b', // gris oscuro
+        backgroundColor: '#1e293b',
         titleColor: '#fff',
         bodyColor: '#fff',
         callbacks: {
-          label: function (context) {
+          label: function (context: any) {
             let label = context.dataset.label || ''
             if (label) {
               label += ': '
@@ -5887,27 +5746,25 @@ const Dashboard: React.FC = () => {
     },
   }
 
-  // Dataset para gráfico diario
   const dailyChartData = {
     labels: dailyLabels,
     datasets: [
       {
         label: 'Ventas diarias',
         data: dailyData,
-        backgroundColor: '#4F46E5', // Indigo-600
+        backgroundColor: '#4F46E5',
         borderRadius: 4,
       },
     ],
   }
 
-  // Dataset para gráfico mensual
   const monthlyChartData = {
     labels: monthlyLabels,
     datasets: [
       {
         label: 'Ventas mensuales',
         data: monthlyData,
-        backgroundColor: '#22C55E', // Green-500
+        backgroundColor: '#22C55E',
         borderRadius: 4,
       },
     ],
@@ -5919,7 +5776,7 @@ const Dashboard: React.FC = () => {
       {
         label: 'Ingresos',
         data: monthlyIncomeContabilidad,
-        borderColor: '#43D478', // Green
+        borderColor: '#43D478',
         backgroundColor: '#43D478',
         fill: false,
         tension: 0.3,
@@ -5927,7 +5784,7 @@ const Dashboard: React.FC = () => {
       {
         label: 'Egresos',
         data: monthlyExpensesContabilidad,
-        borderColor: '#E53935', // Red
+        borderColor: '#E53935',
         backgroundColor: '#E53935',
         fill: false,
         tension: 0.3,
@@ -5942,42 +5799,17 @@ const Dashboard: React.FC = () => {
     categoryData.income &&
     categoryData.expenses
       ? {
-          // Validación aquí
           labels: categoryData.labels,
           datasets: [
             {
               label: 'Ingresos',
-              // --- Debugging logs START ---
-              data: categoryData.income.map((val, index) => {
-                if (typeof val === 'undefined') {
-                  console.error(
-                    'Undefined value in categoryData.income at index:',
-                    index,
-                    'CategoryData:',
-                    categoryData,
-                  )
-                }
-                return val || 0
-              }),
-              // --- Debugging logs END ---
+              data: categoryData.income.map((val) => val || 0),
               backgroundColor: ['#00A86B', '#43D478', '#95E1D3', '#F7B731', '#F73D47', '#78103C'],
               hoverOffset: 4,
             },
             {
               label: 'Egresos',
-              // --- Debugging logs START ---
-              data: categoryData.expenses.map((val, index) => {
-                if (typeof val === 'undefined') {
-                  console.error(
-                    'Undefined value in categoryData.expenses at index:',
-                    index,
-                    'CategoryData:',
-                    categoryData,
-                  )
-                }
-                return val || 0
-              }),
-              // --- Debugging logs END ---
+              data: categoryData.expenses.map((val) => val || 0),
               backgroundColor: ['#E53935', '#870D17', '#F06292', '#A7004B', '#004772', '#0087D0'],
               hoverOffset: 4,
             },
@@ -5985,18 +5817,17 @@ const Dashboard: React.FC = () => {
         }
       : null
 
-  // Para saber si debemos mostrar la parte de admin/encargado
   const showAdminStats = userRole === 'admin' || userRole === 'encargado'
   const showChecklist = userRole === 'admin' || userRole === 'encargado'
   const showClientStats = userRole === 'client'
 
   const handleTaskCompletionChange = async (taskId: string, completed: boolean) => {
-    const todayDate = new Date().toISOString().split('T')[0] // YYYY-MM-DD
+    const todayDate = new Date().toISOString().split('T')[0]
     try {
       const taskDocRef = doc(db, 'tasks', taskId)
       await updateDoc(taskDocRef, {
-        [`dailyCompletions.${todayDate}`]: completed, // Update completion for today
-        completionDate: completed ? new Date() : null, // Optionally update completionDate
+        [`dailyCompletions.${todayDate}`]: completed,
+        completionDate: completed ? new Date() : null,
       })
 
       setTasks((currentTasks) =>
@@ -6027,12 +5858,11 @@ const Dashboard: React.FC = () => {
 
   const last7DaysFormatted = last7Days.map((day) => day.toISOString().split('T')[0])
 
-  // Function to format price to Colombian Pesos
   const formatPriceCOP = (price: number) => {
     return price.toLocaleString('es-CO', {
       style: 'currency',
       currency: 'COP',
-      minimumFractionDigits: 0, // Remove cents if whole number
+      minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     })
   }
@@ -6079,13 +5909,10 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="pt-20 p-4 md:p-6 bg-gray-100 min-h-screen">
-      {/* Título */}
       <h1 className="text-3xl font-bold text-gray-900 mb-4 transition-all duration-300 hover:scale-105">
-        Dashboard
-        {user?.email && <span className="text-sm ml-2">({user.email})</span>}
+        Dashboard {user?.email && <span className="text-sm ml-2">({user.email})</span>}
       </h1>
 
-      {/* Filtro por estado */}
       {showAdminStats && (
         <div className="flex flex-wrap items-center mb-6 gap-2">
           <button
@@ -6116,10 +5943,8 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Sección de Tarjetas de estadísticas */}
       {showAdminStats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          {/* ... statistic cards for admin/encargado ... */}
           <div className="bg-white rounded shadow p-4 text-center transition transform hover:scale-105">
             <p className="text-gray-600">Total de Pedidos</p>
             <p className="text-2xl font-bold text-indigo-600">{totalOrders}</p>
@@ -6155,7 +5980,6 @@ const Dashboard: React.FC = () => {
               <strong>Balance Neto:</strong> {formatPriceCOP(monthlyBalance)}
             </p>
             <div className="h-64">
-              {/* Gráfico de barras del flujo de caja */}
               {monthlyBalance > 0 ? (
                 <Bar
                   data={{
@@ -6183,14 +6007,13 @@ const Dashboard: React.FC = () => {
           categoryData &&
           categoryData.labels?.length &&
           Array.isArray(categoryData.income) &&
-          Array.isArray(categoryData.expenses) ? ( // Validación estricta aquí
+          Array.isArray(categoryData.expenses) ? (
             <div className="bg-white rounded shadow p-4">
               <h2 className="text-xl font-semibold mb-4 text-gray-800">Análisis por Categoría</h2>
               <div className="h-64 relative">
-                {/* --- CONSOLE LOG RIGHT BEFORE PIE CHART - CRUCIAL INSPECTION POINT --- */}
                 {console.log('CategoryChartData just before Pie render:', categoryChartData)}
-                {/* --- Pie Chart Rendering WITH EXTRA SAFETY --- */}
-                {categoryChartData.labels &&
+                {categoryChartData &&
+                categoryChartData.labels &&
                 Array.isArray(categoryChartData.labels) &&
                 categoryChartData.datasets &&
                 Array.isArray(categoryChartData.datasets) ? (
@@ -6214,7 +6037,6 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Gráfico de contabilidad mensual */}
       {showAdminStats && (
         <div className="bg-white rounded shadow p-4 mb-6">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">
@@ -6226,10 +6048,8 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Gráfico de Ventas Diarias (últimos 7 días) */}
       {showAdminStats && (
         <div className="bg-white rounded shadow p-4 mb-6">
-          {/* ... daily sales chart for admin/encargado ... */}
           <h2 className="text-xl font-semibold mb-4 text-gray-800">
             Ventas diarias (últimos 7 días)
           </h2>
@@ -6239,10 +6059,8 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Gráfico de Ventas Mensuales (últimos 6 meses) */}
       {showAdminStats && (
         <div className="bg-white rounded shadow p-4 mb-6">
-          {/* ... monthly sales chart for admin/encargado ... */}
           <h2 className="text-xl font-semibold mb-4 text-gray-800">
             Ventas mensuales (últimos 6 meses)
           </h2>
@@ -6252,10 +6070,8 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Daily Checklist Section */}
       {showChecklist && (
         <div className="bg-white rounded shadow p-4 mb-6">
-          {/* ... daily checklist for admin/encargado ... */}
           <h2 className="text-xl font-semibold mb-4 text-gray-800">
             Checklist Diario de Tareas (Hoy)
           </h2>
@@ -6269,7 +6085,7 @@ const Dashboard: React.FC = () => {
                       className="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500"
                       checked={
                         task.dailyCompletions[new Date().toISOString().split('T')[0]] === true
-                      } // Check against today's completion status
+                      }
                       onChange={(e) => handleTaskCompletionChange(task.id, e.target.checked)}
                     />
                     <span className="ml-2 text-gray-700">{task.taskName}</span>
@@ -6292,7 +6108,6 @@ const Dashboard: React.FC = () => {
 
       {showChecklist && (
         <div className="bg-white rounded shadow p-4 mb-6 overflow-x-auto">
-          {/* ... weekly task status table for admin/encargado ... */}
           <h2 className="text-xl font-semibold mb-4 text-gray-800">Estado de Tareas Semanal</h2>
           <div className="overflow-x-auto">
             <table className="min-w-full table-fixed border-collapse border border-gray-200">
@@ -6337,364 +6152,1150 @@ export default Dashboard
 /* Fin src\pages\Dashboard.tsx */
 
 /* Inicio src\pages\GestionMenu.tsx */
-import { Alert, Snackbar } from '@mui/material'
-import { addDoc, collection, doc, updateDoc } from 'firebase/firestore'
-import React, { useState } from 'react'
-import MenuList from '../components/menu/MenuList'
-import MenuModal from '../components/menu/MenuModal'
-import Button from '../components/ui/Button' // Importa el Button de Tailwind
-import Container from '../components/ui/Container' // Importa Container de Tailwind si lo creaste, sino usa un div normal
-import { MenuItem } from '../context/AppContext'
-import { useAuth } from '../hooks/useAuth' // Importa useAuth
-import { useMenu } from '../hooks/useMenu'
+/* Inicio src\pages\GestionMenu.tsx */
+// src/pages/GestionMenu.tsx
+import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore'
+import React, { useEffect, useRef, useState } from 'react'
 import { COLLECTIONS } from '../utils/constants'
 import { db } from '../utils/firebase'
 
-const GestionMenu: React.FC = () => {
-  const { menu, loading } = useMenu()
-  const [openModal, setOpenModal] = useState(false)
-  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean
-    message: string
-    severity: 'success' | 'error'
-  }>({ open: false, message: '', severity: 'success' })
-  const { userRole } = useAuth() // Obtiene el rol del usuario
-  const [loadingSampleData, setLoadingSampleData] = useState(false) // Estado de carga para el botón de datos de ejemplo
+import { createDefaultMenuItemsAndCombos, deleteAllMenuItems } from '../utils/menu-scripts' // Importa las funciones
 
-  if (loading) {
-    return <div>Cargando...</div>
-  }
+/* =====================================================
+   INTERFACES Y TIPOS
+===================================================== */
 
-  const handleOpenModal = () => {
-    setOpenModal(true)
-    setSelectedItem(null)
-  }
+// Para costos adicionales (aplica a ítems y combos)
+export interface AdditionalCost {
+  description: string
+  amount: number
+}
 
-  const handleCloseModal = () => {
-    setOpenModal(false)
-    setSelectedItem(null)
-  }
+// Interfaz de producto (MenuItemType)
+export interface MenuItemType {
+  id?: string
+  name: string
+  description: string
+  price: number // Precio de venta
+  cost: number // Costo interno
+  points: number // Puntos asignados
+  imageUrls: string[]
+  available: boolean
+  recommendation: string
+  observations: string
+  availabilityStatus: 'disponible' | 'noDisponibleMomento' | 'noDisponibleLargoPlazo'
+  // Para combos:
+  isCombo?: boolean
+  components?: string[] // IDs de productos individuales seleccionados
+  minimumPrice?: number // Precio mínimo (suma de los costos base y adicionales)
+  comboSellingPrice?: number // Precio de venta configurado para el combo
+  comboPoints?: number // Puntos asignados para el combo
+  // Costos adicionales (opcional)
+  additionalCosts?: AdditionalCost[]
+}
 
-  const handleEdit = (item: MenuItem) => {
-    setSelectedItem(item)
-    setOpenModal(true)
-  }
+// Valores iniciales para el formulario
+const initialFormValues: Partial<MenuItemType> = {
+  name: '',
+  description: '',
+  price: 0,
+  cost: 0,
+  points: 0,
+  imageUrls: [],
+  available: true,
+  recommendation: '',
+  observations: '',
+  availabilityStatus: 'disponible',
+  isCombo: false,
+  components: [],
+  minimumPrice: 0,
+  comboSellingPrice: 0,
+  comboPoints: 0,
+  additionalCosts: [],
+}
 
-  const handleDelete = async (item: MenuItem) => {
-    if (
-      !window.confirm(
-        `¿Estás seguro de marcar como no disponible a largo plazo el item "${item.name}"?`,
-      )
-    )
-      return
-    try {
-      // Al "eliminar" un item, se actualiza su estado a "noDisponibleLargoPlazo" y available a false
-      await updateDoc(doc(db, COLLECTIONS.MENU, item.id), {
-        availabilityStatus: 'noDisponibleLargoPlazo', // Se marca como no disponible a largo plazo
-        available: false, // Se marca como no disponible para que no aparezca en el menu para clientes
-      })
-      setSnackbar({
-        open: true,
-        message: 'Item marcado como no disponible a largo plazo.',
-        severity: 'success',
-      })
-    } catch (error) {
-      console.error(error)
-      setSnackbar({
-        open: true,
-        message: 'Error al actualizar el item.',
-        severity: 'error',
-      })
+/* =====================================================
+   COMPONENTES AUXILIARES
+===================================================== */
+
+// Componente para agregar y eliminar imágenes individualmente
+const ImageInputList: React.FC<{
+  images: string[]
+  onChange: (imgs: string[]) => void
+}> = ({ images, onChange }) => {
+  const [newUrl, setNewUrl] = useState<string>('')
+
+  const addImage = () => {
+    if (newUrl.trim() !== '') {
+      onChange([...images, newUrl.trim()])
+      setNewUrl('')
     }
   }
 
-  const handleSubmit = async (values: Partial<MenuItem>) => {
-    try {
-      if (selectedItem) {
-        await updateDoc(doc(db, COLLECTIONS.MENU, selectedItem.id), values)
-        setSnackbar({
-          open: true,
-          message: 'Item actualizado exitosamente.',
-          severity: 'success',
-        })
-      } else {
-        await addDoc(collection(db, COLLECTIONS.MENU), values)
-        setSnackbar({
-          open: true,
-          message: 'Item agregado exitosamente.',
-          severity: 'success',
-        })
-      }
-      handleCloseModal()
-    } catch (error) {
-      console.error(error)
-      setSnackbar({
-        open: true,
-        message: 'Error al guardar el item.',
-        severity: 'error',
-      })
-    }
-  }
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false })
-  }
-
-  // Función para agregar datos de ejemplo
-  const handleAddSampleData = async () => {
-    setLoadingSampleData(true)
-    setSnackbar({
-      open: true,
-      message: 'Agregando datos de ejemplo...',
-      severity: 'success',
-    })
-    try {
-      const sampleMenuItems = generateSampleMenuItems()
-      const menuCollectionRef = collection(db, COLLECTIONS.MENU)
-      for (const item of sampleMenuItems) {
-        await addDoc(menuCollectionRef, item)
-      }
-      setSnackbar({
-        open: true,
-        message: 'Datos de ejemplo agregados exitosamente!',
-        severity: 'success',
-      })
-    } catch (error) {
-      console.error('Error al agregar datos de ejemplo:', error)
-      setSnackbar({
-        open: true,
-        message: 'Error al agregar datos de ejemplo.',
-        severity: 'error',
-      })
-    } finally {
-      setLoadingSampleData(false)
-    }
-  }
-
-  const generateSampleMenuItems = () => {
-    return [
-      {
-        name: 'Hamburguesa Clásica',
-        description: 'Carne de res, queso cheddar, lechuga, tomate y cebolla.',
-        price: 28000, // COP Approx. $8.99 USD
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Hamburguesas',
-        observations: 'Se puede pedir sin cebolla.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Pizza Margarita Personal',
-        description: 'Salsa de tomate, mozzarella fresca y albahaca.',
-        price: 35000, // COP Approx. $12.5 USD (Adjusted for personal size)
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Pizzas',
-        observations: 'Opción vegana disponible con queso de almendras.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Pizza Margarita Familiar',
-        description: 'Salsa de tomate, mozzarella fresca y albahaca.',
-        price: 65000, // COP Approx. $12.5 USD (Adjusted for family size)
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Pizzas',
-        observations: 'Opción vegana disponible con queso de almendras.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Ensalada César',
-        description: 'Lechuga romana, crutones, parmesano y aderezo César.',
-        price: 22000, // COP Approx. $6.75 USD
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Ensaladas',
-        observations: 'Se puede añadir pollo a la parrilla.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Pasta Carbonara',
-        description: 'Spaghetti, huevo, panceta, queso pecorino romano y pimienta negra.',
-        price: 32000, // COP Approx. $10.2 USD
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Pastas',
-        observations: 'Sin gluten disponible con pasta de arroz.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Tacos al Pastor (3 unidades)',
-        description:
-          'Carne de cerdo adobada, piña, cebolla y cilantro, en tortilla de maíz. Orden de 3 tacos.',
-        price: 30000, // COP Approx. $9.5 USD (for 3 tacos)
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Tacos',
-        observations: 'Picante medio.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Sushi Variado (12 piezas)',
-        description: 'Selección de nigiris y makis variados. 12 piezas.',
-        price: 50000, // COP Approx. $15.99 USD
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Sushi',
-        observations: 'Incluye salsa de soya, wasabi y jengibre.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Pollo Frito Individual',
-        description: '1 presa grande de pollo frito, crujiente y jugoso.',
-        price: 15000, // COP - Individual piece
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Pollos',
-        observations: 'Opción extra crujiente disponible.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Combo Pollo Frito Personal',
-        description: '2 presas de pollo frito, papas fritas pequeñas y gaseosa personal.',
-        price: 30000, // COP - Personal combo
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Combos de Pollo',
-        observations: 'Incluye gaseosa personal a elección.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Combo Pollo Frito Familiar',
-        description:
-          '6 presas de pollo frito, papas fritas familiares, ensalada coleslaw familiar y gaseosa 1.5L.',
-        price: 85000, // COP - Family combo
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Combos de Pollo',
-        observations: 'Ideal para compartir en familia.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Pollo Asado Entero',
-        description: 'Pollo entero asado al carbón, jugoso y lleno de sabor.',
-        price: 55000, // COP - Whole roasted chicken
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Pollos',
-        observations: 'Perfecto para compartir.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Sopa de Tomate',
-        description: 'Sopa cremosa de tomate, hecha en casa.',
-        price: 18000, // COP Approx. $5.5 USD
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Sopas',
-        observations: 'Servida con pan tostado.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Brownie con Helado',
-        description: 'Brownie de chocolate caliente con helado de vainilla.',
-        price: 20000, // COP Approx. $6.25 USD
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Postres',
-        observations: 'Se puede pedir sin nueces.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Jugo de Naranja',
-        description: 'Jugo de naranja natural, recién exprimido.',
-        price: 8000, // COP
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Bebidas',
-        observations: 'Sin azúcar añadida.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Limonada Natural',
-        description: 'Limonada refrescante, preparada al momento.',
-        price: 7000, // COP
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Bebidas',
-        observations: 'Puedes pedirla endulzada o sin azúcar.',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Coca-Cola Personal',
-        description: 'Gaseosa Coca-Cola en presentación personal.',
-        price: 5000, // COP
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Gaseosas',
-        observations: '',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Sprite Personal',
-        description: 'Gaseosa Sprite en presentación personal.',
-        price: 5000, // COP
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Gaseosas',
-        observations: '',
-        availabilityStatus: 'disponible',
-      },
-      {
-        name: 'Agua con gas Personal',
-        description: 'Agua con gas en presentación personal.',
-        price: 4000, // COP
-        imageUrl: 'https://tofuu.getjusto.com/orioneat-local/resized2/6GwfDxr96Ey4RnvzH-300-x.webp',
-        available: true,
-        recommendation: 'Bebidas',
-        observations: '',
-        availabilityStatus: 'disponible',
-      },
-    ]
+  const removeImage = (index: number) => {
+    const updated = images.filter((_, i) => i !== index)
+    onChange(updated)
   }
 
   return (
-    <Container className="my-3">
-      <div className="flex justify-between items-center mb-4">
-        <Button variant="contained" color="primary" onClick={handleOpenModal} className="">
-          Agregar Item
-        </Button>
-        {/* Botón "Agregar datos de ejemplo" condicional */}
-        {(userRole === 'admin' || userRole === 'encargado') && (
-          <Button
-            variant="contained"
-            color="success"
-            onClick={void handleAddSampleData}
-            disabled={loadingSampleData}
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
+      <div className="space-y-2">
+        {images.map((url, index) => (
+          <div key={index} className="flex items-center border rounded p-1 bg-gray-50">
+            <input
+              type="text"
+              value={url}
+              readOnly
+              className="flex-1 p-1 bg-transparent focus:outline-none text-sm"
+            />
+            <button type="button" onClick={() => removeImage(index)} className="text-red-500 px-2">
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="mt-2 flex gap-2">
+        <input
+          type="text"
+          value={newUrl}
+          onChange={(e) => setNewUrl(e.target.value)}
+          placeholder="Nueva URL de imagen"
+          className="flex-1 p-1 border rounded focus:outline-none text-sm"
+        />
+        <button
+          type="button"
+          onClick={addImage}
+          className="bg-blue-500 text-white px-3 py-1 rounded text-sm"
+        >
+          Agregar
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// Componente para gestionar costos adicionales
+const AdditionalCostsInput: React.FC<{
+  costs: AdditionalCost[]
+  onChange: (costs: AdditionalCost[]) => void
+}> = ({ costs, onChange }) => {
+  const [desc, setDesc] = useState<string>('')
+  const [amount, setAmount] = useState<number>(0)
+
+  const addCost = () => {
+    if (desc.trim() !== '' && amount > 0) {
+      onChange([...costs, { description: desc.trim(), amount }])
+      setDesc('')
+      setAmount(0)
+    }
+  }
+
+  const removeCost = (index: number) => {
+    const updated = costs.filter((_, i) => i !== index)
+    onChange(updated)
+  }
+
+  return (
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-gray-700 mb-1">Costos adicionales</label>
+      {costs.length > 0 && (
+        <ul className="space-y-1">
+          {costs.map((cost, index) => (
+            <li
+              key={index}
+              className="flex items-center justify-between border p-1 rounded bg-gray-50 text-sm"
+            >
+              <span>
+                {cost.description}:{' '}
+                {cost.amount.toLocaleString('es-CO', {
+                  style: 'currency',
+                  currency: 'COP',
+                  minimumFractionDigits: 0,
+                })}
+              </span>
+              <button type="button" onClick={() => removeCost(index)} className="text-red-500 px-2">
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="mt-2 grid grid-cols-2 gap-2">
+        <input
+          type="text"
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+          placeholder="Descripción"
+          className="p-1 border rounded focus:outline-none text-sm"
+        />
+        <input
+          type="number"
+          min="0"
+          value={amount || ''}
+          onChange={(e) => setAmount(Number(e.target.value))}
+          placeholder="Monto"
+          className="p-1 border rounded focus:outline-none text-sm"
+        />
+      </div>
+      <button
+        type="button"
+        onClick={addCost}
+        className="mt-2 bg-blue-500 text-white px-3 py-1 rounded text-sm"
+      >
+        Agregar costo
+      </button>
+    </div>
+  )
+}
+
+// Componente Carousel sencillo para mostrar imágenes con animación
+const Carousel: React.FC<{ images: string[] }> = ({ images }) => {
+  const imgs = images || []
+  const [current, setCurrent] = useState(0)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    if (imgs.length === 0) return
+    const next = () => {
+      setCurrent((prev) => (prev + 1) % imgs.length)
+    }
+    timeoutRef.current = setInterval(next, 3000)
+    return () => {
+      if (timeoutRef.current) clearInterval(timeoutRef.current)
+    }
+  }, [imgs])
+
+  if (imgs.length === 0) {
+    return (
+      <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+        <span className="text-gray-500 text-sm">Sin imagen</span>
+      </div>
+    )
+  }
+  return (
+    <div className="relative">
+      <img
+        src={imgs[current]}
+        alt="Producto"
+        className="w-full h-48 object-cover transition-all duration-500"
+      />
+    </div>
+  )
+}
+
+/* =====================================================
+   COMPONENTE PRINCIPAL: GestionMenu
+===================================================== */
+const GestionMenu: React.FC = () => {
+  // Estados principales
+  const [menuItems, setMenuItems] = useState<MenuItemType[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [modalOpen, setModalOpen] = useState<boolean>(false)
+  const [editingItem, setEditingItem] = useState<MenuItemType | null>(null)
+  const [formValues, setFormValues] = useState<Partial<MenuItemType>>(initialFormValues)
+  const [alert, setAlert] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  // Validaciones reactivas por campo
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({})
+  // Modo: 'item' o 'combo'
+  const [mode, setMode] = useState<'item' | 'combo'>('item')
+  // Para combos: flujo en 2 pasos
+  const [comboStep, setComboStep] = useState<number>(1)
+
+  /* --- CARGA DE DATOS --- */
+  useEffect(() => {
+    const fetchMenu = async () => {
+      setLoading(true)
+      try {
+        const querySnapshot = await getDocs(collection(db, COLLECTIONS.MENU))
+        const items: MenuItemType[] = querySnapshot.docs.map((docSnap) => ({
+          id: docSnap.id,
+          ...docSnap.data(),
+        })) as MenuItemType[]
+        setMenuItems(items)
+      } catch (error) {
+        console.error('Error al cargar el menú:', error)
+        setAlert({ type: 'error', message: 'Error al cargar el menú' })
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchMenu()
+  }, [])
+  const handleBulkDeleteMenu = async () => {
+    const success = await deleteAllMenuItems()
+    if (success) {
+      // Recargar menú si la eliminación fue exitosa
+      fetchMenu()
+    }
+  }
+
+  const handleBulkCreateDefaultMenu = async () => {
+    const success = await createDefaultMenuItemsAndCombos()
+    if (success) {
+      // Recargar menú si la creación fue exitosa
+      fetchMenu()
+    }
+  }
+  /* --- VALIDACIONES REACTIVAS --- */
+  useEffect(() => {
+    const errors: { [key: string]: string } = {}
+    // Validaciones generales
+    if (!formValues.name || formValues.name.trim() === '') {
+      errors.name = 'El nombre es obligatorio'
+    }
+    if (formValues.price !== undefined && formValues.price < 0) {
+      errors.price = 'El precio no puede ser negativo'
+    }
+    if (formValues.cost !== undefined && formValues.cost < 0) {
+      errors.cost = 'El costo no puede ser negativo'
+    }
+    if (formValues.points !== undefined && formValues.points < 0) {
+      errors.points = 'Los puntos no pueden ser negativos'
+    }
+    // Validaciones para combos
+    if (mode === 'combo') {
+      if (!formValues.components || formValues.components.length === 0) {
+        errors.components = 'Debes seleccionar al menos un producto para el combo' // Mensaje más descriptivo
+      }
+      const baseCost = computeBaseCost()
+      if ((Number(formValues.comboSellingPrice) || 0) < baseCost) {
+        errors.comboSellingPrice =
+          'El precio de venta del combo no puede ser menor que la suma de los costos base' // Mensaje más claro
+      }
+      const compPoints = computeComponentsPoints()
+      if ((Number(formValues.comboPoints) || 0) < compPoints) {
+        errors.comboPoints =
+          'Los puntos del combo no pueden ser menores que la suma de los puntos de los productos' // Mensaje más claro
+      }
+      if (formValues.comboSellingPrice !== undefined && formValues.comboSellingPrice < 0) {
+        // Validación precio combo negativo
+        errors.comboSellingPrice = 'El precio de venta del combo no puede ser negativo'
+      }
+      if (formValues.comboPoints !== undefined && formValues.comboPoints < 0) {
+        // Validación puntos combo negativos
+        errors.comboPoints = 'Los puntos del combo no pueden ser negativos'
+      }
+    }
+    setFormErrors(errors)
+  }, [formValues, mode])
+
+  /* --- MANEJO DEL FORMULARIO --- */
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormValues((prev) => ({
+      ...prev,
+      [name]:
+        name === 'price' ||
+        name === 'cost' ||
+        name === 'points' ||
+        name === 'minimumPrice' ||
+        name === 'comboSellingPrice' ||
+        name === 'comboPoints'
+          ? Number(value) || 0
+          : value,
+    }))
+  }
+
+  // Cambio entre modos (producto o combo)
+  const handleModeChange = (newMode: 'item' | 'combo') => {
+    setMode(newMode)
+    if (newMode === 'combo') {
+      setComboStep(1)
+    }
+    setFormValues((prev) => ({
+      ...prev,
+      isCombo: newMode === 'combo',
+      components: newMode === 'item' ? [] : prev.components,
+      minimumPrice: newMode === 'item' ? 0 : prev.minimumPrice,
+      comboSellingPrice: newMode === 'item' ? 0 : prev.comboSellingPrice,
+      comboPoints: newMode === 'item' ? 0 : prev.comboPoints,
+      additionalCosts: [],
+    }))
+  }
+
+  // Selección de productos para el combo (solo productos individuales)
+  const handleComponentToggle = (componentId: string) => {
+    const current = formValues.components || []
+    if (current.includes(componentId)) {
+      setFormValues((prev) => ({
+        ...prev,
+        components: current.filter((id) => id !== componentId),
+      }))
+    } else {
+      setFormValues((prev) => ({
+        ...prev,
+        components: [...current, componentId],
+      }))
+    }
+  }
+
+  // Funciones para calcular totales a partir de los productos seleccionados
+  const computeBaseCost = () => {
+    if (!formValues.components || menuItems.length === 0) return 0
+    const compCost = menuItems
+      .filter((item) => !item.isCombo && formValues.components.includes(item.id))
+      .reduce((sum, item) => sum + (Number(item.cost) || 0), 0)
+    const additional = formValues.additionalCosts
+      ? formValues.additionalCosts.reduce((sum, cost) => sum + (Number(cost.amount) || 0), 0)
+      : 0
+    return compCost + additional
+  }
+
+  const computeSuggestedSellingPrice = () => {
+    if (!formValues.components || menuItems.length === 0) return 0
+    const sumPrice = menuItems
+      .filter((item) => !item.isCombo && formValues.components.includes(item.id))
+      .reduce((sum, item) => sum + (Number(item.price) || 0), 0)
+    const additional = formValues.additionalCosts
+      ? formValues.additionalCosts.reduce((sum, cost) => sum + (Number(cost.amount) || 0), 0)
+      : 0
+    return sumPrice + additional
+  }
+
+  const computeComponentsPoints = () => {
+    if (!formValues.components || menuItems.length === 0) return 0
+    return menuItems
+      .filter((item) => !item.isCombo && formValues.components.includes(item.id))
+      .reduce((sum, item) => sum + (Number(item.points) || 0), 0)
+  }
+
+  // Nueva función para calcular puntos sugeridos del combo (similar a computeSuggestedSellingPrice pero con puntos)
+  const computeSuggestedPoints = () => {
+    if (!formValues.components || menuItems.length === 0) return 0
+    return menuItems
+      .filter((item) => !item.isCombo && formValues.components.includes(item.id))
+      .reduce((sum, item) => sum + (Number(item.points) || 0), 0)
+  }
+
+  /* --- APERTURA Y EDICIÓN DEL MODAL --- */
+  const openAddModal = (newMode: 'item' | 'combo') => {
+    handleModeChange(newMode)
+    setFormValues({ ...initialFormValues, isCombo: newMode === 'combo' })
+    setEditingItem(null)
+    setModalOpen(true)
+  }
+
+  const openEditModal = (item: MenuItemType) => {
+    setEditingItem(item)
+    setMode(item.isCombo ? 'combo' : 'item')
+    // Para combo editado, ir directamente a la vista final (paso 2)
+    if (item.isCombo) {
+      setComboStep(2)
+    }
+    setFormValues(item)
+    setModalOpen(true)
+  }
+
+  /* --- OPERACIONES CON FIRESTORE --- */
+  const handleDelete = async (item: MenuItemType) => {
+    if (window.confirm(`¿Eliminar el item "${item.name}"?`)) {
+      try {
+        await deleteDoc(doc(db, COLLECTIONS.MENU, item.id))
+        setMenuItems((prev) => prev.filter((i) => i.id !== item.id))
+        setAlert({ type: 'success', message: 'Item eliminado correctamente' })
+      } catch (error) {
+        console.error(error)
+        setAlert({ type: 'error', message: 'Error al eliminar el item' })
+      }
+    }
+  }
+
+  const handleSave = async () => {
+    if (Object.keys(formErrors).length > 0) {
+      setAlert({
+        type: 'error',
+        message: 'Corrige los errores antes de guardar',
+      })
+      return
+    }
+    if (!formValues.name || formValues.name.trim() === '') {
+      setAlert({ type: 'error', message: 'El nombre es obligatorio' })
+      return
+    }
+    try {
+      if (editingItem) {
+        await updateDoc(doc(db, COLLECTIONS.MENU, editingItem.id), formValues)
+        setMenuItems((prev) =>
+          prev.map((i) =>
+            i.id === editingItem.id ? ({ ...i, ...formValues } as MenuItemType) : i,
+          ),
+        )
+        setAlert({ type: 'success', message: 'Item actualizado correctamente' })
+      } else {
+        const docRef = await addDoc(collection(db, COLLECTIONS.MENU), formValues)
+        setMenuItems((prev) => [...prev, { id: docRef.id, ...formValues } as MenuItemType])
+        setAlert({ type: 'success', message: 'Item agregado correctamente' })
+      }
+      setModalOpen(false)
+    } catch (error: any) {
+      console.error(error)
+      setAlert({ type: 'error', message: error.message || 'Error al guardar el item' })
+    }
+  }
+
+  const handleMarkUnavailable = async (
+    item: MenuItemType,
+    type: 'noDisponibleMomento' | 'noDisponibleLargoPlazo',
+  ) => {
+    try {
+      await updateDoc(doc(db, COLLECTIONS.MENU, item.id), {
+        availabilityStatus: type,
+        available: false,
+      })
+      setMenuItems((prev) =>
+        prev.map((i) =>
+          i.id === item.id
+            ? ({ ...i, availabilityStatus: type, available: false } as MenuItemType)
+            : i,
+        ),
+      )
+      setAlert({
+        type: 'success',
+        message:
+          type === 'noDisponibleMomento'
+            ? 'Item marcado como no disponible ahora'
+            : 'Item marcado como no disponible a largo plazo',
+      })
+    } catch (error: any) {
+      console.error(error)
+      setAlert({
+        type: 'error',
+        message: error.message || 'Error al actualizar la disponibilidad',
+      })
+    }
+  }
+
+  const closeAlert = () => setAlert(null)
+
+  // Helper para formatear precios
+  const formatPrice = (value: number | undefined) => {
+    const num = Number(value)
+    if (isNaN(num)) return 'N/A'
+    return num.toLocaleString('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0,
+    })
+  }
+
+  /* =====================================================
+     RENDERIZADO PRINCIPAL
+  ====================================================== */
+  return (
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+      <header className="mb-8 text-center">
+        <h1 className="text-3xl font-bold text-gray-800">Gestionar Menú</h1>
+      </header>
+
+      {alert && (
+        <div
+          className={`mb-4 p-3 rounded flex justify-between items-center ${
+            alert.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}
+        >
+          <span>{alert.message}</span>
+          <button onClick={closeAlert} className="font-bold text-xl">
+            ×
+          </button>
+        </div>
+      )}
+
+      <div className="flex flex-col sm:flex-row sm:justify-between mb-4 gap-2">
+        <div className="flex space-x-2">
+          <button
+            onClick={() => openAddModal('item')}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded flex-1"
           >
-            {loadingSampleData ? 'Cargando Menú...' : 'Cargar Menú Ejemplo'}
-          </Button>
-        )}
+            Nuevo Producto
+          </button>
+          <button
+            onClick={() => openAddModal('combo')}
+            className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded flex-1"
+          >
+            Nuevo Combo
+          </button>
+        </div>
+        {/* Aquí se agregan los nuevos botones */}
+        <div className="flex space-x-2 mt-2 sm:mt-0">
+          <button
+            onClick={handleBulkDeleteMenu}
+            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded flex-1"
+          >
+            Eliminar Todo el Menú
+          </button>
+          <button
+            onClick={handleBulkCreateDefaultMenu}
+            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex-1"
+          >
+            Crear Menú por Defecto
+          </button>
+        </div>
       </div>
 
-      <MenuList menu={menu} onEdit={handleEdit} onDelete={handleDelete} />
-      <MenuModal
-        open={openModal}
-        onClose={handleCloseModal} // Pass handleCloseModal as onClose
-        initialValues={selectedItem || undefined}
-        onSubmit={handleSubmit}
-      />
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Container>
+      {loading ? (
+        <p className="text-center text-gray-600">Cargando menú...</p>
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {menuItems.map((item) => (
+            <div key={item.id} className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="relative">
+                <Carousel images={item.imageUrls ?? []} />
+                <div className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                  {item.availabilityStatus === 'disponible'
+                    ? 'Disponible'
+                    : item.availabilityStatus === 'noDisponibleMomento'
+                      ? 'No Disponible Ahora'
+                      : 'No Disponible a Largo Plazo'}
+                </div>
+              </div>
+              <div className="p-4">
+                <h2 className="text-xl font-semibold text-gray-800">{item.name}</h2>
+                <p className="text-gray-600 text-sm mt-1">{item.description}</p>
+                <div className="mt-2">
+                  <span className="font-medium text-gray-700">Precio:</span>{' '}
+                  <span className="text-gray-900">{formatPrice(item.price)}</span>
+                </div>
+                <div className="mt-1">
+                  <span className="font-medium text-gray-700">Costo:</span>{' '}
+                  <span className="text-gray-900">{formatPrice(item.cost)}</span>
+                </div>
+                <div className="mt-1">
+                  <span className="font-medium text-gray-700">Puntos:</span>{' '}
+                  <span className="text-gray-900">{item.points}</span>
+                </div>
+                {item.isCombo && (
+                  <div className="mt-2 p-2 border rounded bg-gray-50">
+                    <p className="text-sm font-medium text-gray-800 mb-1">Combo</p>
+                    <p className="text-xs text-gray-600">
+                      Componentes:{' '}
+                      {item.components &&
+                        item.components
+                          .map((compId) => {
+                            const comp = menuItems.find((m) => m.id === compId)
+                            return comp ? comp.name : ''
+                          })
+                          .join(', ')}
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Base:{' '}
+                      <span className="bg-red-100 px-1 rounded">{formatPrice(item.cost)}</span> |
+                      Mínimo:{' '}
+                      <span className="bg-red-100 px-1 rounded">
+                        {formatPrice(item.minimumPrice || 0)}
+                      </span>
+                    </p>
+                    <p className="text-xs text-gray-600">
+                      Venta: {formatPrice(item.comboSellingPrice || item.price)} | Puntos:{' '}
+                      {item.comboPoints || item.points}
+                    </p>
+                  </div>
+                )}
+                <div className="flex flex-wrap justify-between mt-4 gap-2">
+                  <button
+                    onClick={() => openEditModal(item)}
+                    className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded text-sm flex-1"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item)}
+                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded text-sm flex-1"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div className="flex flex-wrap justify-between mt-2 gap-2">
+                  <button
+                    onClick={() => handleMarkUnavailable(item, 'noDisponibleMomento')}
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-1 px-3 rounded text-xs flex-1"
+                  >
+                    No Disponible Ahora
+                  </button>
+                  <button
+                    onClick={() => handleMarkUnavailable(item, 'noDisponibleLargoPlazo')}
+                    className="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-xs flex-1"
+                  >
+                    No Disponible Largo Plazo
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* MODAL: Agregar/Editar Producto o Combo */}
+      {modalOpen && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 overflow-y-auto"
+          onClick={() => setModalOpen(false)}
+        >
+          <div
+            className="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 my-4 mx-2 overflow-y-auto max-h-[90vh] animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-800">
+                {editingItem ? 'Editar Item' : 'Agregar Item'}
+              </h2>
+              {/* Botones para seleccionar modo */}
+              <div className="flex space-x-2">
+                <button
+                  onClick={() => handleModeChange('item')}
+                  className={`py-1 px-3 rounded ${
+                    mode === 'item' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
+                  }`}
+                >
+                  Producto
+                </button>
+                <button
+                  onClick={() => handleModeChange('combo')}
+                  className={`py-1 px-3 rounded ${
+                    mode === 'combo' ? 'bg-purple-500 text-white' : 'bg-gray-200 text-gray-700'
+                  }`}
+                >
+                  Combo
+                </button>
+              </div>
+            </div>
+
+            {Object.keys(formErrors).length > 0 && (
+              <div className="mb-4 p-2 bg-red-50 border border-red-200 text-red-600 text-sm rounded">
+                Corrige los errores en el formulario.
+              </div>
+            )}
+
+            {mode === 'combo' ? (
+              <>
+                {comboStep === 1 ? (
+                  // Paso 1: Selección de productos e imágenes
+                  <div className="space-y-4">
+                    <p className="text-lg font-semibold text-gray-700">
+                      Paso 1: Selecciona los productos para el combo
+                    </p>
+                    {formErrors.components && (
+                      <p className="text-red-500 text-xs">{formErrors.components}</p>
+                    )}
+                    <div className="max-h-60 overflow-y-auto border rounded p-2">
+                      {menuItems
+                        .filter((item) => !item.isCombo)
+                        .map((item) => (
+                          <label key={item.id} className="flex items-center space-x-2 mb-1">
+                            <input
+                              type="checkbox"
+                              checked={formValues.components?.includes(item.id) || false}
+                              onChange={() => handleComponentToggle(item.id)}
+                              className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                            />
+                            <span className="text-sm text-gray-700">
+                              {item.name} ({formatPrice(item.cost)})
+                            </span>
+                          </label>
+                        ))}
+                    </div>
+                    {/* Resumen de productos seleccionados */}
+                    {formValues.components && formValues.components.length > 0 && (
+                      <div className="mt-4 p-2 border rounded bg-white shadow">
+                        <p className="font-semibold text-gray-700 mb-1">Productos Seleccionados:</p>
+                        <ul className="divide-y divide-gray-200 text-sm">
+                          {formValues.components.map((compId) => {
+                            const product = menuItems.find((m) => m.id === compId)
+                            if (!product) return null
+                            return (
+                              <li key={compId} className="flex justify-between py-1">
+                                <span>{product.name}</span>
+                                <span>{formatPrice(product.cost)}</span>
+                              </li>
+                            )
+                          })}
+                        </ul>
+                        <div className="mt-2 text-right font-bold text-red-600">
+                          Total Base: {formatPrice(computeBaseCost())}
+                        </div>
+                      </div>
+                    )}
+                    {/* Agregar imágenes para el combo */}
+                    <ImageInputList
+                      images={formValues.imageUrls || []}
+                      onChange={(imgs) => setFormValues((prev) => ({ ...prev, imageUrls: imgs }))}
+                    />
+                    <div className="flex justify-end space-x-4">
+                      <button
+                        onClick={() => setModalOpen(false)}
+                        className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                        type="button"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (!formValues.components || formValues.components.length === 0) {
+                            setAlert({
+                              type: 'error',
+                              message: 'Debes seleccionar al menos un producto.',
+                            })
+                          } else {
+                            // Pre-cargar sugerencias: precio de venta sugerido y puntos sugeridos
+                            setFormValues((prev) => ({
+                              ...prev,
+                              comboSellingPrice: computeSuggestedSellingPrice(),
+                              comboPoints: computeSuggestedPoints(), // Usar la función correcta aquí
+                            }))
+                            setComboStep(2)
+                            setAlert(null)
+                          }
+                        }}
+                        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                        type="button"
+                      >
+                        Siguiente
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  // Paso 2: Ingresar información básica, costos adicionales y preview
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={formValues.name || ''}
+                        onChange={handleChange}
+                        className="mt-1 block w-full p-2 border rounded focus:outline-none"
+                      />
+                      {formErrors.name && (
+                        <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                      <textarea
+                        name="description"
+                        value={formValues.description || ''}
+                        onChange={handleChange}
+                        className="mt-1 block w-full p-2 border rounded focus:outline-none"
+                      ></textarea>
+                    </div>
+                    <AdditionalCostsInput
+                      costs={formValues.additionalCosts || []}
+                      onChange={(costs) =>
+                        setFormValues((prev) => ({ ...prev, additionalCosts: costs }))
+                      }
+                    />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Precio de Venta del Combo
+                        </label>
+                        <input
+                          type="number"
+                          name="comboSellingPrice"
+                          min="0"
+                          value={formValues.comboSellingPrice || 0}
+                          onChange={handleChange}
+                          className="mt-1 block w-full p-2 border rounded focus:outline-none"
+                        />
+                        {formErrors.comboSellingPrice && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {formErrors.comboSellingPrice}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700">
+                          Puntos del Combo
+                        </label>
+                        <input
+                          type="number"
+                          name="comboPoints"
+                          min="0"
+                          value={formValues.comboPoints || 0}
+                          onChange={handleChange}
+                          className="mt-1 block w-full p-2 border rounded focus:outline-none"
+                        />
+                        {formErrors.comboPoints && (
+                          <p className="text-red-500 text-xs mt-1">{formErrors.comboPoints}</p>
+                        )}
+                      </div>
+                    </div>
+                    {/* Preview del combo */}
+                    <div className="p-4 border rounded bg-gray-50 shadow">
+                      <p className="font-semibold text-gray-700 mb-1">Preview del Combo</p>
+                      <p className="text-sm text-gray-600">
+                        <strong>Nombre:</strong> {formValues.name || '(Sin nombre)'}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        <strong>Descripción:</strong>{' '}
+                        {formValues.description || '(Sin descripción)'}
+                      </p>
+                      <div className="mt-2">
+                        <p className="text-sm font-semibold text-gray-700">
+                          Productos Seleccionados:
+                        </p>
+                        <ul className="divide-y divide-gray-200 text-sm">
+                          {formValues.components?.map((compId) => {
+                            const product = menuItems.find((m) => m.id === compId)
+                            if (!product) return null
+                            return (
+                              <li key={compId} className="flex justify-between py-1">
+                                <span>{product.name}</span>
+                                <span>{formatPrice(product.cost)}</span>
+                              </li>
+                            )
+                          })}
+                        </ul>
+                      </div>
+                      <div className="mt-2">
+                        <p className="text-sm text-gray-700">
+                          <strong>Costos adicionales:</strong>{' '}
+                          {formValues.additionalCosts && formValues.additionalCosts.length > 0
+                            ? formValues.additionalCosts
+                                .map(
+                                  (c) =>
+                                    `${c.description}: ${c.amount.toLocaleString('es-CO', {
+                                      style: 'currency',
+                                      currency: 'COP',
+                                      minimumFractionDigits: 0,
+                                    })}`,
+                                )
+                                .join(' | ')
+                            : 'Ninguno'}
+                        </p>
+                      </div>
+                      <div className="mt-2">
+                        <p className="text-sm text-red-600 font-bold">
+                          Costo Base Sugerido: {formatPrice(computeBaseCost())}
+                        </p>
+                        <p className="text-sm text-green-600 font-bold">
+                          Precio de Venta Sugerido: {formatPrice(computeSuggestedSellingPrice())}
+                        </p>
+                        <p className="text-sm text-indigo-600 font-bold">
+                          Puntos Sugeridos: {computeSuggestedPoints()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex justify-between mt-6 space-x-4">
+                      <button
+                        onClick={() => setComboStep(1)}
+                        className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                        type="button"
+                      >
+                        Volver
+                      </button>
+                      <button
+                        onClick={handleSave}
+                        disabled={Object.keys(formErrors).length > 0}
+                        className={`${
+                          Object.keys(formErrors).length > 0
+                            ? 'opacity-50 cursor-not-allowed'
+                            : 'bg-blue-500 hover:bg-blue-600'
+                        } text-white font-bold py-2 px-4 rounded`}
+                        type="button"
+                      >
+                        Guardar Combo
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              // Modo Producto: formulario único
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Nombre</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formValues.name || ''}
+                    onChange={handleChange}
+                    className="mt-1 block w-full p-2 border rounded focus:outline-none"
+                  />
+                  {formErrors.name && (
+                    <p className="text-red-500 text-xs mt-1">{formErrors.name}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Descripción</label>
+                  <textarea
+                    name="description"
+                    value={formValues.description || ''}
+                    onChange={handleChange}
+                    className="mt-1 block w-full p-2 border rounded focus:outline-none"
+                  ></textarea>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Precio de Venta
+                    </label>
+                    <input
+                      type="number"
+                      name="price"
+                      min="0"
+                      value={formValues.price || 0}
+                      onChange={handleChange}
+                      className="mt-1 block w-full p-2 border rounded focus:outline-none"
+                    />
+                    {formErrors.price && (
+                      <p className="text-red-500 text-xs mt-1">{formErrors.price}</p>
+                    )}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Costo</label>
+                    <input
+                      type="number"
+                      name="cost"
+                      min="0"
+                      value={formValues.cost || 0}
+                      onChange={handleChange}
+                      className="mt-1 block w-full p-2 border rounded focus:outline-none"
+                    />
+                    {formErrors.cost && (
+                      <p className="text-red-500 text-xs mt-1">{formErrors.cost}</p>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Puntos</label>
+                  <input
+                    type="number"
+                    name="points"
+                    min="0"
+                    value={formValues.points || 0}
+                    onChange={handleChange}
+                    className="mt-1 block w-full p-2 border rounded focus:outline-none"
+                  />
+                  {formErrors.points && (
+                    <p className="text-red-500 text-xs mt-1">{formErrors.points}</p>
+                  )}
+                </div>
+                <div className="mt-2">
+                  <ImageInputList
+                    images={formValues.imageUrls || []}
+                    onChange={(imgs) => setFormValues((prev) => ({ ...prev, imageUrls: imgs }))}
+                  />
+                </div>
+                <div className="mt-4">
+                  <AdditionalCostsInput
+                    costs={formValues.additionalCosts || []}
+                    onChange={(costs) =>
+                      setFormValues((prev) => ({ ...prev, additionalCosts: costs }))
+                    }
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Recomendación</label>
+                    <input
+                      type="text"
+                      name="recommendation"
+                      value={formValues.recommendation || ''}
+                      onChange={handleChange}
+                      className="mt-1 block w-full p-2 border rounded focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Observaciones</label>
+                    <input
+                      type="text"
+                      name="observations"
+                      value={formValues.observations || ''}
+                      onChange={handleChange}
+                      className="mt-1 block w-full p-2 border rounded focus:outline-none"
+                    />
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <label className="block text-sm font-medium text-gray-700">Disponibilidad</label>
+                  <div className="flex gap-2 mt-1">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormValues((prev) => ({
+                          ...prev,
+                          availabilityStatus: 'disponible',
+                          available: true,
+                        }))
+                      }
+                      className={`flex-1 py-2 rounded ${
+                        formValues.availabilityStatus === 'disponible'
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      Disponible
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormValues((prev) => ({
+                          ...prev,
+                          availabilityStatus: 'noDisponibleMomento',
+                          available: false,
+                        }))
+                      }
+                      className={`flex-1 py-2 rounded ${
+                        formValues.availabilityStatus === 'noDisponibleMomento'
+                          ? 'bg-yellow-500 text-white'
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      No Disponible Ahora
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setFormValues((prev) => ({
+                          ...prev,
+                          availabilityStatus: 'noDisponibleLargoPlazo',
+                          available: false,
+                        }))
+                      }
+                      className={`flex-1 py-2 rounded ${
+                        formValues.availabilityStatus === 'noDisponibleLargoPlazo'
+                          ? 'bg-red-600 text-white'
+                          : 'bg-gray-200 text-gray-700'
+                      }`}
+                    >
+                      No Disponible Largo Plazo
+                    </button>
+                  </div>
+                </div>
+                <div className="flex justify-end mt-6 space-x-4">
+                  <button
+                    onClick={() => setModalOpen(false)}
+                    className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                    type="button"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={Object.keys(formErrors).length > 0}
+                    className={`${
+                      Object.keys(formErrors).length > 0
+                        ? 'opacity-50 cursor-not-allowed'
+                        : 'bg-blue-500 hover:bg-blue-600'
+                    } text-white font-bold py-2 px-4 rounded`}
+                    type="button"
+                  >
+                    Guardar Producto
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
 export default GestionMenu
+
+/* Fin src\pages\GestionMenu.tsx */
 
 /* Fin src\pages\GestionMenu.tsx */
 
@@ -7563,6 +8164,485 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 /* Fin src\utils\firebase.ts */
+
+/* Inicio src\utils\menu-scripts.ts */
+// src/utils/menu-scripts.ts
+import { addDoc, collection, deleteDoc, doc, getDocs } from 'firebase/firestore';
+import { MenuItemType } from '../context/AppContext'; // Asegúrate de la ruta correcta
+import { COLLECTIONS } from './constants';
+import { auth, db } from './firebase';
+
+export const deleteAllMenuItems = async () => {
+    if (!auth.currentUser) {
+        alert('Debes estar autenticado para eliminar el menú.');
+        return;
+    }
+    if (!window.confirm('¿Estás seguro de que quieres eliminar TODO el menú? Esta acción es irreversible.')) {
+        return;
+    }
+    try {
+        const querySnapshot = await getDocs(collection(db, COLLECTIONS.MENU));
+        const batch = [];
+        querySnapshot.forEach((docSnap) => {
+            batch.push(deleteDoc(doc(db, COLLECTIONS.MENU, docSnap.id)));
+        });
+        await Promise.all(batch);
+        alert('Menú eliminado completamente.');
+        return true; // Indica éxito
+    } catch (error) {
+        console.error('Error al eliminar el menú:', error);
+        alert('Error al eliminar el menú.');
+        return false; // Indica fallo
+    }
+};
+
+export const createDefaultMenuItemsAndCombos = async () => {
+    if (!auth.currentUser) {
+        alert('Debes estar autenticado para crear el menú por defecto.');
+        return;
+    }
+    if (!window.confirm('¿Estás seguro de que quieres crear el menú por defecto? Esto reemplazará el menú actual.')) {
+        return;
+    }
+
+    try {
+        const menuCollection = collection(db, COLLECTIONS.MENU);
+
+        // Productos base
+        const productosBase: Omit<MenuItemType, 'id'>[] = [
+            {
+                name: 'Jugo Natural Naranja',
+                description: 'Jugo refrescante de naranja natural.',
+                price: 8000,
+                cost: 3000,
+                points: 10,
+                imageUrls: ['https://bognermex.com/cdn/shop/articles/500x500.jpg?v=1683239129', 'https://cdnx.jumpseller.com/el-kiosco-golosinas/image/24547259/El_Kiosco_jugos_naturales.jpg?1653862612', 'https://lirp.cdn-website.com/586fb047/dms3rep/multi/opt/jugos+naturales-1920w.jpg'],
+                available: true,
+                recommendation: 'Bebida refrescante',
+                observations: '',
+                availabilityStatus: 'disponible',
+                isCombo: false,
+                components: [],
+                minimumPrice: 0,
+                comboSellingPrice: 0,
+                comboPoints: 0,
+                additionalCosts: [],
+            },
+            {
+                name: 'Jugo Natural Fresa',
+                description: 'Jugo refrescante de fresa natural.',
+                price: 9000,
+                cost: 3500,
+                points: 10,
+                imageUrls: ['https://bognermex.com/cdn/shop/articles/500x500.jpg?v=1683239129', 'https://cdnx.jumpseller.com/el-kiosco-golosinas/image/24547259/El_Kiosco_jugos_naturales.jpg?1653862612', 'https://lirp.cdn-website.com/586fb047/dms3rep/multi/opt/jugos+naturales-1920w.jpg'],
+                available: true,
+                recommendation: 'Bebida dulce y refrescante',
+                observations: '',
+                availabilityStatus: 'disponible',
+                isCombo: false,
+                components: [],
+                minimumPrice: 0,
+                comboSellingPrice: 0,
+                comboPoints: 0,
+                additionalCosts: [],
+            },
+            {
+                name: 'Limonada Natural',
+                description: 'Clásica limonada refrescante.',
+                price: 7000,
+                cost: 2500,
+                points: 10,
+                imageUrls: ['https://www.hersheyland.mx/content/dam/Hersheyland_Mexico/es_mx/recipes/recipe-images/limonada.jpg', 'https://i.blogs.es/27a047/limonadas-variadas/1366_2000.jpg', 'https://i.blogs.es/5b3c0d/1366_2000-1-/1366_2000.jpg'],
+                available: true,
+                recommendation: 'Ideal para acompañar comidas',
+                observations: 'Se puede pedir sin azúcar',
+                availabilityStatus: 'disponible',
+                isCombo: false,
+                components: [],
+                minimumPrice: 0,
+                comboSellingPrice: 0,
+                comboPoints: 0,
+                additionalCosts: [],
+            },
+            {
+                name: 'Limonada Cerezada',
+                description: 'Limonada con un toque dulce de cereza.',
+                price: 8000,
+                cost: 3000,
+                points: 10,
+                imageUrls: ['https://www.hersheyland.mx/content/dam/Hersheyland_Mexico/es_mx/recipes/recipe-images/limonada.jpg', 'https://i.blogs.es/27a047/limonadas-variadas/1366_2000.jpg', 'https://i.blogs.es/5b3c0d/1366_2000-1-/1366_2000.jpg'],
+                available: true,
+                recommendation: 'Dulce y refrescante',
+                observations: '',
+                availabilityStatus: 'disponible',
+                isCombo: false,
+                components: [],
+                minimumPrice: 0,
+                comboSellingPrice: 0,
+                comboPoints: 0,
+                additionalCosts: [],
+            },
+            {
+                name: 'Pollo Broaster Personal',
+                description: 'Delicioso pollo broaster, crujiente y jugoso, porción personal.',
+                price: 15000,
+                cost: 7000,
+                points: 20,
+                imageUrls: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQG3B7ysBd_tXYPFKXQVjss1BipZ9Id-xr2QA&s', 'https://www.gourmet.com.co/wp-content/uploads/2023/12/Gourmet-Pollo-broaster.webp', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-vxztR7cg3LVOqUYHrUVBErD96T17RhL621TK5PE0IfPUXoVLT8sLneFQKeEmVQeYQtc&usqp=CAU'],
+                available: true,
+                recommendation: 'Nuestro plato estrella',
+                observations: '',
+                availabilityStatus: 'disponible',
+                isCombo: false,
+                components: [],
+                minimumPrice: 0,
+                comboSellingPrice: 0,
+                comboPoints: 0,
+                additionalCosts: [],
+            },
+            {
+                name: 'Porción Papas Fritas Pequeña',
+                description: 'Porción pequeña de papas fritas, crujientes y doradas.',
+                price: 6000,
+                cost: 2000,
+                points: 10,
+                imageUrls: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQprKoqyoxNcntQpFeC9Lu1ve5UxUe0Pe6PHg&s', 'https://www.paulinacocina.net/wp-content/uploads/2015/08/p1140112-640x480.jpg', 'https://imagenes.eltiempo.com/files/image_1200_600/uploads/2021/04/15/6078c68c2f49b.jpeg'],
+                available: true,
+                recommendation: 'Acompañante perfecto',
+                observations: 'Se puede pedir con sal o sin sal',
+                availabilityStatus: 'disponible',
+                isCombo: false,
+                components: [],
+                minimumPrice: 0,
+                comboSellingPrice: 0,
+                comboPoints: 0,
+                additionalCosts: [],
+            },
+            {
+                name: 'Alitas BBQ (6 unidades)',
+                description: '6 unidades de alitas de pollo en salsa BBQ.',
+                price: 12000,
+                cost: 5000,
+                points: 10,
+                imageUrls: ['https://assets.unileversolutions.com/recipes-v2/237633.jpg', 'https://cdn0.uncomo.com/es/posts/6/0/7/como_hacer_alitas_bbq_sin_horno_50706_600.jpg', 'https://www.unileverfoodsolutions.com.co/dam/global-ufs/mcos/NOLA/calcmenu/recipes/col-recipies/fruco/ALITAS-SALSA-1024X1024-px.jpg'],
+                available: true,
+                recommendation: 'Para picar y compartir',
+                observations: 'Salsa BBQ casera',
+                availabilityStatus: 'disponible',
+                isCombo: false,
+                components: [],
+                minimumPrice: 0,
+                comboSellingPrice: 0,
+                comboPoints: 0,
+                additionalCosts: [],
+            },
+            {
+                name: 'Alipapas Personal',
+                description: 'Combinación de alitas BBQ (3 unidades) y papas fritas porción personal.',
+                price: 18000,
+                cost: 8000,
+                points: 20,
+                imageUrls: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTE9vs5PvwBQ3EDf3oHaFjNlGTylZQQ76Zpag&s', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7StXb9BxAu9eDibcKlWihfQZKbSD1Aaf0M-mf3ZaxZUQzMvrURw4TJCKyjuU4S5QkeQY&usqp=CAU'],
+                available: true,
+                recommendation: 'Ideal para una persona',
+                observations: '',
+                availabilityStatus: 'disponible',
+                isCombo: false,
+                components: [],
+                minimumPrice: 0,
+                comboSellingPrice: 0,
+                comboPoints: 0,
+                additionalCosts: [],
+            },
+            {
+                name: 'Porción Arroz Pequeña',
+                description: 'Porción pequeña de arroz blanco.',
+                price: 4000,
+                cost: 1500,
+                points: 10,
+                imageUrls: ['https://img.freepik.com/fotos-premium/porcion-arroz-cocido-adornar_219193-12145.jpg', 'https://huertalejandro.com/wp-content/uploads/2020/05/arroz.jpg'],
+                available: true,
+                recommendation: 'Acompañante para platos fuertes',
+                observations: '',
+                availabilityStatus: 'disponible',
+                isCombo: false,
+                components: [],
+                minimumPrice: 0,
+                comboSellingPrice: 0,
+                comboPoints: 0,
+                additionalCosts: [],
+            },
+        ];
+
+        // Combos
+        const combos: Omit<MenuItemType, 'id'>[] = [
+            {
+                name: 'Combo Pollo Jugo',
+                description: '1 Pollo broaster personal + 1 Jugo natural a elección.',
+                price: 20000,
+                cost: 10000,
+                points: 30,
+                imageUrls: ['https://www.gourmet.com.co/wp-content/uploads/2023/12/Gourmet-Pollo-broaster.webp', 'https://lirp.cdn-website.com/586fb047/dms3rep/multi/opt/jugos+naturales-1920w.jpg'],
+                available: true,
+                recommendation: 'Combo clásico y completo',
+                observations: 'Elige el sabor del jugo',
+                availabilityStatus: 'disponible',
+                isCombo: true,
+                components: [], // Se llenará dinámicamente
+                minimumPrice: 0, // Se calculará dinámicamente
+                comboSellingPrice: 20000,
+                comboPoints: 30,
+                additionalCosts: [],
+            },
+            {
+                name: 'Combo Alitas Papas',
+                description: 'Alitas BBQ (6 unidades) + Porción de papas fritas pequeña.',
+                price: 16000,
+                cost: 7000,
+                points: 20,
+                imageUrls: ['https://assets.unileversolutions.com/recipes-v2/237633.jpg', 'https://www.paulinacocina.net/wp-content/uploads/2015/08/p1140112-640x480.jpg'],
+                available: true,
+                recommendation: 'Perfecto para compartir',
+                observations: '',
+                availabilityStatus: 'disponible',
+                isCombo: true,
+                components: [], // Se llenará dinámicamente
+                minimumPrice: 0, // Se calculará dinámicamente
+                comboSellingPrice: 16000,
+                comboPoints: 20,
+                additionalCosts: [],
+            },
+            // ... (Combos adicionales - puedes agregar más siguiendo el mismo patrón)
+            {
+                name: 'Combo Familiar Broaster',
+                description: '2 Pollos broaster personales + 2 Porciones de papas fritas pequeñas + 2 Jugos naturales grandes.',
+                price: 50000,
+                cost: 25000,
+                points: 60,
+                imageUrls: ['https://www.gourmet.com.co/wp-content/uploads/2023/12/Gourmet-Pollo-broaster.webp', 'https://www.paulinacocina.net/wp-content/uploads/2015/08/p1140112-640x480.jpg', 'https://lirp.cdn-website.com/586fb047/dms3rep/multi/opt/jugos+naturales-1920w.jpg'],
+                available: true,
+                recommendation: 'Ideal para familias o grupos',
+                observations: 'Incluye aderezos y salsas',
+                availabilityStatus: 'disponible',
+                isCombo: true,
+                components: [], // Se llenará dinámicamente
+                minimumPrice: 0, // Se calculará dinámicamente
+                comboSellingPrice: 50000,
+                comboPoints: 60,
+                additionalCosts: [],
+            },
+            {
+                name: 'Combo Individual Alipapas',
+                description: '1 Alipapas Personal + 1 Limonada Natural.',
+                price: 24000,
+                cost: 12000,
+                points: 30,
+                imageUrls: ['https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTE9vs5PvwBQ3EDf3oHaFjNlGTylZQQ76Zpag&s', 'https://www.hersheyland.mx/content/dam/Hersheyland_Mexico/es_mx/recipes/recipe-images/limonada.jpg'],
+                available: true,
+                recommendation: 'Opción rápida y deliciosa',
+                observations: '',
+                availabilityStatus: 'disponible',
+                isCombo: true,
+                components: [], // Se llenará dinámicamente
+                minimumPrice: 0, // Se calculará dinámicamente
+                comboSellingPrice: 24000,
+                comboPoints: 30,
+                additionalCosts: [],
+            },
+            {
+                name: 'Combo Doble Pollo',
+                description: '2 Pollos broaster personales + Porción de arroz pequeña.',
+                price: 38000,
+                cost: 18000,
+                points: 40,
+                imageUrls: ['https://www.gourmet.com.co/wp-content/uploads/2023/12/Gourmet-Pollo-broaster.webp', 'https://img.freepik.com/fotos-premium/porcion-arroz-cocido-adornar_219193-12145.jpg'],
+                available: true,
+                recommendation: 'Para compartir o para mucho apetito',
+                observations: 'Incluye salsas',
+                availabilityStatus: 'disponible',
+                isCombo: true,
+                components: [], // Se llenará dinámicamente
+                minimumPrice: 0, // Se calculará dinámicamente
+                comboSellingPrice: 38000,
+                comboPoints: 40,
+                additionalCosts: [],
+            },
+            {
+                name: 'Combo Alitas y Arroz',
+                description: 'Alitas BBQ (6 unidades) + Porción de arroz pequeña.',
+                price: 17000,
+                cost: 8000,
+                points: 20,
+                imageUrls: ['https://assets.unileversolutions.com/recipes-v2/237633.jpg', 'https://img.freepik.com/fotos-premium/porcion-arroz-cocido-adornar_219193-12145.jpg'],
+                available: true,
+                recommendation: 'Combinación sabrosa y económica',
+                observations: '',
+                availabilityStatus: 'disponible',
+                isCombo: true,
+                components: [], // Se llenará dinámicamente
+                minimumPrice: 0, // Se calculará dinámicamente
+                comboSellingPrice: 17000,
+                comboPoints: 20,
+                additionalCosts: [],
+            },
+            {
+                name: 'Super Combo Pollo Completo',
+                description: '2 Pollos broaster personales + Alitas BBQ (6 unidades) + Porción de papas fritas pequeña + 2 Limonadas Cerezadas.',
+                price: 65000,
+                cost: 30000,
+                points: 80,
+                imageUrls: ['https://www.gourmet.com.co/wp-content/uploads/2023/12/Gourmet-Pollo-broaster.webp', 'https://assets.unileversolutions.com/recipes-v2/237633.jpg', 'https://www.paulinacocina.net/wp-content/uploads/2015/08/p1140112-640x480.jpg', 'https://www.hersheyland.mx/content/dam/Hersheyland_Mexico/es_mx/recipes/recipe-images/limonada.jpg'],
+                available: true,
+                recommendation: 'El combo más completo para compartir',
+                observations: 'Incluye todas las salsas y aderezos',
+                availabilityStatus: 'disponible',
+                isCombo: true,
+                components: [], // Se llenará dinámicamente
+                minimumPrice: 0, // Se calculará dinámicamente
+                comboSellingPrice: 65000,
+                comboPoints: 80,
+                additionalCosts: [],
+            },
+            {
+                name: 'Combo Ahorro Alitas',
+                description: 'Alitas BBQ (12 unidades) + Porción de papas fritas pequeña.',
+                price: 22000,
+                cost: 11000,
+                points: 30,
+                imageUrls: ['https://assets.unileversolutions.com/recipes-v2/237633.jpg', 'https://www.paulinacocina.net/wp-content/uploads/2015/08/p1140112-640x480.jpg'],
+                available: true,
+                recommendation: 'Más alitas, más sabor',
+                observations: 'Ideal para reuniones informales',
+                availabilityStatus: 'disponible',
+                isCombo: true,
+                components: [], // Se llenará dinámicamente
+                minimumPrice: 0, // Se calculará dinámicamente
+                comboSellingPrice: 22000,
+                comboPoints: 30,
+                additionalCosts: [],
+            },
+            {
+                name: 'Combo Refrescante Limonada',
+                description: 'Limonada Natural + Porción de papas fritas pequeña.',
+                price: 12000,
+                cost: 5000,
+                points: 10,
+                imageUrls: ['https://www.hersheyland.mx/content/dam/Hersheyland_Mexico/es_mx/recipes/recipe-images/limonada.jpg', 'https://www.paulinacocina.net/wp-content/uploads/2015/08/p1140112-640x480.jpg'],
+                available: true,
+                recommendation: 'Ligero y refrescante',
+                observations: 'Perfecto para días calurosos',
+                availabilityStatus: 'disponible',
+                isCombo: true,
+                components: [], // Se llenará dinámicamente
+                minimumPrice: 0, // Se calculará dinámicamente
+                comboSellingPrice: 12000,
+                comboPoints: 10,
+                additionalCosts: [],
+            },
+            {
+                name: 'Combo Doble Jugo',
+                description: '2 Jugos naturales a elección + Porción de arroz pequeña.',
+                price: 18000,
+                cost: 7000,
+                points: 20,
+                imageUrls: ['https://lirp.cdn-website.com/586fb047/dms3rep/multi/opt/jugos+naturales-1920w.jpg', 'https://img.freepik.com/fotos-premium/porcion-arroz-cocido-adornar_219193-12145.jpg'],
+                available: true,
+                recommendation: 'Para los amantes de los jugos naturales',
+                observations: 'Elige tus sabores favoritos',
+                availabilityStatus: 'disponible',
+                isCombo: true,
+                components: [], // Se llenará dinámicamente
+                minimumPrice: 0, // Se calculará dinámicamente
+                comboSellingPrice: 18000,
+                comboPoints: 20,
+                additionalCosts: [],
+            },
+        ];
+
+        // Añadir productos base
+        const productIdsMap: { [key: string]: string } = {}; // Mapa para guardar IDs de productos base
+        for (const producto of productosBase) {
+            const docRef = await addDoc(menuCollection, producto);
+            productIdsMap[producto.name] = docRef.id; // Guardar ID usando el nombre del producto como clave
+        }
+
+        // Añadir combos y referenciar componentes
+        for (const combo of combos) {
+            const comboComponents: string[] = [];
+            if (combo.name === 'Combo Pollo Jugo') {
+                comboComponents.push(productIdsMap['Pollo Broaster Personal']);
+                comboComponents.push(productIdsMap['Jugo Natural Naranja']); // Puedes elegir un jugo por defecto o dejar la elección al usuario
+            } else if (combo.name === 'Combo Alitas Papas') {
+                comboComponents.push(productIdsMap['Alitas BBQ (6 unidades)']);
+                comboComponents.push(productIdsMap['Porción Papas Fritas Pequeña']);
+            } else if (combo.name === 'Combo Familiar Broaster') {
+                comboComponents.push(productIdsMap['Pollo Broaster Personal']);
+                comboComponents.push(productIdsMap['Pollo Broaster Personal']);
+                comboComponents.push(productIdsMap['Porción Papas Fritas Pequeña']);
+                comboComponents.push(productIdsMap['Porción Papas Fritas Pequeña']);
+                comboComponents.push(productIdsMap['Jugo Natural Naranja']); // Puedes elegir un jugo por defecto o dejar la elección al usuario
+                comboComponents.push(productIdsMap['Jugo Natural Naranja']); // Puedes elegir un jugo por defecto o dejar la elección al usuario
+            } else if (combo.name === 'Combo Individual Alipapas') {
+                comboComponents.push(productIdsMap['Alipapas Personal']);
+                comboComponents.push(productIdsMap['Limonada Natural']);
+            } else if (combo.name === 'Combo Doble Pollo') {
+                comboComponents.push(productIdsMap['Pollo Broaster Personal']);
+                comboComponents.push(productIdsMap['Pollo Broaster Personal']);
+                comboComponents.push(productIdsMap['Porción Arroz Pequeña']);
+            } else if (combo.name === 'Combo Alitas y Arroz') {
+                comboComponents.push(productIdsMap['Alitas BBQ (6 unidades)']);
+                comboComponents.push(productIdsMap['Porción Arroz Pequeña']);
+            } else if (combo.name === 'Super Combo Pollo Completo') {
+                comboComponents.push(productIdsMap['Pollo Broaster Personal']);
+                comboComponents.push(productIdsMap['Pollo Broaster Personal']);
+                comboComponents.push(productIdsMap['Alitas BBQ (6 unidades)']);
+                comboComponents.push(productIdsMap['Porción Papas Fritas Pequeña']);
+                comboComponents.push(productIdsMap['Limonada Cerezada']);
+                comboComponents.push(productIdsMap['Limonada Cerezada']);
+            } else if (combo.name === 'Combo Ahorro Alitas') {
+                comboComponents.push(productIdsMap['Alitas BBQ (6 unidades)']);
+                comboComponents.push(productIdsMap['Alitas BBQ (6 unidades)']);
+                comboComponents.push(productIdsMap['Porción Papas Fritas Pequeña']);
+            } else if (combo.name === 'Combo Refrescante Limonada') {
+                comboComponents.push(productIdsMap['Limonada Natural']);
+                comboComponents.push(productIdsMap['Porción Papas Fritas Pequeña']);
+            } else if (combo.name === 'Combo Doble Jugo') {
+                comboComponents.push(productIdsMap['Jugo Natural Naranja']);
+                comboComponents.push(productIdsMap['Jugo Natural Naranja']);
+                comboComponents.push(productIdsMap['Porción Arroz Pequeña']);
+            }
+
+            const comboToSave = { ...combo, components: comboComponents };
+            await addDoc(menuCollection, comboToSave);
+        }
+
+        alert('Menú por defecto creado exitosamente.');
+        return true; // Indica éxito
+    } catch (error) {
+        console.error('Error al crear el menú por defecto:', error);
+        alert('Error al crear el menú por defecto.');
+        return false; // Indica fallo
+    }
+
+
+};
+
+export const handleBulkDeleteMenu = async () => {
+    const success = await deleteAllMenuItems();
+    if (success) {
+        // Recargar menú si la eliminación fue exitosa
+        fetchMenu();
+    }
+};
+
+export const handleBulkCreateDefaultMenu = async () => {
+    const success = await createDefaultMenuItemsAndCombos();
+    if (success) {
+        // Recargar menú si la creación fue exitosa
+        fetchMenu();
+    }
+};
+/* Fin src\utils\menu-scripts.ts */
 
 /* Inicio src\utils\theme.ts */
 // src/utils/theme.ts
