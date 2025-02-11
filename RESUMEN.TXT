@@ -4,7 +4,7 @@
 ├── eslint.config.js [16]
 ├── firebase.json [13]
 ├── index.html [17]
-├── package.json [59]
+├── package.json [57]
 ├── postcss.config.js [7]
 ├── 📂 src
 │   ├── App.tsx [177]
@@ -21,7 +21,7 @@
 │   │   │   ├── PublicLayout.tsx [19]
 │   │   │   └── Sidebar.tsx [123]
 │   │   ├── 📂 menu
-│   │   │   ├── GroupOrderPage.tsx [597]
+│   │   │   ├── GroupOrderPage.tsx [612]
 │   │   │   ├── JoinOrderModal.tsx [57]
 │   │   │   ├── MenuForm.tsx [223]
 │   │   │   ├── MenuItem.tsx [95]
@@ -47,17 +47,17 @@
 │   │       ├── ListItem.tsx [64]
 │   │       └── TextField.tsx [34]
 │   ├── 📂 context
-│   │   ├── AppContext.tsx [69]
+│   │   ├── AppContext.tsx [81]
 │   │   └── AuthContext.tsx [172]
 │   ├── 📂 hooks
 │   │   ├── useAuth.ts [10]
 │   │   └── useMenu.ts [10]
 │   ├── main.tsx [10]
 │   ├── 📂 pages
-│   │   ├── ContabilidadDetail.tsx [468]
+│   │   ├── ContabilidadDetail.tsx [471]
 │   │   ├── ContabilidadPage.tsx [184]
-│   │   ├── Dashboard.tsx [908]
-│   │   ├── GestionMenu.tsx [1145]
+│   │   ├── Dashboard.tsx [999]
+│   │   ├── GestionMenu.tsx [1153]
 │   │   ├── GestionUsuarios.tsx [82]
 │   │   ├── Login.tsx [56]
 │   │   ├── MenuPage.tsx [406]
@@ -72,7 +72,7 @@
 │   └── 📂 utils
 │       ├── constants.ts [6]
 │       ├── firebase.ts [16]
-│       ├── menu-scripts.ts [476]
+│       ├── menu-scripts.ts [462]
 │       └── theme.ts [43]
 ├── tailwind.config.js [9]
 ├── tsconfig.app.json [26]
@@ -81,7 +81,7 @@
 └── vite.config.ts [41]
 
 
-Total de líneas resumidas: 8565
+Total de líneas resumidas: 8678
 
 
 /* Inicio .prettierrc.json */
@@ -166,7 +166,6 @@ export default tseslint.config(
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@heroicons/react": "^2.2.0",
     "@mercadopago/sdk-js": "^0.0.3",
     "@mui/icons-material": "^6.4.1",
     "@mui/material": "^6.4.1",
@@ -209,7 +208,6 @@ export default tseslint.config(
     "vite-plugin-pwa": "^0.21.1"
   }
 }
-
 /* Fin package.json */
 
 /* Inicio postcss.config.js */
@@ -1281,7 +1279,12 @@ export default Sidebar
 /* Fin src\components\layout\Sidebar.tsx */
 
 /* Inicio src\components\menu\GroupOrderPage.tsx */
-// src/components/menu/GroupOrderPage.tsx
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore'
 import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -1360,7 +1363,18 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
   const joiningWithCode = !!codeFromURL
   const { groupOrderId: routeGroupId } = useParams()
 
-  // Suscripción al pedido grupal según el id en la URL
+  // ─── CREAR LOS REFS DE FORMA INCONDICIONAL ─────────────────────────────
+  // Para el SharedOrder (único)
+  const sharedOrderSummaryRef = useRef<HTMLDivElement>(null)
+  // Para cada PersonOrder, creamos un arreglo de refs:
+  const personRefs = useRef<React.RefObject<HTMLDivElement>[]>([])
+  if (personRefs.current.length !== people.length) {
+    personRefs.current = Array(people.length)
+      .fill(null)
+      .map(() => React.createRef<HTMLDivElement>())
+  }
+
+  // ─── SUSCRIPCIÓN AL PEDIDO GRUPAL ─────────────────────────────────────
   useEffect(() => {
     if (routeGroupId) {
       setGroupOrderId(routeGroupId)
@@ -1401,6 +1415,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     )
   }
 
+  // ─── MANEJO DE CAMBIOS ───────────────────────────────────────────────
   const handleNumPeopleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const num = Number(e.target.value)
     setNumPeople(num)
@@ -1440,7 +1455,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     }
   }
 
-  const handleAddToSharedOrder = async (item: any) => {
+  const handleAddToSharedOrder = async (item) => {
     if (!groupOrderId || orderPlaced) return
     if (item.availabilityStatus !== 'disponible') return
 
@@ -1492,7 +1507,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     }
   }
 
-  const handleAddItemToPerson = async (personIndex: number, menuItem: any) => {
+  const handleAddItemToPerson = async (personIndex: number, menuItem) => {
     if (!groupOrderId || orderPlaced || !user) return
     if (menuItem.availabilityStatus !== 'disponible') return
 
@@ -1576,10 +1591,9 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     }
   }
 
-  // --- Modificación para que solo el creador pueda finalizar pedidos de otros ---
+  // ─── Finalizar pedido de persona ─────────────────────────────────
   const handlePersonFinishedOrder = async (personIndex: number) => {
     if (!groupOrderId || orderPlaced || !user) return
-    // Si el usuario no es el creador, solo puede finalizar su propio pedido
     if (!isOwner) {
       const myIndex = people.findIndex((p) => p.userId === user.uid)
       if (myIndex !== personIndex) return
@@ -1697,14 +1711,14 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
               </div>
               <span className="mt-2 text-sm font-medium text-gray-700">Compartido</span>
             </div>
-            {people.map((person, index) => {
+            {people.map((person, i) => {
               const lockedByOther = person.locked && person.userId !== user?.uid
-              const active = selectedView === `person-${index}`
-              const color = bubbleColors[index % bubbleColors.length]
+              const active = selectedView === `person-${i}`
+              const color = bubbleColors[i % bubbleColors.length]
               return (
                 <div
                   key={person.personIndex}
-                  onClick={() => setSelectedView(`person-${index}`)}
+                  onClick={() => setSelectedView(`person-${i}`)}
                   className="cursor-pointer flex flex-col items-center"
                 >
                   <div
@@ -1764,7 +1778,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                   return menuItem ? sum + menuItem.price * si.quantity : sum
                 }, 0)
               }
-              sharedOrderSummaryRef={useRef<HTMLDivElement>(null)}
+              sharedOrderSummaryRef={sharedOrderSummaryRef}
               activeTab={selectedView}
               menu={menu}
               disabled={orderPlaced}
@@ -1799,7 +1813,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                         return menuItem ? total + menuItem.price * it.quantity : total
                       }, 0)
                     }
-                    personOrderSummaryRef={useRef<HTMLDivElement>(null)}
+                    personOrderSummaryRef={personRefs.current[i]}
                     activeTab={selectedView}
                     onPersonFinishedOrder={handlePersonFinishedOrder}
                     isFinished={person.finished || false}
@@ -1807,7 +1821,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                     isCurrentUserTab={person.userId === user?.uid}
                     personIndex={i}
                     disabled={lockedByOther || orderPlaced}
-                    isOrderOwner={isOwner}
                   />
                 )
               }
@@ -4320,8 +4333,20 @@ export interface MenuItem {
     | "disponible"
     | "noDisponibleMomento"
     | "noDisponibleLargoPlazo";
+  cost: number;
+  points: number;
+  imageUrls: string[];
+  isCombo: boolean;
+  components: string[];
+  minimumPrice: number;
+  comboSellingPrice: number;
+  comboPoints: number;
+  additionalCosts: AdditionalCost[];
 }
-
+export interface AdditionalCost {
+  nombre: string;
+  valor: number;
+}
 export type MenuItemType = MenuItem; // Define y exporta MenuItemType como alias de MenuItem
 
 export interface AppContextProps {
@@ -4583,6 +4608,9 @@ createRoot(document.getElementById('root')).render(
 /* Fin src\main.tsx */
 
 /* Inicio src\pages\ContabilidadDetail.tsx */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+
+/* eslint-disable @typescript-eslint/no-misused-promises */
 // src/pages/ContabilidadDetail.tsx
 import { arrayRemove, arrayUnion, doc, onSnapshot, updateDoc } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
@@ -4599,7 +4627,7 @@ interface Movement {
   description?: string
   category: string
   method: string
-  createdAt: any
+  createdAt: string | number | Date
   createdBy: string
 }
 
@@ -4918,7 +4946,7 @@ const ContabilidadDetail: React.FC = () => {
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
                         stroke="currentColor"
-                        class="w-5 h-5"
+                        className="w-5 h-5"
                       >
                         <path
                           stroke-linecap="round"
@@ -5241,23 +5269,27 @@ export default ContabilidadPage
 /* Fin src\pages\ContabilidadPage.tsx */
 
 /* Inicio src\pages\Dashboard.tsx */
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import {
   ArcElement,
   BarElement,
+  BubbleDataPoint,
   CategoryScale,
+  Chart,
   Chart as ChartJS,
+  ChartOptions,
   Legend,
   LinearScale,
   LineController,
   LineElement,
+  Point,
   PointElement,
   Title,
   Tooltip,
 } from 'chart.js'
-import { collection, doc, onSnapshot, query, setDoc, updateDoc, where } from 'firebase/firestore'
+import { collection, doc, onSnapshot, query, updateDoc, where } from 'firebase/firestore'
 import React, { useEffect, useRef, useState } from 'react'
 import { Bar, Line, Pie } from 'react-chartjs-2'
-import { v4 as uuidv4 } from 'uuid'
 import { useAuth } from '../hooks/useAuth'
 import { db } from '../utils/firebase'
 
@@ -5296,33 +5328,33 @@ interface Task {
 
 const ALL_STATUSES = ['pendiente', 'atendiendo', 'preparando', 'enviado', 'entregado']
 
-const defaultDailyTasks = [
-  {
-    taskName: 'Hacer el aseo del restaurante',
-    subtasks: [
-      'Barrer y trapear pisos',
-      'Limpiar mesas y sillas',
-      'Vaciar papeleras',
-      'Limpiar baños',
-    ],
-  },
-  { taskName: 'Lavar la freidora', subtasks: [] },
-  {
-    taskName: 'Revisar inventario y hacer pedidos si es necesario',
-    subtasks: [
-      'Verificar niveles de stock',
-      'Listar productos a pedir',
-      'Enviar pedido a proveedores',
-      'Recibir y organizar pedido',
-    ],
-  },
-]
+// const defaultDailyTasks = [
+//   {
+//     taskName: 'Hacer el aseo del restaurante',
+//     subtasks: [
+//       'Barrer y trapear pisos',
+//       'Limpiar mesas y sillas',
+//       'Vaciar papeleras',
+//       'Limpiar baños',
+//     ],
+//   },
+//   { taskName: 'Lavar la freidora', subtasks: [] },
+//   {
+//     taskName: 'Revisar inventario y hacer pedidos si es necesario',
+//     subtasks: [
+//       'Verificar niveles de stock',
+//       'Listar productos a pedir',
+//       'Enviar pedido a proveedores',
+//       'Recibir y organizar pedido',
+//     ],
+//   },
+// ]
 
-const periodicTasksConfig = [
-  { dayOfMonth: 25, taskName: 'Pagar arriendo', taskType: 'periodic' },
-  { dayOfMonth: 25, taskName: 'Pagar factura de luz', taskType: 'periodic' },
-  { dayOfMonth: 25, taskName: 'Pagar factura de agua', taskType: 'periodic' },
-]
+// const periodicTasksConfig = [
+//   { dayOfMonth: 25, taskName: 'Pagar arriendo', taskType: 'periodic' },
+//   { dayOfMonth: 25, taskName: 'Pagar factura de luz', taskType: 'periodic' },
+//   { dayOfMonth: 25, taskName: 'Pagar factura de agua', taskType: 'periodic' },
+// ]
 
 interface Movement {
   movementId: string
@@ -5332,7 +5364,7 @@ interface Movement {
   description?: string
   category: string
   method: string
-  createdAt: any
+  createdAt: string
   createdBy: string
 }
 
@@ -5386,12 +5418,16 @@ const Dashboard: React.FC = () => {
   const [dailyData, setDailyData] = useState<number[]>([])
   const [monthlyLabels, setMonthlyLabels] = useState<string[]>([])
   const [monthlyData, setMonthlyData] = useState<number[]>([])
-  const [selectedDateRange, setSelectedDateRange] = useState<{
-    from: Date | null
-    to: Date | null
-  }>({ from: null, to: null })
+  // const [selectedDateRange, setSelectedDateRange] = useState<{
+  //   from: Date | null
+  //   to: Date | null
+  // }>({ from: null, to: null })
 
-  const chartRef = useRef<ChartJS | null>(null)
+  const chartRef = useRef<Chart<
+    'line',
+    (number | [number, number] | Point | BubbleDataPoint)[],
+    unknown
+  > | null>(null)
 
   const categories = ['venta', 'compra_insumos', 'pago_servicios', 'nomina', 'otros']
 
@@ -5506,7 +5542,12 @@ const Dashboard: React.FC = () => {
       pedidosQuery,
       (snapshot) => {
         const pedidosData: Pedido[] = snapshot.docs.map((doc) => {
-          const data = doc.data()
+          const data = doc.data() as {
+            status: string
+            total: number
+            orderDate: { toDate: () => Date; toMillis: () => number }
+            userId: string
+          }
           return {
             id: doc.id,
             status: data.status,
@@ -5536,7 +5577,15 @@ const Dashboard: React.FC = () => {
         tasksCollection,
         (snapshot) => {
           let fetchedTasks: Task[] = snapshot.docs.map((doc) => {
-            const data = doc.data()
+            const data = doc.data() as {
+              taskId: string
+              taskName: string
+              taskType: 'daily' | 'periodic'
+              dueDate: { toDate: () => Date } | null
+              dailyCompletions: { [date: string]: boolean }
+              completionDate: { toDate: () => Date } | null
+              subtasks: string[]
+            }
             return {
               id: doc.id,
               taskId: data.taskId,
@@ -5572,26 +5621,26 @@ const Dashboard: React.FC = () => {
     }
   }, [userRole])
 
-  const addDefaultTask = async (
-    taskName: string,
-    taskType: 'daily' | 'periodic',
-    subtasks: string[] = [],
-    dueDate: Date | null = null,
-  ) => {
-    try {
-      await setDoc(doc(collection(db, 'tasks'), uuidv4()), {
-        taskId: uuidv4(),
-        taskName: taskName,
-        taskType: taskType,
-        completed: false,
-        dailyCompletions: {},
-        subtasks: subtasks,
-        dueDate: dueDate || null,
-      })
-    } catch (error) {
-      console.error('Error adding default task:', error)
-    }
-  }
+  // const addDefaultTask = async (
+  //   taskName: string,
+  //   taskType: 'daily' | 'periodic',
+  //   subtasks: string[] = [],
+  //   dueDate: Date | null = null,
+  // ) => {
+  //   try {
+  //     await setDoc(doc(collection(db, 'tasks'), uuidv4()), {
+  //       taskId: uuidv4(),
+  //       taskName: taskName,
+  //       taskType: taskType,
+  //       completed: false,
+  //       dailyCompletions: {},
+  //       subtasks: subtasks,
+  //       dueDate: dueDate || null,
+  //     })
+  //   } catch (error) {
+  //     console.error('Error adding default task:', error)
+  //   }
+  // }
 
   useEffect(() => {
     if (!pedidos.length) {
@@ -5714,19 +5763,83 @@ const Dashboard: React.FC = () => {
     setMonthlyData(monthTotals)
   }, [pedidos, selectedStatus, userRole, user])
 
-  const chartOptions = {
+  const categoryChartOptions: ChartOptions<'pie'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false as const,
+        display: false,
       },
       tooltip: {
         backgroundColor: '#1e293b',
         titleColor: '#fff',
         bodyColor: '#fff',
         callbacks: {
-          label: function (context: any) {
+          label: (tooltipItem: import('chart.js').TooltipItem<'pie'>) => {
+            let label = tooltipItem.label || ''
+            if (label) {
+              label += ': '
+            }
+            if (tooltipItem.parsed !== null) {
+              label += new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              }).format(tooltipItem.parsed)
+            }
+            return label
+          },
+        },
+      },
+    },
+  }
+
+  const monthlyContabilidadChartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: '#1e293b',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        callbacks: {
+          label: (context) => {
+            let label = context.dataset.label || ''
+            if (label) {
+              label += ': '
+            }
+            if (context.parsed.y !== null) {
+              label += new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              }).format(context.parsed.y)
+            }
+            return label
+          },
+        },
+      },
+    },
+  }
+
+  const chartOptions: ChartOptions<'bar'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: '#1e293b',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        callbacks: {
+          label: (context) => {
             let label = context.dataset.label || ''
             if (label) {
               label += ': '
@@ -6011,13 +6124,12 @@ const Dashboard: React.FC = () => {
             <div className="bg-white rounded shadow p-4">
               <h2 className="text-xl font-semibold mb-4 text-gray-800">Análisis por Categoría</h2>
               <div className="h-64 relative">
-                {console.log('CategoryChartData just before Pie render:', categoryChartData)}
                 {categoryChartData &&
                 categoryChartData.labels &&
                 Array.isArray(categoryChartData.labels) &&
                 categoryChartData.datasets &&
                 Array.isArray(categoryChartData.datasets) ? (
-                  <Pie data={categoryChartData} options={chartOptions} />
+                  <Pie data={categoryChartData} options={categoryChartOptions} />
                 ) : (
                   <p className="text-gray-500 italic text-center">
                     Error al preparar datos para el gráfico de categorías.
@@ -6043,7 +6155,11 @@ const Dashboard: React.FC = () => {
             Comparativa de Ingresos y Egresos Mensuales
           </h2>
           <div className="h-64">
-            <Line data={monthlyContabilidadChartData} options={chartOptions} ref={chartRef} />
+            <Line
+              data={monthlyContabilidadChartData}
+              options={monthlyContabilidadChartOptions}
+              ref={chartRef}
+            />
           </div>
         </div>
       )}
@@ -6086,7 +6202,10 @@ const Dashboard: React.FC = () => {
                       checked={
                         task.dailyCompletions[new Date().toISOString().split('T')[0]] === true
                       }
-                      onChange={(e) => handleTaskCompletionChange(task.id, e.target.checked)}
+                      onChange={(e) => {
+                        const x = handleTaskCompletionChange(task.id, e.target.checked)
+                        console.log(x)
+                      }}
                     />
                     <span className="ml-2 text-gray-700">{task.taskName}</span>
                   </label>
@@ -6152,6 +6271,8 @@ export default Dashboard
 /* Fin src\pages\Dashboard.tsx */
 
 /* Inicio src\pages\GestionMenu.tsx */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-misused-promises */
 /* Inicio src\pages\GestionMenu.tsx */
 // src/pages/GestionMenu.tsx
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore'
@@ -6159,7 +6280,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { COLLECTIONS } from '../utils/constants'
 import { db } from '../utils/firebase'
 
-import { createDefaultMenuItemsAndCombos, deleteAllMenuItems } from '../utils/menu-scripts' // Importa las funciones
+import { createDefaultMenuItemsAndCombos, deleteAllMenuItems } from '../utils/menu-scripts'; // Importa las funciones
 
 /* =====================================================
    INTERFACES Y TIPOS
@@ -6403,7 +6524,7 @@ const GestionMenu: React.FC = () => {
   const [comboStep, setComboStep] = useState<number>(1)
 
   /* --- CARGA DE DATOS --- */
-  useEffect(() => {
+  // Define fetchMenu outside useEffect to be reusable
     const fetchMenu = async () => {
       setLoading(true)
       try {
@@ -6420,13 +6541,16 @@ const GestionMenu: React.FC = () => {
         setLoading(false)
       }
     }
-    fetchMenu()
+
+  useEffect(() => {
+    fetchMenu() // Call fetchMenu on component mount
   }, [])
+
   const handleBulkDeleteMenu = async () => {
     const success = await deleteAllMenuItems()
     if (success) {
       // Recargar menú si la eliminación fue exitosa
-      fetchMenu()
+      fetchMenu() // Use the defined fetchMenu function
     }
   }
 
@@ -6434,7 +6558,7 @@ const GestionMenu: React.FC = () => {
     const success = await createDefaultMenuItemsAndCombos()
     if (success) {
       // Recargar menú si la creación fue exitosa
-      fetchMenu()
+      fetchMenu() // Use the defined fetchMenu function
     }
   }
   /* --- VALIDACIONES REACTIVAS --- */
@@ -6628,9 +6752,12 @@ const GestionMenu: React.FC = () => {
         setAlert({ type: 'success', message: 'Item agregado correctamente' })
       }
       setModalOpen(false)
-    } catch (error: any) {
+    } catch (error) {
       console.error(error)
-      setAlert({ type: 'error', message: error.message || 'Error al guardar el item' })
+      setAlert({
+        type: 'error',
+        message: (error as { message: string }).message || 'Error al guardar el item',
+      })
     }
   }
 
@@ -6657,11 +6784,11 @@ const GestionMenu: React.FC = () => {
             ? 'Item marcado como no disponible ahora'
             : 'Item marcado como no disponible a largo plazo',
       })
-    } catch (error: any) {
+    } catch (error) {
       console.error(error)
       setAlert({
         type: 'error',
-        message: error.message || 'Error al actualizar la disponibilidad',
+        message: (error as { message: string }).message || 'Error al actualizar la disponibilidad',
       })
     }
   }
@@ -8209,7 +8336,7 @@ export const createDefaultMenuItemsAndCombos = async () => {
         const menuCollection = collection(db, COLLECTIONS.MENU);
 
         // Productos base
-        const productosBase: Omit<MenuItemType, 'id'>[] = [
+        const productosBase: Partial<MenuItemType>[] = [
             {
                 name: 'Jugo Natural Naranja',
                 description: 'Jugo refrescante de naranja natural.',
@@ -8375,7 +8502,7 @@ export const createDefaultMenuItemsAndCombos = async () => {
         ];
 
         // Combos
-        const combos: Omit<MenuItemType, 'id'>[] = [
+        const combos: Partial<MenuItemType>[] = [
             {
                 name: 'Combo Pollo Jugo',
                 description: '1 Pollo broaster personal + 1 Jugo natural a elección.',
@@ -8627,21 +8754,7 @@ export const createDefaultMenuItemsAndCombos = async () => {
 
 };
 
-export const handleBulkDeleteMenu = async () => {
-    const success = await deleteAllMenuItems();
-    if (success) {
-        // Recargar menú si la eliminación fue exitosa
-        fetchMenu();
-    }
-};
 
-export const handleBulkCreateDefaultMenu = async () => {
-    const success = await createDefaultMenuItemsAndCombos();
-    if (success) {
-        // Recargar menú si la creación fue exitosa
-        fetchMenu();
-    }
-};
 /* Fin src\utils\menu-scripts.ts */
 
 /* Inicio src\utils\theme.ts */

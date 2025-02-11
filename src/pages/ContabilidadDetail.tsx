@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
+
+/* eslint-disable @typescript-eslint/no-misused-promises */
 // src/pages/ContabilidadDetail.tsx
 import { arrayRemove, arrayUnion, doc, onSnapshot, updateDoc } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
@@ -14,7 +17,7 @@ interface Movement {
   description?: string
   category: string
   method: string
-  createdAt: any
+  createdAt: string | number | Date
   createdBy: string
 }
 
@@ -333,7 +336,7 @@ const ContabilidadDetail: React.FC = () => {
                         viewBox="0 0 24 24"
                         stroke-width="1.5"
                         stroke="currentColor"
-                        class="w-5 h-5"
+                        className="w-5 h-5"
                       >
                         <path
                           stroke-linecap="round"

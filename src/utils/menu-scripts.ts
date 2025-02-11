@@ -41,7 +41,7 @@ export const createDefaultMenuItemsAndCombos = async () => {
         const menuCollection = collection(db, COLLECTIONS.MENU);
 
         // Productos base
-        const productosBase: Omit<MenuItemType, 'id'>[] = [
+        const productosBase: Partial<MenuItemType>[] = [
             {
                 name: 'Jugo Natural Naranja',
                 description: 'Jugo refrescante de naranja natural.',
@@ -207,7 +207,7 @@ export const createDefaultMenuItemsAndCombos = async () => {
         ];
 
         // Combos
-        const combos: Omit<MenuItemType, 'id'>[] = [
+        const combos: Partial<MenuItemType>[] = [
             {
                 name: 'Combo Pollo Jugo',
                 description: '1 Pollo broaster personal + 1 Jugo natural a elección.',

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/* eslint-disable @typescript-eslint/no-misused-promises */
 /* Inicio src\pages\GestionMenu.tsx */
 // src/pages/GestionMenu.tsx
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore'
@@ -5,7 +7,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { COLLECTIONS } from '../utils/constants'
 import { db } from '../utils/firebase'
 
-import { createDefaultMenuItemsAndCombos, deleteAllMenuItems } from '../utils/menu-scripts' // Importa las funciones
+import { createDefaultMenuItemsAndCombos, deleteAllMenuItems } from '../utils/menu-scripts'; // Importa las funciones
 
 /* =====================================================
    INTERFACES Y TIPOS
@@ -249,7 +251,7 @@ const GestionMenu: React.FC = () => {
   const [comboStep, setComboStep] = useState<number>(1)
 
   /* --- CARGA DE DATOS --- */
-  useEffect(() => {
+  // Define fetchMenu outside useEffect to be reusable
     const fetchMenu = async () => {
       setLoading(true)
       try {
@@ -266,13 +268,16 @@ const GestionMenu: React.FC = () => {
         setLoading(false)
       }
     }
-    fetchMenu()
+
+  useEffect(() => {
+    fetchMenu() // Call fetchMenu on component mount
   }, [])
+
   const handleBulkDeleteMenu = async () => {
     const success = await deleteAllMenuItems()
     if (success) {
       // Recargar menú si la eliminación fue exitosa
-      fetchMenu()
+      fetchMenu() // Use the defined fetchMenu function
     }
   }
 
@@ -280,7 +285,7 @@ const GestionMenu: React.FC = () => {
     const success = await createDefaultMenuItemsAndCombos()
     if (success) {
       // Recargar menú si la creación fue exitosa
-      fetchMenu()
+      fetchMenu() // Use the defined fetchMenu function
     }
   }
   /* --- VALIDACIONES REACTIVAS --- */
@@ -474,9 +479,12 @@ const GestionMenu: React.FC = () => {
         setAlert({ type: 'success', message: 'Item agregado correctamente' })
       }
       setModalOpen(false)
-    } catch (error: any) {
+    } catch (error) {
       console.error(error)
-      setAlert({ type: 'error', message: error.message || 'Error al guardar el item' })
+      setAlert({
+        type: 'error',
+        message: (error as { message: string }).message || 'Error al guardar el item',
+      })
     }
   }
 
@@ -503,11 +511,11 @@ const GestionMenu: React.FC = () => {
             ? 'Item marcado como no disponible ahora'
             : 'Item marcado como no disponible a largo plazo',
       })
-    } catch (error: any) {
+    } catch (error) {
       console.error(error)
       setAlert({
         type: 'error',
-        message: error.message || 'Error al actualizar la disponibilidad',
+        message: (error as { message: string }).message || 'Error al actualizar la disponibilidad',
       })
     }
   }

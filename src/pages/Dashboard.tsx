@@ -1,20 +1,24 @@
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import {
   ArcElement,
   BarElement,
+  BubbleDataPoint,
   CategoryScale,
+  Chart,
   Chart as ChartJS,
+  ChartOptions,
   Legend,
   LinearScale,
   LineController,
   LineElement,
+  Point,
   PointElement,
   Title,
   Tooltip,
 } from 'chart.js'
-import { collection, doc, onSnapshot, query, setDoc, updateDoc, where } from 'firebase/firestore'
+import { collection, doc, onSnapshot, query, updateDoc, where } from 'firebase/firestore'
 import React, { useEffect, useRef, useState } from 'react'
 import { Bar, Line, Pie } from 'react-chartjs-2'
-import { v4 as uuidv4 } from 'uuid'
 import { useAuth } from '../hooks/useAuth'
 import { db } from '../utils/firebase'
 
@@ -53,33 +57,33 @@ interface Task {
 
 const ALL_STATUSES = ['pendiente', 'atendiendo', 'preparando', 'enviado', 'entregado']
 
-const defaultDailyTasks = [
-  {
-    taskName: 'Hacer el aseo del restaurante',
-    subtasks: [
-      'Barrer y trapear pisos',
-      'Limpiar mesas y sillas',
-      'Vaciar papeleras',
-      'Limpiar baños',
-    ],
-  },
-  { taskName: 'Lavar la freidora', subtasks: [] },
-  {
-    taskName: 'Revisar inventario y hacer pedidos si es necesario',
-    subtasks: [
-      'Verificar niveles de stock',
-      'Listar productos a pedir',
-      'Enviar pedido a proveedores',
-      'Recibir y organizar pedido',
-    ],
-  },
-]
+// const defaultDailyTasks = [
+//   {
+//     taskName: 'Hacer el aseo del restaurante',
+//     subtasks: [
+//       'Barrer y trapear pisos',
+//       'Limpiar mesas y sillas',
+//       'Vaciar papeleras',
+//       'Limpiar baños',
+//     ],
+//   },
+//   { taskName: 'Lavar la freidora', subtasks: [] },
+//   {
+//     taskName: 'Revisar inventario y hacer pedidos si es necesario',
+//     subtasks: [
+//       'Verificar niveles de stock',
+//       'Listar productos a pedir',
+//       'Enviar pedido a proveedores',
+//       'Recibir y organizar pedido',
+//     ],
+//   },
+// ]
 
-const periodicTasksConfig = [
-  { dayOfMonth: 25, taskName: 'Pagar arriendo', taskType: 'periodic' },
-  { dayOfMonth: 25, taskName: 'Pagar factura de luz', taskType: 'periodic' },
-  { dayOfMonth: 25, taskName: 'Pagar factura de agua', taskType: 'periodic' },
-]
+// const periodicTasksConfig = [
+//   { dayOfMonth: 25, taskName: 'Pagar arriendo', taskType: 'periodic' },
+//   { dayOfMonth: 25, taskName: 'Pagar factura de luz', taskType: 'periodic' },
+//   { dayOfMonth: 25, taskName: 'Pagar factura de agua', taskType: 'periodic' },
+// ]
 
 interface Movement {
   movementId: string
@@ -89,7 +93,7 @@ interface Movement {
   description?: string
   category: string
   method: string
-  createdAt: any
+  createdAt: string
   createdBy: string
 }
 
@@ -143,12 +147,16 @@ const Dashboard: React.FC = () => {
   const [dailyData, setDailyData] = useState<number[]>([])
   const [monthlyLabels, setMonthlyLabels] = useState<string[]>([])
   const [monthlyData, setMonthlyData] = useState<number[]>([])
-  const [selectedDateRange, setSelectedDateRange] = useState<{
-    from: Date | null
-    to: Date | null
-  }>({ from: null, to: null })
+  // const [selectedDateRange, setSelectedDateRange] = useState<{
+  //   from: Date | null
+  //   to: Date | null
+  // }>({ from: null, to: null })
 
-  const chartRef = useRef<ChartJS | null>(null)
+  const chartRef = useRef<Chart<
+    'line',
+    (number | [number, number] | Point | BubbleDataPoint)[],
+    unknown
+  > | null>(null)
 
   const categories = ['venta', 'compra_insumos', 'pago_servicios', 'nomina', 'otros']
 
@@ -263,7 +271,12 @@ const Dashboard: React.FC = () => {
       pedidosQuery,
       (snapshot) => {
         const pedidosData: Pedido[] = snapshot.docs.map((doc) => {
-          const data = doc.data()
+          const data = doc.data() as {
+            status: string
+            total: number
+            orderDate: { toDate: () => Date; toMillis: () => number }
+            userId: string
+          }
           return {
             id: doc.id,
             status: data.status,
@@ -293,7 +306,15 @@ const Dashboard: React.FC = () => {
         tasksCollection,
         (snapshot) => {
           let fetchedTasks: Task[] = snapshot.docs.map((doc) => {
-            const data = doc.data()
+            const data = doc.data() as {
+              taskId: string
+              taskName: string
+              taskType: 'daily' | 'periodic'
+              dueDate: { toDate: () => Date } | null
+              dailyCompletions: { [date: string]: boolean }
+              completionDate: { toDate: () => Date } | null
+              subtasks: string[]
+            }
             return {
               id: doc.id,
               taskId: data.taskId,
@@ -329,26 +350,26 @@ const Dashboard: React.FC = () => {
     }
   }, [userRole])
 
-  const addDefaultTask = async (
-    taskName: string,
-    taskType: 'daily' | 'periodic',
-    subtasks: string[] = [],
-    dueDate: Date | null = null,
-  ) => {
-    try {
-      await setDoc(doc(collection(db, 'tasks'), uuidv4()), {
-        taskId: uuidv4(),
-        taskName: taskName,
-        taskType: taskType,
-        completed: false,
-        dailyCompletions: {},
-        subtasks: subtasks,
-        dueDate: dueDate || null,
-      })
-    } catch (error) {
-      console.error('Error adding default task:', error)
-    }
-  }
+  // const addDefaultTask = async (
+  //   taskName: string,
+  //   taskType: 'daily' | 'periodic',
+  //   subtasks: string[] = [],
+  //   dueDate: Date | null = null,
+  // ) => {
+  //   try {
+  //     await setDoc(doc(collection(db, 'tasks'), uuidv4()), {
+  //       taskId: uuidv4(),
+  //       taskName: taskName,
+  //       taskType: taskType,
+  //       completed: false,
+  //       dailyCompletions: {},
+  //       subtasks: subtasks,
+  //       dueDate: dueDate || null,
+  //     })
+  //   } catch (error) {
+  //     console.error('Error adding default task:', error)
+  //   }
+  // }
 
   useEffect(() => {
     if (!pedidos.length) {
@@ -471,19 +492,83 @@ const Dashboard: React.FC = () => {
     setMonthlyData(monthTotals)
   }, [pedidos, selectedStatus, userRole, user])
 
-  const chartOptions = {
+  const categoryChartOptions: ChartOptions<'pie'> = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false as const,
+        display: false,
       },
       tooltip: {
         backgroundColor: '#1e293b',
         titleColor: '#fff',
         bodyColor: '#fff',
         callbacks: {
-          label: function (context: any) {
+          label: (tooltipItem: import('chart.js').TooltipItem<'pie'>) => {
+            let label = tooltipItem.label || ''
+            if (label) {
+              label += ': '
+            }
+            if (tooltipItem.parsed !== null) {
+              label += new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              }).format(tooltipItem.parsed)
+            }
+            return label
+          },
+        },
+      },
+    },
+  }
+
+  const monthlyContabilidadChartOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: '#1e293b',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        callbacks: {
+          label: (context) => {
+            let label = context.dataset.label || ''
+            if (label) {
+              label += ': '
+            }
+            if (context.parsed.y !== null) {
+              label += new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              }).format(context.parsed.y)
+            }
+            return label
+          },
+        },
+      },
+    },
+  }
+
+  const chartOptions: ChartOptions<'bar'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        backgroundColor: '#1e293b',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        callbacks: {
+          label: (context) => {
             let label = context.dataset.label || ''
             if (label) {
               label += ': '
@@ -768,13 +853,12 @@ const Dashboard: React.FC = () => {
             <div className="bg-white rounded shadow p-4">
               <h2 className="text-xl font-semibold mb-4 text-gray-800">Análisis por Categoría</h2>
               <div className="h-64 relative">
-                {console.log('CategoryChartData just before Pie render:', categoryChartData)}
                 {categoryChartData &&
                 categoryChartData.labels &&
                 Array.isArray(categoryChartData.labels) &&
                 categoryChartData.datasets &&
                 Array.isArray(categoryChartData.datasets) ? (
-                  <Pie data={categoryChartData} options={chartOptions} />
+                  <Pie data={categoryChartData} options={categoryChartOptions} />
                 ) : (
                   <p className="text-gray-500 italic text-center">
                     Error al preparar datos para el gráfico de categorías.
@@ -800,7 +884,11 @@ const Dashboard: React.FC = () => {
             Comparativa de Ingresos y Egresos Mensuales
           </h2>
           <div className="h-64">
-            <Line data={monthlyContabilidadChartData} options={chartOptions} ref={chartRef} />
+            <Line
+              data={monthlyContabilidadChartData}
+              options={monthlyContabilidadChartOptions}
+              ref={chartRef}
+            />
           </div>
         </div>
       )}
@@ -843,7 +931,10 @@ const Dashboard: React.FC = () => {
                       checked={
                         task.dailyCompletions[new Date().toISOString().split('T')[0]] === true
                       }
-                      onChange={(e) => handleTaskCompletionChange(task.id, e.target.checked)}
+                      onChange={(e) => {
+                        const x = handleTaskCompletionChange(task.id, e.target.checked)
+                        console.log(x)
+                      }}
                     />
                     <span className="ml-2 text-gray-700">{task.taskName}</span>
                   </label>

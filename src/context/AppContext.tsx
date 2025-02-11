@@ -21,8 +21,20 @@ export interface MenuItem {
     | "disponible"
     | "noDisponibleMomento"
     | "noDisponibleLargoPlazo";
+  cost: number;
+  points: number;
+  imageUrls: string[];
+  isCombo: boolean;
+  components: string[];
+  minimumPrice: number;
+  comboSellingPrice: number;
+  comboPoints: number;
+  additionalCosts: AdditionalCost[];
 }
-
+export interface AdditionalCost {
+  nombre: string;
+  valor: number;
+}
 export type MenuItemType = MenuItem; // Define y exporta MenuItemType como alias de MenuItem
 
 export interface AppContextProps {
