@@ -41,7 +41,7 @@
 │   │   │   ├── PedidoItem.tsx [9]
 │   │   │   └── PedidoList.tsx [395]
 │   │   ├── 📂 splash
-│   │   │   └── SplashScreen.tsx [64]
+│   │   │   └── SplashScreen.tsx [63]
 │   │   └── 📂 ui
 │   │       ├── Button.tsx [79]
 │   │       ├── Container.tsx [17]
@@ -61,7 +61,7 @@
 │   │   ├── Dashboard.tsx [999]
 │   │   ├── GestionMenu.tsx [1153]
 │   │   ├── GestionUsuarios.tsx [82]
-│   │   ├── Login.tsx [52]
+│   │   ├── Login.tsx [51]
 │   │   ├── MenuPage.tsx [406]
 │   │   ├── PedidosPage.tsx [18]
 │   │   ├── Perfil.tsx [97]
@@ -83,7 +83,7 @@
 └── vite.config.ts [41]
 
 
-Total de líneas resumidas: 8706
+Total de líneas resumidas: 8704
 
 
 /* Inicio .prettierrc.json */
@@ -4041,19 +4041,19 @@ const SplashScreen: React.FC = () => {
     // Después de que la animación del logo termine (0.8 segundo), inicia la del texto
     const logoTimeout = setTimeout(() => {
       setTextAnimation(true)
-    }, 800)
+    }, 100)
 
     // Después de 2.2 segundos, inicia el fade out
     const fadeTimeout = setTimeout(() => {
       setFadeOut(true)
-    }, 2200)
+    }, 5000)
 
     // Después de que el fade out termine (0.8 segundos), redirige
     const redirectTimeout = setTimeout(() => {
       if (!loading) {
         navigate(user ? '/' : '/login')
       }
-    }, 3000)
+    }, 100)
 
     // Limpia los timeouts para evitar problemas si el componente se desmonta
     return () => {
@@ -4073,8 +4073,7 @@ const SplashScreen: React.FC = () => {
           className={`splash-logo ${logoAnimation ? 'scale-up' : ''}`}
         />
         <div className={`splash-text ${textAnimation ? 'fade-in' : ''}`}>
-          <h1 className="splash-title">SrPol</h1>
-          <p className="splash-subtitle">Delicias a tu mesa</p>
+          <p className="splash-subtitle">Pollo de rechupete</p>
         </div>
       </div>
     </div>
@@ -7563,7 +7562,6 @@ const Login: React.FC = () => {
         <div className="login-card">
           <div className="login-header">
             <img src="/SrPol.png" alt="Logo SrPol" className="login-logo" />
-            <h1 className="login-title">SrPol</h1>
           </div>
 
           <div className="login-tabs">

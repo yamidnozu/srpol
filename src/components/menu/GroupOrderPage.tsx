@@ -390,11 +390,14 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
       {/* Encabezado */}
       <header className="mb-6 text-center">
         {groupOrderCode && (
-          <div>
+          <div className="sm:flex sm:items-center sm:justify-center">
+            {' '}
+            {/* Ajuste para pantallas pequeñas */}
             <h2 className="text-2xl font-bold text-indigo-600">
               Código de Pedido: <span className="text-3xl">{groupOrderCode}</span>
             </h2>
-            <p className="text-sm text-gray-500">Comparte este código con tus amigos</p>
+            <p className="text-sm text-gray-500 sm:ml-2">Comparte este código con tus amigos</p>{' '}
+            {/* Ajuste para pantallas pequeñas */}
           </div>
         )}
       </header>
