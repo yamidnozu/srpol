@@ -20,19 +20,19 @@ const SplashScreen: React.FC = () => {
     // Después de que la animación del logo termine (0.8 segundo), inicia la del texto
     const logoTimeout = setTimeout(() => {
       setTextAnimation(true)
-    }, 800)
+    }, 100)
 
     // Después de 2.2 segundos, inicia el fade out
     const fadeTimeout = setTimeout(() => {
       setFadeOut(true)
-    }, 2200)
+    }, 5000)
 
     // Después de que el fade out termine (0.8 segundos), redirige
     const redirectTimeout = setTimeout(() => {
       if (!loading) {
         navigate(user ? '/' : '/login')
       }
-    }, 3000)
+    }, 100)
 
     // Limpia los timeouts para evitar problemas si el componente se desmonta
     return () => {
@@ -52,8 +52,7 @@ const SplashScreen: React.FC = () => {
           className={`splash-logo ${logoAnimation ? 'scale-up' : ''}`}
         />
         <div className={`splash-text ${textAnimation ? 'fade-in' : ''}`}>
-          <h1 className="splash-title">SrPol</h1>
-          <p className="splash-subtitle">Delicias a tu mesa</p>
+          <p className="splash-subtitle">Pollo de rechupete</p>
         </div>
       </div>
     </div>

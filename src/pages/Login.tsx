@@ -18,7 +18,6 @@ const Login: React.FC = () => {
         <div className="login-card">
           <div className="login-header">
             <img src="/SrPol.png" alt="Logo SrPol" className="login-logo" />
-            <h1 className="login-title">SrPol</h1>
           </div>
 
           <div className="login-tabs">

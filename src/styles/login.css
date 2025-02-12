@@ -32,6 +32,8 @@
 .login-logo {
   width: 80px; /* Tamaño del logo */
   margin-bottom: 1rem;
+  margin: auto;
+  display: inline-block;
 }
 
 .login-title {
