@@ -29,14 +29,12 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDrawer }) => {
             <MenuIcon className="transition-transform duration-300 hover:scale-110" />{' '}
             {/* Transición y escala en hover del icono */}
           </button>
+
           <img
-            src="SrPolForYouSinTitle.svg"
+            src="SrPolTitulo.png"
             alt="SrPol Logo"
             className="h-10 mr-2 transition-transform duration-300 hover:scale-105" // Transición en el logo
           />
-          <span className="text-xl font-semibold text-gray-900 transition-colors duration-200 hover:text-indigo-700">
-            SrPol
-          </span>{' '}
           {/* Transición en el título */}
         </div>
         {user && (

@@ -16,14 +16,11 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": false,
-    "noImplicitAny": false,
-    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "src"
-  ], //  <-  Incluye solo la carpeta 'src' (archivos fuente)
+  ],
   "exclude": [
     "node_modules",
     "dist",

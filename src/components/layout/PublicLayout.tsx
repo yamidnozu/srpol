@@ -1,18 +1,13 @@
 // src/components/layout/PublicLayout.tsx
-import React, { ReactNode } from "react";
+import React, { ReactNode } from 'react'
+import '../../styles/public-layout.css' // Importa el archivo CSS para el diseño público
 
 interface PublicLayoutProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
-  return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      {" "}
-      {/* Clases Tailwind para centrar y fondo */}
-      {children}
-    </div>
-  );
-};
+  return <div>{children}</div>
+}
 
-export default PublicLayout;
+export default PublicLayout

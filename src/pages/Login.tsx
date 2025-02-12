@@ -1,55 +1,51 @@
 // src/pages/Login.tsx
-import React, { useState } from "react";
-import LoginForm from "../components/auth/LoginForm";
-import RegisterForm from "../components/auth/RegisterForm";
-import PublicLayout from "../components/layout/PublicLayout";
+import React, { useState } from 'react'
+import LoginForm from '../components/auth/LoginForm'
+import RegisterForm from '../components/auth/RegisterForm'
+import PublicLayout from '../components/layout/PublicLayout'
+import '../styles/login.css' // Importa el archivo CSS específico para el login
 
 const Login: React.FC = () => {
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState(0)
 
   const handleChange = (newValue: number) => {
-    // Simplificamos el handler
-    setTabValue(newValue);
-  };
+    setTabValue(newValue)
+  }
 
   return (
     <PublicLayout>
-      <div className="max-w-md w-full">
-        {" "}
-        {/* Contenedor principal con Tailwind */}
-        <div className="bg-white shadow-md rounded-lg p-6">
-          {" "}
-          {/* Reemplaza Paper con div y clases */}
-          <div className="flex justify-center border-b border-gray-200 mb-4">
-            {" "}
-            {/* Reemplaza Tabs con divs */}
+      <div className="login-container">
+        <div className="login-card">
+          <div className="login-header">
+            <img src="/SrPol.png" alt="Logo SrPol" className="login-logo" />
+            <h1 className="login-title">SrPol</h1>
+          </div>
+
+          <div className="login-tabs">
             <button
-              className={`py-2 px-4 -mb-px border-b-2 ${
-                tabValue === 0
-                  ? "border-blue-500 text-blue-500"
-                  : "border-transparent hover:border-gray-300"
-              } font-semibold`}
+              className={`login-tab ${tabValue === 0 ? 'active' : ''}`}
               onClick={() => handleChange(0)}
             >
               Iniciar Sesión
             </button>
             <button
-              className={`py-2 px-4 -mb-px border-b-2 ${
-                tabValue === 1
-                  ? "border-blue-500 text-blue-500"
-                  : "border-transparent hover:border-gray-300"
-              } font-semibold`}
+              className={`login-tab ${tabValue === 1 ? 'active' : ''}`}
               onClick={() => handleChange(1)}
             >
               Registrarse
             </button>
           </div>
-          {tabValue === 0 && <LoginForm />}
-          {tabValue === 1 && <RegisterForm />}
+
+          <div
+            className={`login-form-container ${tabValue === 0 ? 'slide-in-left' : 'slide-in-right'}`}
+          >
+            {tabValue === 0 && <LoginForm />}
+            {tabValue === 1 && <RegisterForm />}
+          </div>
         </div>
       </div>
     </PublicLayout>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login

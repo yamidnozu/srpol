@@ -1,0 +1,75 @@
+/* src/styles/SplashScreen.css */
+/* Importa la fuente Poppins desde Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #4f46e5, #7e57c2); /* Degradado de fondo */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Asegura que esté en la parte superior */
+  font-family: 'Poppins', sans-serif; /* Aplica la fuente */
+  overflow: hidden; /* Para evitar que las animaciones se salgan */
+  transition: opacity 0.8s ease; /* Animación de fade out más suave */
+}
+
+.splash-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.splash-logo {
+  width: 120px; /* Tamaño inicial del logo */
+  height: auto;
+  margin-bottom: 20px;
+  transform: scale(0); /* Escala inicial completamente pequeña */
+  opacity: 0;
+  transition:
+    transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+    opacity 0.8s ease; /* Animación de escala y opacidad */
+}
+
+.scale-up {
+  transform: scale(1); /* Escala final */
+  opacity: 1;
+}
+
+.splash-text {
+  text-align: center;
+  opacity: 0; /* Inicia invisible */
+  transition:
+    opacity 0.6s ease 0.8s,
+    transform 0.6s ease 0.8s; /* Fade in y movimiento después de 0.8s */
+  transform: translateY(20px); /* Empieza un poco abajo */
+}
+
+.fade-in {
+  opacity: 1; /* Aparece */
+  transform: translateY(0); /* Vuelve a la posición normal */
+}
+
+.splash-title {
+  font-size: 3rem;
+  font-weight: 600;
+  color: #fff; /* Color del título */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Sombra al texto */
+}
+
+.splash-subtitle {
+  font-size: 1.2rem;
+  color: #ddd; /* Color del subtítulo */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Sombra al texto */
+}
+
+.fade-out {
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1.2); /* Un poco de escala para dar un efecto final */
+  filter: blur(5px); /* Un pequeño desenfoque al final */
+}

@@ -10,7 +10,7 @@ declare global {
 }
 
 interface MercadoPago {
-  new (
+  new(
     publicKey: string,
     options?,
   ): {
@@ -18,4 +18,13 @@ interface MercadoPago {
   }
 }
 
-export {} // Exporta un objeto vacío para evitar error de módulo
+export { }; // Exporta un objeto vacío para evitar error de módulo
+
+declare module '*.svg?url' {
+  const content: string;
+  export default content;
+}
+declare module '*.svg' {
+  const content: string;
+  export default content;
+}

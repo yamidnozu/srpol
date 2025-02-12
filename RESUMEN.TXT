@@ -7,18 +7,18 @@
 ├── package.json [57]
 ├── postcss.config.js [7]
 ├── 📂 src
-│   ├── App.tsx [177]
+│   ├── App.tsx [183]
 │   ├── 📂 components
 │   │   ├── 📂 auth
-│   │   │   ├── LoginForm.tsx [83]
-│   │   │   └── RegisterForm.tsx [83]
+│   │   │   ├── LoginForm.tsx [58]
+│   │   │   └── RegisterForm.tsx [58]
 │   │   ├── 📂 forms
 │   │   │   ├── MenuForm.tsx [222]
 │   │   │   └── PedidoForm.tsx [228]
 │   │   ├── 📂 layout
-│   │   │   ├── MainLayout.tsx [37]
-│   │   │   ├── Navbar.tsx [59]
-│   │   │   ├── PublicLayout.tsx [19]
+│   │   │   ├── MainLayout.tsx [50]
+│   │   │   ├── Navbar.tsx [57]
+│   │   │   ├── PublicLayout.tsx [14]
 │   │   │   └── Sidebar.tsx [123]
 │   │   ├── 📂 menu
 │   │   │   ├── GroupOrderPage.tsx [612]
@@ -40,6 +40,8 @@
 │   │   │   ├── PedidoForm.tsx [228]
 │   │   │   ├── PedidoItem.tsx [9]
 │   │   │   └── PedidoList.tsx [395]
+│   │   ├── 📂 splash
+│   │   │   └── SplashScreen.tsx [64]
 │   │   └── 📂 ui
 │   │       ├── Button.tsx [79]
 │   │       ├── Container.tsx [17]
@@ -59,7 +61,7 @@
 │   │   ├── Dashboard.tsx [999]
 │   │   ├── GestionMenu.tsx [1153]
 │   │   ├── GestionUsuarios.tsx [82]
-│   │   ├── Login.tsx [56]
+│   │   ├── Login.tsx [52]
 │   │   ├── MenuPage.tsx [406]
 │   │   ├── PedidosPage.tsx [18]
 │   │   ├── Perfil.tsx [97]
@@ -68,7 +70,7 @@
 │   │   └── payment.ts [87]
 │   ├── 📂 types
 │   │   ├── css.d.ts [2]
-│   │   └── global.d.ts [22]
+│   │   └── global.d.ts [31]
 │   └── 📂 utils
 │       ├── constants.ts [6]
 │       ├── firebase.ts [16]
@@ -76,12 +78,12 @@
 │       └── theme.ts [43]
 ├── tailwind.config.js [9]
 ├── tsconfig.app.json [26]
-├── tsconfig.json [32]
+├── tsconfig.json [29]
 ├── tsconfig.node.json [25]
 └── vite.config.ts [41]
 
 
-Total de líneas resumidas: 8678
+Total de líneas resumidas: 8706
 
 
 /* Inicio .prettierrc.json */
@@ -221,25 +223,24 @@ export default {
 /* Fin postcss.config.js */
 
 /* Inicio src\App.tsx */
-/* src\App.tsx */
-/* Inicio src\App.tsx */
-import React from 'react'
+// src/App.tsx
+import React, { useEffect, useState } from 'react'
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom'
 import MainLayout from './components/layout/MainLayout'
 import PublicLayout from './components/layout/PublicLayout'
+import GroupOrderPage from './components/menu/GroupOrderPage'
+import SplashScreen from './components/splash/SplashScreen' // Importa el componente SplashScreen
 import ErrorBoundary from './components/ui/ErrorBoundry'
 import { AppProvider } from './context/AppContext'
 import { AuthProvider } from './context/AuthContext'
 import { useAuth } from './hooks/useAuth'
+import ContabilidadDetail from './pages/ContabilidadDetail'
+import ContabilidadPage from './pages/ContabilidadPage'
 import Dashboard from './pages/Dashboard'
 import GestionMenu from './pages/GestionMenu'
 import GestionUsuarios from './pages/GestionUsuarios'
 import Login from './pages/Login'
-
-import GroupOrderPage from './components/menu/GroupOrderPage'
-import ContabilidadDetail from './pages/ContabilidadDetail'
-import ContabilidadPage from './pages/ContabilidadPage'
-import MenuPage from './pages/MenuPage' // Importa MenuPage
+import MenuPage from './pages/MenuPage'
 import PedidosPage from './pages/PedidosPage'
 import Perfil from './pages/Perfil'
 import Success from './pages/Success'
@@ -277,116 +278,125 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 }
 
 const App: React.FC = () => {
+  const [splashFinished, setSplashFinished] = useState(false)
+
+  useEffect(() => {
+    // Simula la finalización del splash screen después de un tiempo (ajusta este tiempo)
+    const timeout = setTimeout(() => {
+      setSplashFinished(true)
+    }, 3000) // Debe coincidir con la duración total del splash screen (2.5s + 0.5s fade out)
+
+    return () => clearTimeout(timeout)
+  }, [])
+
   return (
     <AuthProvider>
       <AppProvider>
         <Router>
           <ErrorBoundary>
-            <Routes>
-              <Route
-                path="/login"
-                element={
-                  <PublicRoute>
-                    <Login />
-                  </PublicRoute>
-                }
-              />
-              <Route
-                path="/success"
-                element={
-                  <PrivateRoute>
-                    <Success />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/"
-                element={
-                  <PrivateRoute>
-                    <Dashboard />
-                  </PrivateRoute>
-                }
-              />
-              {/* Ruta modificada para GroupOrderPage que recibe groupOrderId como parámetro */}
-              <Route
-                path="/menu/:groupOrderId"
-                element={
-                  <PrivateRoute>
-                    <GroupOrderPage name="" />
-                  </PrivateRoute>
-                }
-              />
-              {/* Nueva ruta para MenuPage (punto de entrada) */}
-              <Route
-                path="/menu"
-                element={
-                  <PrivateRoute>
-                    <MenuPage />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/pedidos"
-                element={
-                  <PrivateRoute>
-                    <PedidosPage />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/gestion-menu"
-                element={
-                  <PrivateRoute allowedRoles={['admin', 'encargado']}>
-                    <GestionMenu />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/perfil"
-                element={
-                  <PrivateRoute>
-                    <Perfil />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/gestion-usuarios"
-                element={
-                  <PrivateRoute allowedRoles={['admin']}>
-                    <GestionUsuarios />
-                  </PrivateRoute>
-                }
-              />
-              {/* Ruta para manejar pagos exitosos */}
-              <Route
-                path="/success"
-                element={
-                  <PrivateRoute>
-                    <Success />
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/contabilidad"
-                element={
-                  <PrivateRoute allowedRoles={['admin', 'encargado']}>
-                    <ContabilidadPage />
-                  </PrivateRoute>
-                }
-              />
-              {/* Detalle del día */}
-              <Route
-                path="/contabilidad/:id"
-                element={
-                  <PrivateRoute allowedRoles={['admin', 'encargado']}>
-                    <ContabilidadDetail />
-                  </PrivateRoute>
-                }
-              />
-
-              {/* Ruta por defecto */}
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
+            {!splashFinished ? (
+              <SplashScreen /> // Renderiza el SplashScreen mientras no haya terminado
+            ) : (
+              <Routes>
+                <Route
+                  path="/login"
+                  element={
+                    <PublicRoute>
+                      <Login />
+                    </PublicRoute>
+                  }
+                />
+                <Route
+                  path="/success"
+                  element={
+                    <PrivateRoute>
+                      <Success />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/"
+                  element={
+                    <PrivateRoute>
+                      <Dashboard />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/menu/:groupOrderId"
+                  element={
+                    <PrivateRoute>
+                      <GroupOrderPage name="" />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/menu"
+                  element={
+                    <PrivateRoute>
+                      <MenuPage />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/pedidos"
+                  element={
+                    <PrivateRoute>
+                      <PedidosPage />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/gestion-menu"
+                  element={
+                    <PrivateRoute allowedRoles={['admin', 'encargado']}>
+                      <GestionMenu />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/perfil"
+                  element={
+                    <PrivateRoute>
+                      <Perfil />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/gestion-usuarios"
+                  element={
+                    <PrivateRoute allowedRoles={['admin']}>
+                      <GestionUsuarios />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/success"
+                  element={
+                    <PrivateRoute>
+                      <Success />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/contabilidad"
+                  element={
+                    <PrivateRoute allowedRoles={['admin', 'encargado']}>
+                      <ContabilidadPage />
+                    </PrivateRoute>
+                  }
+                />
+                <Route
+                  path="/contabilidad/:id"
+                  element={
+                    <PrivateRoute allowedRoles={['admin', 'encargado']}>
+                      <ContabilidadDetail />
+                    </PrivateRoute>
+                  }
+                />
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            )}
           </ErrorBoundary>
         </Router>
       </AppProvider>
@@ -398,177 +408,125 @@ export default App
 
 /* Fin src\App.tsx */
 
-/* Fin src\App.tsx */
-
 /* Inicio src\components\auth\LoginForm.tsx */
-import React, { useState } from "react";
-import { useAuth } from "../../hooks/useAuth";
+// src/components/auth/LoginForm.tsx
+import React, { useState } from 'react'
+import { useAuth } from '../../hooks/useAuth'
+import '../../styles/authForm.css' // Importa el archivo CSS específico para los formularios de autenticación
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const { login } = useAuth();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const { login } = useAuth()
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+    event.preventDefault()
+    setError(null)
     try {
-      await login(email, password);
-    } catch (error) {
-      setError((error as { message: string }).message);
-      setTimeout(() => setError(null), 5000);
+      await login(email, password)
+    } catch (err) {
+      setError((err as { message: string }).message)
+      setTimeout(() => setError(null), 5000)
     }
-  };
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-      <h2 className="text-xl font-bold text-gray-900">Iniciar Sesión</h2>
-      <div>
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Correo electrónico
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Contraseña
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          />
-        </div>
+    <form onSubmit={handleSubmit} className="auth-form">
+      <div className="form-group">
+        <label htmlFor="email">Correo electrónico</label>
+        <input
+          type="email"
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+      <div className="form-group">
+        <label htmlFor="password">Contraseña</label>
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
       </div>
       {error && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-2"
-          role="alert"
-        >
-          <strong className="font-bold">Error!</strong>
-          <span className="block sm:inline">{error}</span>
+        <div className="error-message">
+          <p>Error: {error}</p>
         </div>
       )}
-      <div>
-        <button
-          type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Iniciar Sesión
-        </button>
-      </div>
+      <button type="submit" className="auth-button">
+        Iniciar Sesión
+      </button>
     </form>
-  );
-};
+  )
+}
 
-export default LoginForm;
+export default LoginForm
 
 /* Fin src\components\auth\LoginForm.tsx */
 
 /* Inicio src\components\auth\RegisterForm.tsx */
-import React, { useState } from "react";
-import { useAuth } from "../../hooks/useAuth";
+// src/components/auth/RegisterForm.tsx
+import React, { useState } from 'react'
+import { useAuth } from '../../hooks/useAuth'
+import '../../styles/authForm.css' // Importa el archivo CSS específico para los formularios de autenticación
 
 const RegisterForm: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const { register } = useAuth();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const { register } = useAuth()
 
   const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+    event.preventDefault()
+    setError(null)
     try {
-      await register(email, password);
-    } catch (error) {
-      setError((error as { message: string }).message);
-      setTimeout(() => setError(null), 5000);
+      await register(email, password)
+    } catch (err) {
+      setError((err as { message: string }).message)
+      setTimeout(() => setError(null), 5000)
     }
-  };
+  }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <h2 className="text-xl font-bold text-gray-900">Registrarse</h2>
-      <div className="space-y-4">
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Correo electrónico
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="password"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Contraseña
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          />
-        </div>
+    <form onSubmit={handleSubmit} className="auth-form">
+      <div className="form-group">
+        <label htmlFor="email">Correo electrónico</label>
+        <input
+          type="email"
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+      <div className="form-group">
+        <label htmlFor="password">Contraseña</label>
+        <input
+          type="password"
+          id="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
       </div>
       {error && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-2"
-          role="alert"
-        >
-          <strong className="font-bold">Error!</strong>
-          <span className="block sm:inline">{error}</span>
+        <div className="error-message">
+          <p>Error: {error}</p>
         </div>
       )}
-      <div>
-        <button
-          type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Registrarse
-        </button>
-      </div>
+      <button type="submit" className="auth-button">
+        Registrarse
+      </button>
     </form>
-  );
-};
+  )
+}
 
-export default RegisterForm;
+export default RegisterForm
 
 /* Fin src\components\auth\RegisterForm.tsx */
 
@@ -1030,41 +988,54 @@ export default PedidoForm
 
 /* Inicio src\components\layout\MainLayout.tsx */
 // src/components/layout/MainLayout.tsx
-import React, { useState } from "react";
-import Navbar from "./Navbar";
-import Sidebar from "./Sidebar";
+import React, { useEffect, useState } from 'react'
+import Navbar from './Navbar'
+import Sidebar from './Sidebar'
 
 interface MainLayoutProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
 
   const handleDrawerToggle = () => {
-    setDrawerOpen(!drawerOpen);
-  };
+    setDrawerOpen(!drawerOpen)
+  }
 
   const handleDrawerClose = () => {
-    setDrawerOpen(false);
-  };
+    setDrawerOpen(false)
+  }
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768) // Ajusta el breakpoint según tus necesidades
+    }
+
+    handleResize() // Set initial value
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
       <Navbar toggleDrawer={handleDrawerToggle} />
       <Sidebar drawerOpen={drawerOpen} handleDrawerClose={handleDrawerClose} />
-      <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:pl-64">
-        {" "}
-        {/* Ajuste de padding lateral en desktop para el sidebar fijo */}
+      <main
+        className={`flex-1 overflow-x-hidden overflow-y-auto p-4 ${
+          isMobile ? 'pt-16' : 'md:pl-64'
+        }`}
+      >
         <div className="container mx-auto">
           <div className="w-full">{children}</div>
         </div>
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default MainLayout;
+export default MainLayout
 
 /* Fin src\components\layout\MainLayout.tsx */
 
@@ -1100,14 +1071,12 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDrawer }) => {
             <MenuIcon className="transition-transform duration-300 hover:scale-110" />{' '}
             {/* Transición y escala en hover del icono */}
           </button>
+
           <img
-            src="SrPolForYouSinTitle.svg"
+            src="SrPolTitulo.png"
             alt="SrPol Logo"
             className="h-10 mr-2 transition-transform duration-300 hover:scale-105" // Transición en el logo
           />
-          <span className="text-xl font-semibold text-gray-900 transition-colors duration-200 hover:text-indigo-700">
-            SrPol
-          </span>{' '}
           {/* Transición en el título */}
         </div>
         {user && (
@@ -1132,23 +1101,18 @@ export default Navbar
 
 /* Inicio src\components\layout\PublicLayout.tsx */
 // src/components/layout/PublicLayout.tsx
-import React, { ReactNode } from "react";
+import React, { ReactNode } from 'react'
+import '../../styles/public-layout.css' // Importa el archivo CSS para el diseño público
 
 interface PublicLayoutProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 const PublicLayout: React.FC<PublicLayoutProps> = ({ children }) => {
-  return (
-    <div className="flex justify-center items-center h-screen bg-gray-100">
-      {" "}
-      {/* Clases Tailwind para centrar y fondo */}
-      {children}
-    </div>
-  );
-};
+  return <div>{children}</div>
+}
 
-export default PublicLayout;
+export default PublicLayout
 
 /* Fin src\components\layout\PublicLayout.tsx */
 
@@ -4053,6 +4017,73 @@ export default PedidoList;
 /* Fin src\components\pedidos\PedidoList.tsx */
 
 /* Fin src\components\pedidos\PedidoList.tsx */
+
+/* Inicio src\components\splash\SplashScreen.tsx */
+// src/components/splash/SplashScreen.tsx
+import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+// Importa el logo como una URL
+
+import { useAuth } from '../../hooks/useAuth'
+import './../../styles/SplashScreen.css' // Importa el archivo CSS de estilos
+
+const SplashScreen: React.FC = () => {
+  const [logoAnimation, setLogoAnimation] = useState(false)
+  const [textAnimation, setTextAnimation] = useState(false)
+  const [fadeOut, setFadeOut] = useState(false)
+  const { user, loading } = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    // Inicia la animación del logo
+    setLogoAnimation(true)
+
+    // Después de que la animación del logo termine (0.8 segundo), inicia la del texto
+    const logoTimeout = setTimeout(() => {
+      setTextAnimation(true)
+    }, 800)
+
+    // Después de 2.2 segundos, inicia el fade out
+    const fadeTimeout = setTimeout(() => {
+      setFadeOut(true)
+    }, 2200)
+
+    // Después de que el fade out termine (0.8 segundos), redirige
+    const redirectTimeout = setTimeout(() => {
+      if (!loading) {
+        navigate(user ? '/' : '/login')
+      }
+    }, 3000)
+
+    // Limpia los timeouts para evitar problemas si el componente se desmonta
+    return () => {
+      clearTimeout(logoTimeout)
+      clearTimeout(fadeTimeout)
+      clearTimeout(redirectTimeout)
+    }
+  }, [user, loading, navigate])
+
+  // Renderiza el splash screen
+  return (
+    <div className={`splash-screen ${fadeOut ? 'fade-out' : ''}`}>
+      <div className="splash-content">
+        <img
+          src="/SrPol.png"
+          alt="SrPol Logo"
+          className={`splash-logo ${logoAnimation ? 'scale-up' : ''}`}
+        />
+        <div className={`splash-text ${textAnimation ? 'fade-in' : ''}`}>
+          <h1 className="splash-title">SrPol</h1>
+          <p className="splash-subtitle">Delicias a tu mesa</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default SplashScreen
+
+/* Fin src\components\splash\SplashScreen.tsx */
 
 /* Inicio src\components\ui\Button.tsx */
 /* src\components\ui\Button.tsx */
@@ -7513,60 +7544,56 @@ export default GestionUsuarios;
 
 /* Inicio src\pages\Login.tsx */
 // src/pages/Login.tsx
-import React, { useState } from "react";
-import LoginForm from "../components/auth/LoginForm";
-import RegisterForm from "../components/auth/RegisterForm";
-import PublicLayout from "../components/layout/PublicLayout";
+import React, { useState } from 'react'
+import LoginForm from '../components/auth/LoginForm'
+import RegisterForm from '../components/auth/RegisterForm'
+import PublicLayout from '../components/layout/PublicLayout'
+import '../styles/login.css' // Importa el archivo CSS específico para el login
 
 const Login: React.FC = () => {
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useState(0)
 
   const handleChange = (newValue: number) => {
-    // Simplificamos el handler
-    setTabValue(newValue);
-  };
+    setTabValue(newValue)
+  }
 
   return (
     <PublicLayout>
-      <div className="max-w-md w-full">
-        {" "}
-        {/* Contenedor principal con Tailwind */}
-        <div className="bg-white shadow-md rounded-lg p-6">
-          {" "}
-          {/* Reemplaza Paper con div y clases */}
-          <div className="flex justify-center border-b border-gray-200 mb-4">
-            {" "}
-            {/* Reemplaza Tabs con divs */}
+      <div className="login-container">
+        <div className="login-card">
+          <div className="login-header">
+            <img src="/SrPol.png" alt="Logo SrPol" className="login-logo" />
+            <h1 className="login-title">SrPol</h1>
+          </div>
+
+          <div className="login-tabs">
             <button
-              className={`py-2 px-4 -mb-px border-b-2 ${
-                tabValue === 0
-                  ? "border-blue-500 text-blue-500"
-                  : "border-transparent hover:border-gray-300"
-              } font-semibold`}
+              className={`login-tab ${tabValue === 0 ? 'active' : ''}`}
               onClick={() => handleChange(0)}
             >
               Iniciar Sesión
             </button>
             <button
-              className={`py-2 px-4 -mb-px border-b-2 ${
-                tabValue === 1
-                  ? "border-blue-500 text-blue-500"
-                  : "border-transparent hover:border-gray-300"
-              } font-semibold`}
+              className={`login-tab ${tabValue === 1 ? 'active' : ''}`}
               onClick={() => handleChange(1)}
             >
               Registrarse
             </button>
           </div>
-          {tabValue === 0 && <LoginForm />}
-          {tabValue === 1 && <RegisterForm />}
+
+          <div
+            className={`login-form-container ${tabValue === 0 ? 'slide-in-left' : 'slide-in-right'}`}
+          >
+            {tabValue === 0 && <LoginForm />}
+            {tabValue === 1 && <RegisterForm />}
+          </div>
         </div>
       </div>
     </PublicLayout>
-  );
-};
+  )
+}
 
-export default Login;
+export default Login
 
 /* Fin src\pages\Login.tsx */
 
@@ -8252,7 +8279,7 @@ declare global {
 }
 
 interface MercadoPago {
-  new (
+  new(
     publicKey: string,
     options?,
   ): {
@@ -8260,7 +8287,16 @@ interface MercadoPago {
   }
 }
 
-export {} // Exporta un objeto vacío para evitar error de módulo
+export { }; // Exporta un objeto vacío para evitar error de módulo
+
+declare module '*.svg?url' {
+  const content: string;
+  export default content;
+}
+declare module '*.svg' {
+  const content: string;
+  export default content;
+}
 
 /* Fin src\types\global.d.ts */
 
@@ -8863,14 +8899,11 @@ export default {
     "isolatedModules": true,
     "jsx": "react-jsx",
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": false,
-    "noImplicitAny": false,
-    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "src"
-  ], //  <-  Incluye solo la carpeta 'src' (archivos fuente)
+  ],
   "exclude": [
     "node_modules",
     "dist",
