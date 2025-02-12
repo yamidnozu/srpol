@@ -38,8 +38,8 @@ const Navbar: React.FC<NavbarProps> = ({ toggleDrawer }) => {
           {/* Transición en el título */}
         </div>
         {user && (
-          <div className="hidden md:flex items-center">
-            <span className="text-gray-700 mr-4">{user.email}</span>
+          <div className=" md:flex items-center">
+            <span className="hidden md:flex items-center text-gray-700 mr-4">{user.email}</span>
             <button
               className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200 hover:scale-105" // Transición en el botón
               onClick={handleLogout}
