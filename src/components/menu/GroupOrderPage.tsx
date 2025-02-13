@@ -1,17 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+// src/components/menu/GroupOrderPage.tsx
 /* eslint-disable @typescript-eslint/no-floating-promises */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { ChangeEvent, FC, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { MenuItem as MenuItemType } from '../../context/AppContext'
 import { useAuth } from '../../hooks/useAuth'
 import { useMenu } from '../../hooks/useMenu'
 import { COLLECTIONS } from '../../utils/constants'
 import { db } from '../../utils/firebase'
-import NameModal from './NameModal'
 import OrderReview from './partials/OrderReview'
 import PeopleSelection from './partials/PeopleSelection'
 import PersonOrder from './partials/PersonOrder'
@@ -33,7 +30,7 @@ export interface SharedOrderItem {
   personIds: string[]
 }
 
-interface GroupOrderData {
+export interface GroupOrderData {
   code: string
   ownerId: string
   status: string
@@ -44,67 +41,57 @@ interface GroupOrderData {
   showPricesToAll?: boolean
 }
 
-export interface GroupOrderPageProps {
-  name: string
-}
-
-const bubbleColors = [
-  'bg-pink-100',
-  'bg-blue-100',
-  'bg-yellow-100',
-  'bg-green-100',
-  'bg-purple-100',
-  'bg-teal-100',
-]
-
-const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
+const GroupOrderPage: FC = (): JSX.Element => {
   const { menu } = useMenu()
   const { user } = useAuth()
+  const navigate = useNavigate()
+
+  // Estados principales del grupo de pedido
   const [numPeople, setNumPeople] = useState<number>(1)
   const [people, setPeople] = useState<Person[]>([])
-  const [showPeopleNames, setShowPeopleNames] = useState(false)
-  const [showPedidoForm, setShowPedidoForm] = useState(false)
+  const [showPeopleNames, setShowPeopleNames] = useState<boolean>(false)
+  const [showPedidoForm, setShowPedidoForm] = useState<boolean>(false)
   const [sharedOrderItems, setSharedOrderItems] = useState<SharedOrderItem[]>([])
   const [selectedView, setSelectedView] = useState<string>('shared')
   const [groupOrderCode, setGroupOrderCode] = useState<string | null>(null)
   const [groupOrderId, setGroupOrderId] = useState<string | null>(null)
-  const [isOwner, setIsOwner] = useState(false)
-  const [allFinished, setAllFinished] = useState(false)
-  const [orderPlaced, setOrderPlaced] = useState(false)
-  const [showPricesToAll, setShowPricesToAll] = useState(false)
-  const [showNameModal, setShowNameModal] = useState(false)
-  const [currentPersonIndex, setCurrentPersonIndex] = useState<number | null>(null)
-  const [tempPersonName, setTempPersonName] = useState<string>('')
+  const [isOwner, setIsOwner] = useState<boolean>(false)
+  const [allFinished, setAllFinished] = useState<boolean>(false)
+  const [orderPlaced, setOrderPlaced] = useState<boolean>(false)
+  const [showPricesToAll, setShowPricesToAll] = useState<boolean>(false)
 
-  const navigate = useNavigate()
+  // NUEVA: Estados para edición inline del nombre (sin modal)
+  const [editingPersonIndex, setEditingPersonIndex] = useState<number | null>(null)
+  const [editingName, setEditingName] = useState<string>('')
+
+  // Parámetros de la URL
   const [searchParams] = useSearchParams()
-  const codeFromURL = searchParams.get('code')
-  const joiningWithCode = !!codeFromURL
-  const { groupOrderId: routeGroupId } = useParams()
+  const codeFromURL: string | null = searchParams.get('code')
+  const joiningWithCode: boolean = !!codeFromURL
+  const { groupOrderId: routeGroupId } = useParams<{ groupOrderId: string }>()
 
-  // ─── CREAR LOS REFS DE FORMA INCONDICIONAL ─────────────────────────────
-  // Para el SharedOrder (único)
+  // Refs para elementos visuales (resumen compartido y de cada persona)
   const sharedOrderSummaryRef = useRef<HTMLDivElement>(null)
-  // Para cada PersonOrder, creamos un arreglo de refs:
   const personRefs = useRef<React.RefObject<HTMLDivElement>[]>([])
   if (personRefs.current.length !== people.length) {
-    personRefs.current = Array(people.length)
-      .fill(null)
-      .map(() => React.createRef<HTMLDivElement>())
+    personRefs.current = Array.from({ length: people.length }, () =>
+      React.createRef<HTMLDivElement>(),
+    )
   }
 
-  // ─── SUSCRIPCIÓN AL PEDIDO GRUPAL ─────────────────────────────────────
+  // Suscripción al pedido grupal (Firestore)
   useEffect(() => {
     if (routeGroupId) {
       setGroupOrderId(routeGroupId)
       setGroupOrderCode(codeFromURL)
-      subscribeToGroupOrder(routeGroupId)
+      const unsubscribe = subscribeToGroupOrder(routeGroupId)
+      return () => unsubscribe()
     } else {
-      console.log('No se encontró groupOrderId en la ruta')
+      console.error('No se encontró groupOrderId en la ruta')
     }
   }, [routeGroupId, codeFromURL])
 
-  const subscribeToGroupOrder = (groupId: string) => {
+  const subscribeToGroupOrder = (groupId: string): (() => void) => {
     const ref = doc(db, COLLECTIONS.GROUP_ORDERS, groupId)
     return onSnapshot(
       ref,
@@ -118,9 +105,9 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         setPeople(data.participants)
         setSharedOrderItems(data.sharedItems)
         setIsOwner(user?.uid === data.ownerId)
-        setAllFinished(data.participants.every((p) => p.finished))
-        setOrderPlaced(!!data.orderPlaced)
-        setShowPricesToAll(!!data.showPricesToAll)
+        setAllFinished(data.participants.every((p: Person) => Boolean(p.finished)))
+        setOrderPlaced(Boolean(data.orderPlaced))
+        setShowPricesToAll(Boolean(data.showPricesToAll))
         if (data.participants.length !== numPeople) {
           setNumPeople(data.participants.length)
         }
@@ -128,20 +115,21 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           setShowPedidoForm(true)
         }
       },
-      () => {
+      (error) => {
+        console.error('Error al suscribirse al pedido grupal:', error)
         navigate('/menu')
       },
     )
   }
 
-  // ─── MANEJO DE CAMBIOS ───────────────────────────────────────────────
-  const handleNumPeopleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const num = Number(e.target.value)
+  // Manejo del número de personas
+  const handleNumPeopleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const num: number = Number(e.target.value)
     setNumPeople(num)
-    setPeople((prev) => {
+    setPeople((prev: Person[]) => {
       const currentCount = prev.length
       if (num > currentCount) {
-        const newPeople = Array.from({ length: num - currentCount }, (_, i) => ({
+        const newPeople: Person[] = Array.from({ length: num - currentCount }, (_, i) => ({
           personIndex: currentCount + i,
           userId: null,
           name: `Persona ${currentCount + i + 1}`,
@@ -157,16 +145,20 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     })
   }
 
-  const handlePersonNameChange = (index: number, name: string) => {
-    const updated = [...people]
-    if (updated[index]) {
-      updated[index].name = name
-      setPeople(updated)
-    }
+  // Manejo del cambio de nombre para cada participante (inline)
+  const handlePersonNameChange = (index: number, name: string): void => {
+    setPeople((prev: Person[]) => {
+      const updated = [...prev]
+      if (updated[index]) {
+        updated[index].name = name
+      }
+      return updated
+    })
   }
 
-  const handleStartOrder = () => {
-    if (people.every((p) => p.name.trim() !== '')) {
+  // Manejo para iniciar el pedido (verifica que todos tengan nombre)
+  const handleStartOrder = (): void => {
+    if (people.every((p: Person) => p.name.trim() !== '')) {
       setShowPeopleNames(true)
       setSelectedView('shared')
     } else {
@@ -174,11 +166,12 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     }
   }
 
-  const handleAddToSharedOrder = async (item) => {
+  // Funciones para el pedido compartido
+  const handleAddToSharedOrder = async (item: MenuItemType): Promise<void> => {
     if (!groupOrderId || orderPlaced) return
     if (item.availabilityStatus !== 'disponible') return
 
-    const existingIndex = sharedOrderItems.findIndex((si) => si.itemId === item.id)
+    const existingIndex: number = sharedOrderItems.findIndex((si) => si.itemId === item.id)
     let updated: SharedOrderItem[]
     if (existingIndex >= 0) {
       updated = sharedOrderItems.map((si, idx) =>
@@ -193,11 +186,14 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         sharedItems: updated,
       })
     } catch (error) {
-      console.error('Error al actualizar sharedItems:', error)
+      console.error('Error al actualizar sharedItems:', (error as Error).message)
     }
   }
 
-  const handleSharedOrderItemQuantityChange = async (itemId: string, quantity: number) => {
+  const handleSharedOrderItemQuantityChange = async (
+    itemId: string,
+    quantity: number,
+  ): Promise<void> => {
     if (!groupOrderId || orderPlaced) return
     if (quantity < 0) return
 
@@ -208,11 +204,11 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         sharedItems: updated,
       })
     } catch (error) {
-      console.error('Error al cambiar cantidad en sharedItems:', error)
+      console.error('Error al cambiar cantidad en sharedItems:', (error as Error).message)
     }
   }
 
-  const handleRemoveSharedOrderItem = async (itemId: string) => {
+  const handleRemoveSharedOrderItem = async (itemId: string): Promise<void> => {
     if (!groupOrderId || orderPlaced) return
 
     const updated = sharedOrderItems.filter((si) => si.itemId !== itemId)
@@ -222,25 +218,25 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         sharedItems: updated,
       })
     } catch (error) {
-      console.error('Error al remover item compartido:', error)
+      console.error('Error al remover item compartido:', (error as Error).message)
     }
   }
 
-  const handleAddItemToPerson = async (personIndex: number, menuItem) => {
+  // Funciones para el pedido individual
+  const handleAddItemToPerson = async (
+    personIndex: number,
+    menuItem: MenuItemType,
+  ): Promise<void> => {
     if (!groupOrderId || orderPlaced || !user) return
     if (menuItem.availabilityStatus !== 'disponible') return
 
-    const personData = people[personIndex]
-    const lockedByOther = personData.locked && personData.userId !== user.uid
+    const personData: Person = people[personIndex]
+    const lockedByOther: boolean = Boolean(personData.locked) && personData.userId !== user.uid
     if (lockedByOther) return
 
-    let updatedPeople = [...people]
+    let updatedPeople: Person[] = [...people]
     if (!personData.locked) {
-      if (personData.name.startsWith('Persona')) {
-        setCurrentPersonIndex(personIndex)
-        setTempPersonName(personData.name)
-        setShowNameModal(true)
-      }
+      // Asignar usuario y bloquear sin modal
       updatedPeople = updatedPeople.map((p, idx) =>
         idx === personIndex ? { ...p, userId: user.uid, locked: true } : p,
       )
@@ -267,7 +263,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         participants: updatedPeople,
       })
     } catch (error) {
-      console.error('Error al agregar item a persona:', error)
+      console.error('Error al agregar item a persona:', (error as Error).message)
     }
   }
 
@@ -275,13 +271,16 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
     personIndex: number,
     itemId: string,
     quantity: number,
-  ) => {
+  ): Promise<void> => {
     if (!groupOrderId || orderPlaced) return
     if (quantity < 0) return
 
     const updated = people.map((p, idx) =>
       idx === personIndex
-        ? { ...p, items: p.items.map((it) => (it.id === itemId ? { ...it, quantity } : it)) }
+        ? {
+            ...p,
+            items: p.items.map((it) => (it.id === itemId ? { ...it, quantity } : it)),
+          }
         : p,
     )
     setPeople(updated)
@@ -290,11 +289,11 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         participants: updated,
       })
     } catch (error) {
-      console.error('Error al cambiar cantidad de item en persona:', error)
+      console.error('Error al cambiar cantidad de item en persona:', (error as Error).message)
     }
   }
 
-  const handleRemoveItemFromPerson = async (personIndex: number, itemId: string) => {
+  const handleRemoveItemFromPerson = async (personIndex: number, itemId: string): Promise<void> => {
     if (!groupOrderId || orderPlaced) return
 
     const updated = people.map((p, idx) =>
@@ -306,20 +305,19 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         participants: updated,
       })
     } catch (error) {
-      console.error('Error al remover item de persona:', error)
+      console.error('Error al remover item de persona:', (error as Error).message)
     }
   }
 
-  // ─── Finalizar pedido de persona ─────────────────────────────────
-  const handlePersonFinishedOrder = async (personIndex: number) => {
+  const handlePersonFinishedOrder = async (personIndex: number): Promise<void> => {
     if (!groupOrderId || orderPlaced || !user) return
     if (!isOwner) {
-      const myIndex = people.findIndex((p) => p.userId === user.uid)
+      const myIndex: number = people.findIndex((p) => p.userId === user.uid)
       if (myIndex !== personIndex) return
     }
     const updated = people.map((p, idx) => (idx === personIndex ? { ...p, finished: true } : p))
     setPeople(updated)
-    const everyoneDone = updated.every((p) => p.finished)
+    const everyoneDone: boolean = updated.every((p) => Boolean(p.finished))
     setAllFinished(everyoneDone)
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
@@ -327,63 +325,41 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         allFinished: everyoneDone,
       })
     } catch (error) {
-      console.error('Error al finalizar pedido de persona:', error)
+      console.error('Error al finalizar pedido de persona:', (error as Error).message)
     }
   }
 
-  const handleNameModalClose = () => {
-    setShowNameModal(false)
-    setCurrentPersonIndex(null)
-  }
-
-  const handleNameSubmit = async (name: string) => {
-    if (!groupOrderId || currentPersonIndex === null || !user) return
-    const updated = people.map((p, idx) =>
-      idx === currentPersonIndex
-        ? { ...p, name: name.trim() !== '' ? name : p.name, userId: user.uid, locked: true }
-        : p,
-    )
-    setPeople(updated)
-    setShowNameModal(false)
-    setCurrentPersonIndex(null)
-    try {
-      await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
-        participants: updated,
-      })
-    } catch (error) {
-      console.error('Error al actualizar nombre:', error)
-    }
-  }
-
-  const handleReviewOrder = () => {
+  const handleReviewOrder = (): void => {
     setShowPedidoForm(true)
   }
 
-  const handleOrderPlacement = async () => {
+  const handleOrderPlacement = async (): Promise<void> => {
     if (!groupOrderId) return
-    await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), { orderPlaced: true })
+    await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
+      orderPlaced: true,
+    })
     setOrderPlaced(true)
     setShowPedidoForm(true)
   }
 
-  const handleToggleShowPrices = async () => {
+  const handleToggleShowPrices = async (): Promise<void> => {
     if (!groupOrderId) return
-    const newVal = !showPricesToAll
+    const newVal: boolean = !showPricesToAll
     setShowPricesToAll(newVal)
     try {
       await updateDoc(doc(db, COLLECTIONS.GROUP_ORDERS, groupOrderId), {
         showPricesToAll: newVal,
       })
     } catch (error) {
-      console.error('Error al alternar visualización de precios:', error)
+      console.error('Error al alternar visualización de precios:', (error as Error).message)
     }
   }
 
-  const getSharedItemCount = () => sharedOrderItems.reduce((acc, si) => acc + si.quantity, 0)
-  const getPersonItemCount = (person: Person) =>
-    person.items.reduce((acc, it) => acc + it.quantity, 0)
-  const getInitialLetter = (name: string) =>
-    !name || name.trim() === '' ? '?' : name.trim()[0].toUpperCase()
+  // Helpers para contar y formatear
+  const getSharedItemCount = (): number =>
+    sharedOrderItems.reduce((acc, si) => acc + si.quantity, 0)
+  const getInitialLetter = (name: string): string =>
+    name.trim() === '' ? '?' : name.trim()[0].toUpperCase()
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
@@ -391,18 +367,15 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
       <header className="mb-6 text-center">
         {groupOrderCode && (
           <div className="sm:flex sm:items-center sm:justify-center">
-            {' '}
-            {/* Ajuste para pantallas pequeñas */}
             <h2 className="text-2xl font-bold text-indigo-600">
-              Código de Pedido: <span className="text-3xl">{groupOrderCode}</span>
+              Código de Pedido: <span className="text-3xl font-mono">{groupOrderCode}</span>
             </h2>
-            <p className="text-sm text-gray-500 sm:ml-2">Comparte este código con tus amigos</p>{' '}
-            {/* Ajuste para pantallas pequeñas */}
+            <p className="text-sm text-gray-500 sm:ml-2">Comparte este código con tus amigos</p>
           </div>
         )}
       </header>
 
-      {/* Selección de número de personas y nombres */}
+      {/* Si aún no se han definido los nombres */}
       {!showPeopleNames && !joiningWithCode ? (
         <PeopleSelection
           numPeople={numPeople}
@@ -413,7 +386,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
         />
       ) : !showPedidoForm ? (
         <>
-          {/* Burbujas para cambiar de vista */}
+          {/* Menú de pestañas para vista compartida vs individual */}
           <div className="flex flex-wrap gap-4 justify-center mb-8">
             <div
               onClick={() => setSelectedView('shared')}
@@ -434,9 +407,17 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
               <span className="mt-2 text-sm font-medium text-gray-700">Compartido</span>
             </div>
             {people.map((person, i) => {
-              const lockedByOther = person.locked && person.userId !== user?.uid
-              const active = selectedView === `person-${i}`
-              const color = bubbleColors[i % bubbleColors.length]
+              const lockedByOther: boolean = Boolean(person.locked) && person.userId !== user?.uid
+              const active: boolean = selectedView === `person-${i}`
+              const bubbleColors: string[] = [
+                'bg-pink-100',
+                'bg-blue-100',
+                'bg-yellow-100',
+                'bg-green-100',
+                'bg-purple-100',
+                'bg-teal-100',
+              ]
+              const color: string = bubbleColors[i % bubbleColors.length]
               return (
                 <div
                   key={person.personIndex}
@@ -468,28 +449,54 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                       </span>
                     )}
                   </div>
-                  <span className="mt-2 text-sm font-medium text-gray-700 max-w-[4rem] truncate">
-                    {person.name}
-                  </span>
+                  {/* Edición inline del nombre: si es editable, al hacer clic se transforma en input */}
+                  {editingPersonIndex === i ? (
+                    <input
+                      type="text"
+                      value={editingName}
+                      onChange={(e) => setEditingName(e.target.value)}
+                      onBlur={() => {
+                        handlePersonNameChange(i, editingName)
+                        setEditingPersonIndex(null)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handlePersonNameChange(i, editingName)
+                          setEditingPersonIndex(null)
+                        }
+                      }}
+                      className="mt-2 text-sm font-medium text-gray-700 max-w-[4rem] truncate border border-gray-300 rounded px-1"
+                      autoFocus
+                    />
+                  ) : (
+                    <span
+                      onClick={() => {
+                        if (!person.locked || person.userId === user?.uid) {
+                          setEditingPersonIndex(i)
+                          setEditingName(person.name)
+                        }
+                      }}
+                      className="mt-2 text-sm font-medium text-gray-700 max-w-[4rem] truncate cursor-pointer"
+                    >
+                      {person.name}
+                    </span>
+                  )}
                 </div>
               )
             })}
           </div>
 
-          {/* Sección de vista según selección */}
+          {/* Mostrar la vista seleccionada: compartida o individual */}
           {selectedView === 'shared' ? (
             <SharedOrder
               menuCategories={menu
-                .filter((i) => i.availabilityStatus !== 'noDisponibleLargoPlazo')
-                .reduce(
-                  (acc, item) => {
-                    const cat = item.recommendation || 'General'
-                    acc[cat] = acc[cat] || []
-                    acc[cat].push(item)
-                    return acc
-                  },
-                  {} as Record<string, any[]>,
-                )}
+                .filter((item) => item.availabilityStatus !== 'noDisponibleLargoPlazo')
+                .reduce<Record<string, MenuItemType[]>>((acc, item) => {
+                  const cat: string = item.recommendation || 'General'
+                  if (!acc[cat]) acc[cat] = []
+                  acc[cat].push(item)
+                  return acc
+                }, {})}
               sharedOrderItems={sharedOrderItems}
               onAddToSharedOrder={handleAddToSharedOrder}
               onSharedOrderItemQuantityChange={handleSharedOrderItemQuantityChange}
@@ -508,7 +515,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           ) : (
             people.map((person, i) => {
               if (selectedView === `person-${i}`) {
-                const lockedByOther = person.locked && person.userId !== user?.uid
+                const lockedByOther: boolean = Boolean(person.locked) && person.userId !== user?.uid
                 return (
                   <PersonOrder
                     key={person.personIndex}
@@ -516,15 +523,12 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                     index={i}
                     menuCategories={menu
                       .filter((m) => m.availabilityStatus !== 'noDisponibleLargoPlazo')
-                      .reduce(
-                        (acc, item) => {
-                          const cat = item.recommendation || 'General'
-                          acc[cat] = acc[cat] || []
-                          acc[cat].push(item)
-                          return acc
-                        },
-                        {} as Record<string, any[]>,
-                      )}
+                      .reduce<Record<string, MenuItemType[]>>((acc, item) => {
+                        const cat: string = item.recommendation || 'General'
+                        if (!acc[cat]) acc[cat] = []
+                        acc[cat].push(item)
+                        return acc
+                      }, {})}
                     menu={menu}
                     onAddItemToPerson={handleAddItemToPerson}
                     onPersonOrderItemQuantityChange={handlePersonOrderItemQuantityChange}
@@ -538,8 +542,8 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
                     personOrderSummaryRef={personRefs.current[i]}
                     activeTab={selectedView}
                     onPersonFinishedOrder={handlePersonFinishedOrder}
-                    isFinished={person.finished || false}
-                    personLocked={person.locked || false}
+                    isFinished={Boolean(person.finished)}
+                    personLocked={Boolean(person.locked)}
                     isCurrentUserTab={person.userId === user?.uid}
                     personIndex={i}
                     disabled={lockedByOther || orderPlaced}
@@ -550,7 +554,7 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
             })
           )}
 
-          {/* Botón para revisar el pedido grupal (solo visible para el creador) */}
+          {/* Botón para revisar el pedido grupal (solo para el creador) */}
           <div className="flex justify-center mt-8">
             {isOwner && allFinished && !orderPlaced ? (
               <button
@@ -600,13 +604,6 @@ const GroupOrderPage: React.FC<GroupOrderPageProps> = () => {
           onToggleShowPrices={handleToggleShowPrices}
         />
       )}
-
-      <NameModal
-        open={showNameModal}
-        onClose={handleNameModalClose}
-        currentName={tempPersonName}
-        onSubmit={handleNameSubmit}
-      />
     </div>
   )
 }

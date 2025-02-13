@@ -101,7 +101,7 @@ const App: React.FC = () => {
                   path="/menu/:groupOrderId"
                   element={
                     <PrivateRoute>
-                      <GroupOrderPage name="" />
+                      <GroupOrderPage />
                     </PrivateRoute>
                   }
                 />
