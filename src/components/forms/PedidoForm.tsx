@@ -1,4 +1,5 @@
-// src/components/pedidos/PedidoForm.tsx
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* src/components/pedidos/PedidoForm.tsx */
 import { Timestamp, addDoc, collection } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
@@ -6,7 +7,6 @@ import { useAuth } from '../../hooks/useAuth'
 import { useMenu } from '../../hooks/useMenu'
 import { db } from '../../utils/firebase'
 
-/** Mismo tipo que uses en GroupOrderPage */
 interface Person {
   personIndex: number
   userId: string | null
@@ -24,7 +24,7 @@ interface SharedOrderItem {
 
 interface PedidoFormProps {
   onClose: () => void
-  people?: Person[] // Aquí usamos la interface Person
+  people?: Person[]
   sharedOrderItems?: SharedOrderItem[]
 }
 
@@ -46,7 +46,6 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderIte
   const [paymentMethod, setPaymentMethod] = useState('contraentrega')
 
   useEffect(() => {
-    // Convertimos people en un estado con 'peopleOrder'
     if (people) {
       const mapped = people.map((p) => ({
         userId: p.userId,
@@ -54,7 +53,6 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderIte
       }))
       setPeopleOrder(mapped)
 
-      // Flatten person items
       const personItems = people.flatMap((person) =>
         person.items.map((item) => ({
           id: item.id,
@@ -68,7 +66,6 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderIte
 
   useEffect(() => {
     if (sharedOrderItems) {
-      // Flatten shared items -> assignedTo: 'Compartido'
       const sharedItemsForDisplay = sharedOrderItems.flatMap((sharedItem) =>
         Array(sharedItem.quantity)
           .fill(null)
@@ -82,13 +79,12 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderIte
     }
   }, [sharedOrderItems])
 
-  // Simulación sedes
   const sedesDisponibles = ['Sede Norte', 'Sede Sur', 'Sede Centro']
   useEffect(() => {
     if (sedesDisponibles.length === 1) {
       setSede(sedesDisponibles[0])
     }
-  }, [sedesDisponibles])
+  }, [])
 
   const calculateTotal = () => {
     let total = 0
@@ -103,13 +99,13 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderIte
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (!user) return
+    const uid = user ? user.uid : null // Permitir pedidos sin autenticación
 
     try {
       const total = calculateTotal()
       const orderId = uuidv4()
       const orderData = {
-        userId: user.uid,
+        userId: uid,
         items: items.map((item) => ({
           id: item.id,
           quantity: item.quantity,
@@ -134,16 +130,17 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderIte
       }
 
       await addDoc(collection(db, 'pedidos'), orderData)
-      handlePaymentSuccess()
+      if (user) {
+        await addPoints()
+        alert('Pedido realizado con éxito y puntos sumados.')
+      } else {
+        alert('Pedido realizado con éxito.')
+      }
+      onClose()
     } catch (error) {
       console.error('Error al agregar el pedido:', error)
+      alert('Error al agregar el pedido.')
     }
-  }
-
-  const handlePaymentSuccess = async () => {
-    await addPoints()
-    alert('Pedido realizado con éxito y puntos sumados.')
-    onClose()
   }
 
   return (
@@ -184,9 +181,9 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderIte
       <div className="flex items-start">
         <div className="flex items-center h-5">
           <input
+            type="checkbox"
             id="deliveryIncluded"
             name="deliveryIncluded"
-            type="checkbox"
             checked={deliveryIncluded}
             onChange={(e) => setDeliveryIncluded(e.target.checked)}
             className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
@@ -217,7 +214,7 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderIte
           type="submit"
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
         >
-          Realizar Pedido1
+          Realizar Pedido
         </button>
       </div>
     </form>

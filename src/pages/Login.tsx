@@ -1,5 +1,6 @@
 // src/pages/Login.tsx
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import LoginForm from '../components/auth/LoginForm'
 import RegisterForm from '../components/auth/RegisterForm'
 import PublicLayout from '../components/layout/PublicLayout'
@@ -40,6 +41,16 @@ const Login: React.FC = () => {
           >
             {tabValue === 0 && <LoginForm />}
             {tabValue === 1 && <RegisterForm />}
+          </div>
+
+          {/* Nuevo enlace para acceso como invitado */}
+          <div className="guest-access" style={{ marginTop: '1rem', textAlign: 'center' }}>
+            <p>
+              ¿No tienes cuenta?{' '}
+              <Link to="/menu" style={{ color: '#4f46e5', textDecoration: 'underline' }}>
+                Acceder como invitado
+              </Link>
+            </p>
           </div>
         </div>
       </div>

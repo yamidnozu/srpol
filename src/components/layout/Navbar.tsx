@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
+/* eslint-disable @typescript-eslint/no-floating-promises */
 // src/components/layout/Navbar.tsx
 import MenuIcon from '@mui/icons-material/Menu'
 import React from 'react'

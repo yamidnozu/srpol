@@ -21,10 +21,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768) // Ajusta el breakpoint según tus necesidades
+      setIsMobile(window.innerWidth < 768)
     }
 
-    handleResize() // Set initial value
+    handleResize()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
@@ -35,7 +35,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <Sidebar drawerOpen={drawerOpen} handleDrawerClose={handleDrawerClose} />
       <main
         className={`flex-1 overflow-x-hidden overflow-y-auto p-4 ${
-          isMobile ? 'pt-16' : 'md:pl-64'
+          isMobile ? 'pt-16' : 'md:pl-64 pt-20' // padding-top añadido aquí
         }`}
       >
         <div className="container mx-auto">

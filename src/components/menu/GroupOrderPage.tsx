@@ -1,4 +1,4 @@
-// src/components/menu/GroupOrderPage.tsx
+/* src/components/menu/GroupOrderPage.tsx */
 /* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import { doc, onSnapshot, updateDoc } from 'firebase/firestore'
@@ -32,7 +32,7 @@ export interface SharedOrderItem {
 
 export interface GroupOrderData {
   code: string
-  ownerId: string
+  ownerId: string | null
   status: string
   participants: Person[]
   sharedItems: SharedOrderItem[]
@@ -46,7 +46,6 @@ const GroupOrderPage: FC = (): JSX.Element => {
   const { user } = useAuth()
   const navigate = useNavigate()
 
-  // Estados principales del grupo de pedido
   const [numPeople, setNumPeople] = useState<number>(1)
   const [people, setPeople] = useState<Person[]>([])
   const [showPeopleNames, setShowPeopleNames] = useState<boolean>(false)
@@ -60,17 +59,14 @@ const GroupOrderPage: FC = (): JSX.Element => {
   const [orderPlaced, setOrderPlaced] = useState<boolean>(false)
   const [showPricesToAll, setShowPricesToAll] = useState<boolean>(false)
 
-  // NUEVA: Estados para edición inline del nombre (sin modal)
   const [editingPersonIndex, setEditingPersonIndex] = useState<number | null>(null)
   const [editingName, setEditingName] = useState<string>('')
 
-  // Parámetros de la URL
   const [searchParams] = useSearchParams()
   const codeFromURL: string | null = searchParams.get('code')
   const joiningWithCode: boolean = !!codeFromURL
   const { groupOrderId: routeGroupId } = useParams<{ groupOrderId: string }>()
 
-  // Refs para elementos visuales (resumen compartido y de cada persona)
   const sharedOrderSummaryRef = useRef<HTMLDivElement>(null)
   const personRefs = useRef<React.RefObject<HTMLDivElement>[]>([])
   if (personRefs.current.length !== people.length) {
@@ -79,7 +75,6 @@ const GroupOrderPage: FC = (): JSX.Element => {
     )
   }
 
-  // Suscripción al pedido grupal (Firestore)
   useEffect(() => {
     if (routeGroupId) {
       setGroupOrderId(routeGroupId)
@@ -88,6 +83,7 @@ const GroupOrderPage: FC = (): JSX.Element => {
       return () => unsubscribe()
     } else {
       console.error('No se encontró groupOrderId en la ruta')
+      navigate('/menu')
     }
   }, [routeGroupId, codeFromURL])
 
@@ -104,7 +100,7 @@ const GroupOrderPage: FC = (): JSX.Element => {
         setGroupOrderCode(data.code)
         setPeople(data.participants)
         setSharedOrderItems(data.sharedItems)
-        setIsOwner(user?.uid === data.ownerId)
+        setIsOwner(user ? user.uid === data.ownerId : false)
         setAllFinished(data.participants.every((p: Person) => Boolean(p.finished)))
         setOrderPlaced(Boolean(data.orderPlaced))
         setShowPricesToAll(Boolean(data.showPricesToAll))
@@ -122,7 +118,6 @@ const GroupOrderPage: FC = (): JSX.Element => {
     )
   }
 
-  // Manejo del número de personas
   const handleNumPeopleChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const num: number = Number(e.target.value)
     setNumPeople(num)
@@ -145,7 +140,6 @@ const GroupOrderPage: FC = (): JSX.Element => {
     })
   }
 
-  // Manejo del cambio de nombre para cada participante (inline)
   const handlePersonNameChange = (index: number, name: string): void => {
     setPeople((prev: Person[]) => {
       const updated = [...prev]
@@ -156,7 +150,6 @@ const GroupOrderPage: FC = (): JSX.Element => {
     })
   }
 
-  // Manejo para iniciar el pedido (verifica que todos tengan nombre)
   const handleStartOrder = (): void => {
     if (people.every((p: Person) => p.name.trim() !== '')) {
       setShowPeopleNames(true)
@@ -166,7 +159,6 @@ const GroupOrderPage: FC = (): JSX.Element => {
     }
   }
 
-  // Funciones para el pedido compartido
   const handleAddToSharedOrder = async (item: MenuItemType): Promise<void> => {
     if (!groupOrderId || orderPlaced) return
     if (item.availabilityStatus !== 'disponible') return
@@ -222,25 +214,31 @@ const GroupOrderPage: FC = (): JSX.Element => {
     }
   }
 
-  // Funciones para el pedido individual
   const handleAddItemToPerson = async (
     personIndex: number,
     menuItem: MenuItemType,
   ): Promise<void> => {
-    if (!groupOrderId || orderPlaced || !user) return
+    if (!groupOrderId || orderPlaced) return
     if (menuItem.availabilityStatus !== 'disponible') return
 
     const personData: Person = people[personIndex]
-    const lockedByOther: boolean = Boolean(personData.locked) && personData.userId !== user.uid
+    const lockedByOther: boolean = user
+      ? Boolean(personData.locked) && personData.userId !== user.uid
+      : false
     if (lockedByOther) return
 
     let updatedPeople: Person[] = [...people]
-    if (!personData.locked) {
-      // Asignar usuario y bloquear sin modal
+    if (user && !personData.locked) {
       updatedPeople = updatedPeople.map((p, idx) =>
         idx === personIndex ? { ...p, userId: user.uid, locked: true } : p,
       )
+    } else if (!user && !personData.locked) {
+      // Permitir edición para invitados manteniendo userId como null
+      updatedPeople = updatedPeople.map((p, idx) =>
+        idx === personIndex ? { ...p, userId: null, locked: true } : p,
+      )
     }
+
     updatedPeople = updatedPeople.map((p, idx) => {
       if (idx === personIndex) {
         const foundItem = p.items.find((it) => it.id === menuItem.id)
@@ -310,11 +308,8 @@ const GroupOrderPage: FC = (): JSX.Element => {
   }
 
   const handlePersonFinishedOrder = async (personIndex: number): Promise<void> => {
-    if (!groupOrderId || orderPlaced || !user) return
-    if (!isOwner) {
-      const myIndex: number = people.findIndex((p) => p.userId === user.uid)
-      if (myIndex !== personIndex) return
-    }
+    if (!groupOrderId || orderPlaced) return
+
     const updated = people.map((p, idx) => (idx === personIndex ? { ...p, finished: true } : p))
     setPeople(updated)
     const everyoneDone: boolean = updated.every((p) => Boolean(p.finished))
@@ -355,15 +350,14 @@ const GroupOrderPage: FC = (): JSX.Element => {
     }
   }
 
-  // Helpers para contar y formatear
   const getSharedItemCount = (): number =>
     sharedOrderItems.reduce((acc, si) => acc + si.quantity, 0)
+
   const getInitialLetter = (name: string): string =>
     name.trim() === '' ? '?' : name.trim()[0].toUpperCase()
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-      {/* Encabezado */}
       <header className="mb-6 text-center">
         {groupOrderCode && (
           <div className="sm:flex sm:items-center sm:justify-center">
@@ -375,7 +369,6 @@ const GroupOrderPage: FC = (): JSX.Element => {
         )}
       </header>
 
-      {/* Si aún no se han definido los nombres */}
       {!showPeopleNames && !joiningWithCode ? (
         <PeopleSelection
           numPeople={numPeople}
@@ -386,7 +379,6 @@ const GroupOrderPage: FC = (): JSX.Element => {
         />
       ) : !showPedidoForm ? (
         <>
-          {/* Menú de pestañas para vista compartida vs individual */}
           <div className="flex flex-wrap gap-4 justify-center mb-8">
             <div
               onClick={() => setSelectedView('shared')}
@@ -407,7 +399,8 @@ const GroupOrderPage: FC = (): JSX.Element => {
               <span className="mt-2 text-sm font-medium text-gray-700">Compartido</span>
             </div>
             {people.map((person, i) => {
-              const lockedByOther: boolean = Boolean(person.locked) && person.userId !== user?.uid
+              const lockedByOther: boolean =
+                Boolean(person.locked) && person.userId !== (user ? user.uid : null)
               const active: boolean = selectedView === `person-${i}`
               const bubbleColors: string[] = [
                 'bg-pink-100',
@@ -449,7 +442,6 @@ const GroupOrderPage: FC = (): JSX.Element => {
                       </span>
                     )}
                   </div>
-                  {/* Edición inline del nombre: si es editable, al hacer clic se transforma en input */}
                   {editingPersonIndex === i ? (
                     <input
                       type="text"
@@ -471,7 +463,7 @@ const GroupOrderPage: FC = (): JSX.Element => {
                   ) : (
                     <span
                       onClick={() => {
-                        if (!person.locked || person.userId === user?.uid) {
+                        if (!person.locked || (user && person.userId === user.uid) || !user) {
                           setEditingPersonIndex(i)
                           setEditingName(person.name)
                         }
@@ -486,7 +478,6 @@ const GroupOrderPage: FC = (): JSX.Element => {
             })}
           </div>
 
-          {/* Mostrar la vista seleccionada: compartida o individual */}
           {selectedView === 'shared' ? (
             <SharedOrder
               menuCategories={menu
@@ -515,7 +506,8 @@ const GroupOrderPage: FC = (): JSX.Element => {
           ) : (
             people.map((person, i) => {
               if (selectedView === `person-${i}`) {
-                const lockedByOther: boolean = Boolean(person.locked) && person.userId !== user?.uid
+                const lockedByOther: boolean =
+                  Boolean(person.locked) && person.userId !== (user ? user.uid : null)
                 return (
                   <PersonOrder
                     key={person.personIndex}
@@ -544,7 +536,7 @@ const GroupOrderPage: FC = (): JSX.Element => {
                     onPersonFinishedOrder={handlePersonFinishedOrder}
                     isFinished={Boolean(person.finished)}
                     personLocked={Boolean(person.locked)}
-                    isCurrentUserTab={person.userId === user?.uid}
+                    isCurrentUserTab={user ? person.userId === user.uid : true}
                     personIndex={i}
                     disabled={lockedByOther || orderPlaced}
                   />
@@ -554,7 +546,6 @@ const GroupOrderPage: FC = (): JSX.Element => {
             })
           )}
 
-          {/* Botón para revisar el pedido grupal (solo para el creador) */}
           <div className="flex justify-center mt-8">
             {isOwner && allFinished && !orderPlaced ? (
               <button

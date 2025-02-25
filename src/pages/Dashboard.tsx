@@ -35,7 +35,8 @@ ChartJS.register(
   ArcElement,
 )
 
-interface Pedido {
+export interface Pedido {
+  orderId: string
   id: string
   status: string
   total: number

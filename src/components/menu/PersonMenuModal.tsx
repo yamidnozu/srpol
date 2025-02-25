@@ -1,4 +1,5 @@
-// src/components/forms/PedidoForm.tsx
+/* eslint-disable @typescript-eslint/no-misused-promises */
+// src/components/menu/PersonMenuModal.tsx
 import { Timestamp, addDoc, collection } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
@@ -17,14 +18,20 @@ interface PedidoFormProps {
     itemId: string
     quantity: number
     personIds: string[]
-  }[] // Prop para items compartidos
+  }[]
 }
 
-const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderItems }) => {
+const PersonMenuModal: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderItems }) => {
   const { menu } = useMenu()
   const { user, addPoints } = useAuth()
+  const [items, setItems] = useState<
+    {
+      id: string
+      quantity: number
+      assignedTo: string
+    }[]
+  >([])
 
-  const [items, setItems] = useState<{ id: string; quantity: number; assignedTo: string }[]>([])
   const [peopleOrder, setPeopleOrder] = useState<{ id: string; name: string }[]>([])
   const [sede, setSede] = useState('')
   const [deliveryFee, setDeliveryFee] = useState(0)
@@ -45,9 +52,8 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderIte
     }
   }, [people])
 
-  // Simulación de sedes disponibles (puedes obtenerlas de Firestore)
+  // Simulación de sedes
   const sedesDisponibles = ['Sede Norte', 'Sede Sur', 'Sede Centro']
-
   useEffect(() => {
     if (sedesDisponibles.length === 1) {
       setSede(sedesDisponibles[0])
@@ -62,44 +68,34 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderIte
         total += menuItem.price * item.quantity
       }
     })
-    if (sharedOrderItems) {
-      // Sumar el costo de items compartidos
-      sharedOrderItems.forEach((sharedItem) => {
-        const menuItem = menu.find((m) => m.id === sharedItem.itemId)
-        if (menuItem) {
-          total += menuItem.price * sharedItem.personIds.length // Precio por cada persona que lo pide
-        }
-      })
-    }
     return total + deliveryFee
   }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
-    if (!user) return
-
+    // Permitir envío aunque no se esté autenticado
+    const uid = user ? user.uid : null
     try {
       const total = calculateTotal()
       const orderId = uuidv4()
       const orderData = {
-        userId: user.uid,
+        userId: uid,
         items: items.map((item) => ({
           id: item.id,
           quantity: item.quantity,
           assignedTo: item.assignedTo,
         })),
         people: peopleOrder,
-        sede: sede,
+        sede,
         status: 'pendiente',
-        total: total,
-        deliveryFee: deliveryFee,
-        deliveryIncluded: deliveryIncluded,
-        paymentMethod: paymentMethod,
+        total,
+        deliveryFee,
+        deliveryIncluded,
+        paymentMethod,
         orderDate: Timestamp.now(),
-        orderId: orderId,
+        orderId,
         sharedItems: sharedOrderItems
           ? sharedOrderItems.map((si) => ({
-              // Incluir sharedOrderItems en los datos del pedido
               itemId: si.itemId,
               personIds: si.personIds,
             }))
@@ -107,16 +103,16 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderIte
       }
 
       await addDoc(collection(db, 'pedidos'), orderData)
-      handlePaymentSuccess()
+      if (user) {
+        await addPoints()
+        alert('Pedido realizado con éxito y puntos sumados.')
+      } else {
+        alert('Pedido realizado con éxito.')
+      }
+      onClose()
     } catch (error) {
       console.error('Error al agregar el pedido:', error)
     }
-  }
-
-  const handlePaymentSuccess = async () => {
-    await addPoints()
-    alert('Pedido realizado con éxito y puntos sumados.')
-    onClose()
   }
 
   return (
@@ -188,13 +184,13 @@ const PedidoForm: React.FC<PedidoFormProps> = ({ onClose, people, sharedOrderIte
       <div>
         <button
           type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
         >
-          Realizar Pedido2
+          Realizar Pedido
         </button>
       </div>
     </form>
   )
 }
 
-export default PedidoForm
+export default PersonMenuModal
